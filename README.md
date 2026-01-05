@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -72,7 +71,3 @@ export default defineConfig([
   },
 ])
 ```
-=======
-# Frontend
-데이터센터 에너지 운영 데이터 기반 “ESG(기후/환경) 증빙 패키지” 자동 생성·검증 플랫폼 프론트엔드 레포입니다.
->>>>>>> 6dcc326d071c76a9f99e2dee8f6a471493811adc
