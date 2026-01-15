@@ -1,0 +1,102 @@
+/**
+ * @file sharedStyles.css
+ * @description 프로젝트 전역 스타일 및 레이아웃 설정
+ * @details
+ * - 디자인 토큰(Color, Typography) 임포트
+ * - Base: 62.5% 폰트 사이즈 설정 (1rem = 10px 환산용)
+ * - Layout: 데스크탑 전체 화면 뷰를 위한 main 태그 설정
+ * - Utilities: 중앙 정렬, 스크롤바 숨김 등 커스텀 유틸리티 클래스 정의
+ */
+@import './tokens/color.css';
+@import './tokens/typography.css';
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    width: 100%;
+  }
+  body {
+    overflow-y: auto;
+  }
+  html {
+    font-size: 62.5%;
+    font-family:
+      'Pretendard Variable',
+      Pretendard,
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      Roboto,
+      'Helvetica Neue',
+      'Segoe UI',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      sans-serif;
+  }
+  body {
+    background-color: var(--color-gray-900);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  #root {
+    background-color: var(--color-gray-100);
+  }
+  main {
+    max-width: 100%; 
+    margin: 0;
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .fixed-center {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Hide scrollbar for Chrome, Safari, and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge, and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scroll-fade {
+    position: relative;
+  }
+  .scroll-fade::before,
+  .scroll-fade::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .scroll-fade::before {
+    left: -0.2rem;
+    width: 2rem;
+    background: linear-gradient(to right, #131313, transparent);
+  }
+  .scroll-fade::after {
+    right: -0.2rem;
+    width: 2rem;
+    background: linear-gradient(to left, #131313, transparent);
+  }
+}

@@ -1,0 +1,171 @@
+/**
+ * @file typography.css
+ * @description 디자인 시스템의 타이포그래피 토큰 정의
+ * @details
+ * - Font Sizes: Headline, Title, Subtitle, Body, Button, Caption 등 용도별 크기 변수화
+ * - .font-headline1 ~ .font-label2 클래스를 통한 일관된 텍스트 스타일 적용
+ */
+@theme {
+  /* Headline */
+  --font-headline1-size: 1.9rem;
+
+  /* Title */
+  --font-title1-size: 1.8rem;
+  --font-title2-size: 1.6rem;
+  --font-title3-size: 1.6rem;
+
+  /* Subtitle */
+  --font-subtitle1-size: 1.2rem;
+
+  /* Body */
+  --font-body1-size: 1.4rem;
+  --font-body2-size: 1.4rem;
+  --font-body3-size: 1.4rem;
+  --font-body4-size: 2.8rem;
+
+  /* Button */
+  --font-button1-size: 1.2rem;
+  --font-button2-size: 1.4rem;
+  --font-button3-size: 1.4rem;
+  --font-button4-size: 1.7rem;
+
+  /* Caption / Label */
+  --font-caption1-size: 1.2rem;
+  --font-caption2-size: 1.4rem;
+  --font-label1-size: 1.1rem;
+  --font-label2-size: 1.2rem;
+}
+
+@layer utilities {
+  /* Headings */
+  .font-headline1 {
+    font-size: var(--font-headline1-size);
+    font-weight: 800;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  /* Titles */
+  .font-title1 {
+    font-size: var(--font-title1-size);
+    font-weight: 500;
+    line-height: 150%;
+    letter-spacing: -0.03em;
+  }
+
+  .font-title2 {
+    font-size: var(--font-title2-size);
+    font-weight: 700;
+    line-height: 150%;
+    letter-spacing: -0.03em;
+  }
+
+  .font-title3 {
+    font-size: var(--font-title3-size);
+    font-weight: 900;
+    line-height: 150%;
+    letter-spacing: -0.03em;
+  }
+
+  /* Subtitles */
+  .font-subtitle1 {
+    font-size: var(--font-subtitle1-size);
+    font-weight: 400;
+    line-height: 160%;
+    letter-spacing: -0.06em;
+  }
+
+  /* Body */
+  .font-body1 {
+    font-size: var(--font-body1-size);
+    font-weight: 400;
+    line-height: 135.7%;
+    letter-spacing: -0.05em;
+  }
+
+  .font-body2 {
+    font-size: var(--font-body2-size);
+    font-weight: 700;
+    line-height: 135.7%;
+    letter-spacing: -0.05em;
+  }
+
+  /* 댓글 */
+  .font-body3 {
+    font-size: var(--font-body3-size);
+    font-weight: 400;
+    line-height: 142.9%;
+    letter-spacing: -0.01em;
+  }
+
+  /* 강조 숫자 */
+  .font-body4 {
+    font-size: var(--font-body4-size);
+    font-weight: 700;
+    line-height: 142.9%;
+    letter-spacing: -0.03em;
+  }
+
+  /* Button */
+  /* 칩 버튼명 */
+  .font-button1 {
+    font-size: var(--font-button1-size);
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: -0.06em;
+  }
+
+  /* 칩 버튼명2 */
+  .font-button2 {
+    font-size: var(--font-button2-size);
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: -0.05em;
+  }
+
+  /* 칩 버튼2 선택시 */
+  .font-button3 {
+    font-size: var(--font-button3-size);
+    font-weight: 700;
+    line-height: 150%;
+    letter-spacing: -0.04em;
+  }
+
+  /* 하단 버튼 텍스트 */
+  .font-button4 {
+    font-size: var(--font-button4-size);
+    font-weight: 700;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  /* Caption / Label */
+  /* 내용 설명 */
+  .font-caption1 {
+    font-size: var(--font-caption1-size);
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: -0.06em;
+  }
+
+  /* 추가 설명 */
+  .font-caption2 {
+    font-size: var(--font-caption2-size);
+    font-weight: 400;
+    line-height: 150%;
+    letter-spacing: -0.06em;
+  }
+
+  /* 시간 */
+  .font-label1 {
+    font-size: var(--font-label1-size);
+    font-weight: 300;
+    line-height: 150%;
+    letter-spacing: -0.06em;
+  }
+  .font-label2 {
+    font-size: var(--font-label2-size);
+    font-weight: 600;
+    line-height: 140%;
+  }
+}
