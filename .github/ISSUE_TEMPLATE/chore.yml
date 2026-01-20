@@ -1,0 +1,44 @@
+name: "🧹 Chore / Tech Debt"
+description: "설정/문서/리팩터링/성능/테스트 등"
+title: "[CHORE] "
+labels: ["chore"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: 분류
+      options:
+        - 문서/규칙(SSOT/Integration)
+        - 설정/툴링(Vite/ESLint/Prettier)
+        - 리팩터링
+        - 테스트
+        - 성능
+        - CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      placeholder: "왜 하는지, 어떤 개선을 기대하는지"
+    validations:
+      required: true
+
+  - type: textarea
+    id: plan
+    attributes:
+      label: 작업 계획
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 영향 범위 / 리스크
+      placeholder: "깨질 수 있는 부분, 마이그레이션 필요 여부"
+    validations:
+      required: false
