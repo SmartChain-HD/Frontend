@@ -2,13 +2,36 @@
  * @file sharedStyles.css
  * @description 프로젝트 전역 스타일 및 레이아웃 설정
  * @details
- * - 디자인 토큰(Color, Typography) 임포트
+ * - Font Face: HD 폰트(Light, Medium, Bold) 로드 및 가중치 매핑
  * - Base: 62.5% 폰트 사이즈 설정 (1rem = 10px 환산용)
- * - Layout: 데스크탑 전체 화면 뷰를 위한 main 태그 설정
- * - Utilities: 중앙 정렬, 스크롤바 숨김 등 커스텀 유틸리티 클래스 정의
+ * - Global Colors: Tokens.json 기반의 배경색 적용
  */
 @import './tokens/color.css';
 @import './tokens/typography.css';
+
+@font-face {
+  font-family: 'HD';
+  src: url('/src/shared/styles/fonts/HD-Light.ttf') format('truetype');
+  font-weight: 300; /* Light */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HD';
+  src: url('/src/shared/styles/fonts/HD-Medium.ttf') format('truetype');
+  font-weight: 500; /* Medium */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HD';
+  src: url('/src/shared/styles/fonts/HD-Bold.ttf') format('truetype');
+  font-weight: 700; /* Bold */
+  font-style: normal;
+  font-display: swap;
+}
 
 @layer base {
   html,
@@ -16,12 +39,15 @@
     height: 100%;
     width: 100%;
   }
+
   body {
     overflow-y: auto;
   }
+
   html {
-    font-size: 62.5%;
+    font-size: 62.5%; /* 1rem = 10px */
     font-family:
+      'HD', 
       'Pretendard Variable',
       Pretendard,
       -apple-system,
@@ -38,17 +64,23 @@
       'Segoe UI Symbol',
       sans-serif;
   }
+
   body {
-    background-color: var(--color-gray-900);
+    background-color: var(--color-page-bg);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
   }
+
   * {
     box-sizing: border-box;
   }
+
   #root {
-    background-color: var(--color-gray-100);
+    background-color: var(--color-page-bg);
   }
+
   main {
-    max-width: 100%; 
+    max-width: 100%;
     margin: 0;
     height: auto;
     min-height: 100vh;
@@ -71,15 +103,14 @@
 
   /* Hide scrollbar for IE, Edge, and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .scroll-fade {
     position: relative;
   }
+
   .scroll-fade::before,
   .scroll-fade::after {
     content: '';
@@ -89,14 +120,16 @@
     pointer-events: none;
     z-index: 5;
   }
+
   .scroll-fade::before {
     left: -0.2rem;
     width: 2rem;
-    background: linear-gradient(to right, #131313, transparent);
+    background: linear-gradient(to right, var(--color-page-bg), transparent);
   }
+
   .scroll-fade::after {
     right: -0.2rem;
     width: 2rem;
-    background: linear-gradient(to left, #131313, transparent);
+    background: linear-gradient(to left, var(--color-page-bg), transparent);
   }
 }
