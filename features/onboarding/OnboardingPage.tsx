@@ -32,8 +32,34 @@ export default function OnboardingPage() {
 
   return (
     <div className="ob-page">
+      {/* Header */}
+      <header className="absolute top-0 left-0 right-0 z-20 py-6">
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <div
+            className="text-white font-bold text-4xl cursor-pointer"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            SmartChain
+          </div>
+          <div className="flex gap-4 items-center">
+            <button onClick={() => scrollTo('features')} className="ob-btn-secondary">
+              더 알아보기
+            </button>
+            <button onClick={() => navigate('/login')} className="ob-btn-primary">
+              시작하기
+            </button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="ob-hero min-h-screen flex items-center justify-center relative">
+      <section
+        className="ob-hero min-h-screen flex items-center justify-center relative"
+        style={{
+          background: 'linear-gradient(-45deg, #002554, #003087, #0052cc, #002970)',
+          backgroundSize: '400% 400%',
+        }}
+      >
         <div className="container mx-auto px-6 py-20 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="ob-fade-in-up mb-8">
