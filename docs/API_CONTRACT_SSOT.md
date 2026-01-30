@@ -1,7 +1,7 @@
 # API Contract - Single Source of Truth (SSOT)
 
-> **버전**: 1.0
-> **최종 수정**: 2026-01-20
+> **버전**: 2.3
+> **최종 수정**: 2026-01-30
 > **목적**: 백엔드/프론트엔드 간 API 계약의 단일 진실 공급원
 
 ---
@@ -203,6 +203,41 @@ type RoleCode = 'GUEST' | 'DRAFTER' | 'APPROVER' | 'REVIEWER';
 type DiagnosticStatus = 'WRITING' | 'SUBMITTED' | 'RETURNED' | 'APPROVED' | 'REVIEWING' | 'COMPLETED';
 ```
 
+### 3.4 도메인 코드 (DomainCode)
+
+```typescript
+type DomainCode = 'ESG' | 'SAFETY' | 'COMPLIANCE';
+```
+
+| 코드 | 한글명 | 서비스 설명 |
+|------|-------|------------|
+| `ESG` | ESG 실사 | ESG 증빙 자동 파싱 및 AI 리포트 생성 |
+| `SAFETY` | 안전보건 | AI 기반 현장 안전점검(TBM) 자동 검증 |
+| `COMPLIANCE` | 컴플라이언스 | LLM 기반 하도급 계약서 자동 검토 |
+
+### 3.5 사용자 도메인 역할 (UserDomainRole)
+
+사용자는 각 도메인별로 서로 다른 역할을 가질 수 있습니다:
+
+```typescript
+interface UserDomainRoleDto {
+  domainCode: DomainCode;
+  domainName: string;
+  roleCode: RoleCode;
+  roleName: string;
+}
+```
+
+**예시:**
+```json
+{
+  "domainRoles": [
+    { "domainCode": "ESG", "domainName": "ESG 실사", "roleCode": "APPROVER", "roleName": "결재자" },
+    { "domainCode": "SAFETY", "domainName": "안전보건", "roleCode": "DRAFTER", "roleName": "기안자" }
+  ]
+}
+```
+
 ---
 
 ## 4. 공통 DTO 구조 (Common DTOs)
@@ -220,7 +255,8 @@ interface UserInfoDto {
   userId: number;
   email: string;
   name: string;
-  role?: RoleInfoDto;
+  role?: RoleInfoDto;          // 레거시 전역 역할
+  domainRoles?: UserDomainRoleDto[];  // 도메인별 역할
   company?: CompanyInfoDto;
 }
 ```
@@ -262,6 +298,42 @@ interface ProcessedByDto {
 }
 ```
 
+### 4.5 도메인 정보
+
+```typescript
+interface DomainSimpleDto {
+  code: string;   // "ESG", "SAFETY", "COMPLIANCE"
+  name: string;   // "ESG 실사", "안전보건", "컴플라이언스"
+}
+
+interface DomainInfoDto {
+  domainId: number;
+  code: string;
+  name: string;
+  description?: string;
+}
+```
+
+### 4.6 진단 정보 (도메인 포함)
+
+```typescript
+interface DiagnosticSimpleDto {
+  diagnosticId: number;
+  diagnosticCode: string;
+  title: string;
+  domain?: DomainSimpleDto;
+}
+
+interface DiagnosticCreateRequest {
+  title: string;
+  campaignId: number;
+  domainCode: string;         // 필수: ESG, SAFETY, COMPLIANCE
+  periodStartDate: string;    // "2026-01-01"
+  periodEndDate: string;
+  deadline?: string;
+}
+```
+
 ---
 
 ## 5. 날짜/시간 형식 (DateTime Formats)
@@ -297,10 +369,15 @@ const formatDate = (isoString: string): string => {
 |--------|--------|------|
 | 사용자 | `userId` | number |
 | 회사 | `companyId` | number |
+| 서비스 도메인 | `domainId` | number |
+| 도메인 코드 | `domainCode` | string |
 | 권한 요청 | `accessRequestId` | number |
 | 역할 | `roleId` | number |
 | 진단 | `diagnosticId` | number |
 | 증빙파일 | `evidenceId` | number |
+| 캠페인 | `campaignId` | number |
+| 결재 | `approvalId` | number |
+| 심사 | `reviewId` | number |
 
 ---
 
@@ -319,7 +396,185 @@ const formatDate = (isoString: string): string => {
 
 ---
 
-## 8. NULL 처리 규칙
+## 8. AI Run API DTO 구조
+
+### 8.1 AI Run Preview Request/Response
+
+```typescript
+// Preview 요청 - 파일 추가 시 슬롯 추정
+interface AiPreviewRequest {
+  fileIds: number[];  // 추정할 파일 ID 목록
+}
+
+interface RunPreviewResponse {
+  packageId: string;           // 패키지 식별자
+  requiredSlotStatus: SlotStatus[];  // 필수 슬롯 상태
+  slotHints: SlotHint[];       // 파일-슬롯 매핑 추정
+  missingRequiredSlots: string[];    // 미제출 필수 슬롯 목록
+}
+```
+
+### 8.2 AI Run Submit Response (고정 스키마)
+
+```typescript
+interface RunSubmitResponse {
+  packageId: string;           // 패키지 식별자
+  verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  why: string;                 // 판정 사유
+  slotResults: SlotResult[];   // 슬롯별 검증 결과
+  clarifications: Clarification[];  // 보완 요청
+  extras: Record<string, any>; // 도메인별 추가 데이터
+}
+```
+
+### 8.3 공통 DTO
+
+```typescript
+interface FileInfo {
+  fileId: string;
+  url: string;       // SAS URL
+  fileName: string;
+}
+
+interface SlotHint {
+  fileId: string;
+  slotName: string;  // 예: "esg.energy.usage", "safety.tbm"
+  confidence?: number;
+}
+
+interface SlotStatus {
+  slotName: string;
+  required: boolean;
+  submitted: boolean;
+}
+
+interface SlotResult {
+  slotName: string;
+  status: 'VALID' | 'INVALID' | 'MISSING';
+  message?: string;
+  extractedData?: Record<string, any>;
+}
+
+interface Clarification {
+  targetSlot: string;
+  code: string;
+  message: string;  // 보완 요청 메시지
+}
+```
+
+### 8.4 AI 분석 결과 응답
+
+```typescript
+interface AiAnalysisResultResponse {
+  resultId: number;
+  diagnosticId: number;
+  domainCode: string;
+  packageId: string;
+  riskLevel: string;
+  verdict: string;
+  whySummary: string;
+  resultJson: string;  // 전체 AI 응답 JSON
+  analyzedAt: string;  // ISO 8601
+}
+```
+
+### 8.5 AI 분석 결과 상세 응답
+
+> `/result/detail` 엔드포인트 - resultJson을 파싱하여 구조화된 데이터 제공
+
+```typescript
+interface AiAnalysisResultDetailResponse {
+  id: number;
+  diagnosticId: number;
+  domainCode: string;
+  packageId: string;
+  riskLevel: string;
+  verdict: string;
+  whySummary: string;
+  slotResults: SlotResultDetail[];    // 슬롯별 검증 결과
+  clarifications: ClarificationDetail[];  // 보완 요청 목록
+  extras: Record<string, any>;        // 도메인별 추가 데이터
+  analyzedAt: string;
+}
+
+interface SlotResultDetail {
+  slotName: string;
+  verdict: string;
+  reasons: string[];
+  fileIds: string[];
+  fileNames: string[];
+}
+
+interface ClarificationDetail {
+  slotName: string;
+  message: string;
+  fileIds: string[];
+}
+```
+
+### 8.6 도메인별 슬롯 정의
+
+AI 서비스가 관리하는 전체 슬롯 목록입니다. 백엔드는 파일명 기반 1차 추정만 수행하고, AI 서비스가 전체 슬롯을 기준으로 검증합니다.
+
+#### ESG 도메인 (15개 슬롯, 필수 4개)
+
+| 슬롯명 | 필수 | 설명 |
+|--------|:---:|------|
+| `esg.energy.electricity.usage` | O | 전기 사용량 (XLSX) |
+| `esg.energy.electricity.bill` | | 전기 고지서 (PDF) |
+| `esg.energy.gas.usage` | O | 도시가스 사용량 (XLSX) |
+| `esg.energy.gas.bill` | | 도시가스 고지서 (PDF) |
+| `esg.energy.water.usage` | | 수도 사용량 (XLSX) |
+| `esg.energy.water.bill` | | 수도 고지서 (PDF) |
+| `esg.energy.ghg.evidence` | | GHG 산정 근거 |
+| `esg.hazmat.msds` | O | MSDS/SDS 문서 |
+| `esg.hazmat.inventory` | | 유해물질 목록 (XLSX) |
+| `esg.hazmat.disposal.list` | | 폐기/처리 목록 (XLSX) |
+| `esg.hazmat.disposal.evidence` | | 폐기/처리 증빙 (PDF) |
+| `esg.ethics.code` | O | 윤리강령/행동강령 (PDF) |
+| `esg.ethics.distribution.log` | | 배포/수신확인 로그 (XLSX) |
+| `esg.ethics.pledge` | | 서약서 (PDF) |
+| `esg.ethics.poster.image` | | 윤리 포스터/사진 (이미지) |
+
+#### Safety 도메인 (8개 슬롯, 필수 4개)
+
+| 슬롯명 | 필수 | 설명 |
+|--------|:---:|------|
+| `safety.education.status` | O | 교육 이수 현황 (XLSX) |
+| `safety.fire.inspection` | O | 소방 점검표 (PDF/XLSX) |
+| `safety.risk.assessment` | O | 위험성평가서 (XLSX/PDF) |
+| `safety.management.system` | O | 안전보건관리체계 매뉴얼 (PDF) |
+| `safety.site.photos` | | 현장 사진 (이미지) |
+| `safety.education.attendance` | | 교육 출석부 (스캔 PDF) |
+| `safety.education.photo` | | 교육일 사진 (이미지) |
+| `safety.tbm` | | TBM 자료 |
+
+#### Compliance 도메인 (7개 슬롯, 필수 3개)
+
+| 슬롯명 | 필수 | 설명 |
+|--------|:---:|------|
+| `compliance.contract.sample` | O | 표준 근로/하도급 계약서 |
+| `compliance.education.privacy` | O | 개인정보보호 교육 이수 현황 |
+| `compliance.fair.trade` | O | 공정거래 자율 점검표 |
+| `compliance.ethics.report` | | 윤리경영 내부신고 현황 |
+| `compliance.education.plan` | | 법정의무 교육 계획서 |
+| `compliance.education.attendance` | | 교육 출석부 (스캔 PDF) |
+| `compliance.education.photo` | | 교육일 사진 (이미지) |
+
+### 8.7 result/history 엔드포인트 아키텍처
+
+> `result`와 `history` 엔드포인트는 **백엔드 DB 조회**입니다. AI 서비스로 프록시되지 않습니다.
+
+```
+submit 호출 → AI 서비스 /run/submit → 응답을 ai_analysis_result 테이블에 저장
+result 조회 → DB에서 최신 결과 반환 (AI 서비스 호출 없음)
+history 조회 → DB에서 전체 이력 반환 (AI 서비스 호출 없음)
+```
+
+---
+
+## 9. NULL 처리 규칙
 
 ### 8.1 응답에서 NULL 필드
 

@@ -1,8 +1,42 @@
 # Frontend Integration Rules (프론트엔드 연동 규칙)
 
-> **버전**: 1.0
-> **최종 수정**: 2026-01-20
+> **버전**: 2.1
+> **최종 수정**: 2026-01-28
 > **목적**: 프론트엔드 개발자를 위한 API 연동 가이드
+
+---
+
+## 0. 서비스 도메인 개요
+
+플랫폼은 3개의 서비스 도메인으로 구성됩니다:
+
+| 도메인 코드 | 이름 | 설명 |
+|------------|------|------|
+| `ESG` | ESG 실사 | ESG 증빙 자동 파싱 및 AI 리포트 생성 |
+| `SAFETY` | 안전보건 | AI 기반 현장 안전점검(TBM) 자동 검증 |
+| `COMPLIANCE` | 컴플라이언스 | LLM 기반 하도급 계약서 자동 검토 |
+
+### 역할별 도메인 권한
+
+사용자는 각 도메인별로 다른 역할을 가질 수 있습니다:
+
+```typescript
+// 도메인별 역할 예시
+interface UserDomainRole {
+  domainCode: 'ESG' | 'SAFETY' | 'COMPLIANCE';
+  roleCode: 'DRAFTER' | 'APPROVER' | 'REVIEWER';
+}
+
+// 사용자 정보 응답
+interface UserInfoDto {
+  userId: number;
+  email: string;
+  name: string;
+  role?: RoleInfoDto;        // 레거시 전역 역할
+  domainRoles: UserDomainRole[]; // 도메인별 역할
+  company?: CompanyInfoDto;
+}
+```
 
 ---
 
@@ -475,10 +509,27 @@ export const roleRequestSchema = z.object({
   requestedRole: z.enum(['DRAFTER', 'APPROVER', 'REVIEWER'], {
     errorMap: () => ({ message: '역할을 선택해주세요' }),
   }),
+  domainCode: z.enum(['ESG', 'SAFETY', 'COMPLIANCE'], {
+    errorMap: () => ({ message: '도메인을 선택해주세요' }),
+  }),
   companyId: z.number({
     errorMap: () => ({ message: '회사를 선택해주세요' }),
   }).positive(),
   reason: z.string().max(500, '사유는 500자 이내로 입력해주세요').optional(),
+});
+```
+
+### 6.3 진단 생성 검증 (도메인 포함)
+
+```typescript
+export const diagnosticCreateSchema = z.object({
+  title: z.string().min(1, '제목을 입력해주세요').max(200),
+  campaignId: z.number().positive('캠페인을 선택해주세요'),
+  domainCode: z.enum(['ESG', 'SAFETY', 'COMPLIANCE'], {
+    errorMap: () => ({ message: '도메인을 선택해주세요' }),
+  }),
+  periodStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  periodEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 ```
 
@@ -525,6 +576,61 @@ const ROLE_CONFIG = {
 export const RoleBadge = ({ roleCode }: { roleCode: string }) => {
   const config = ROLE_CONFIG[roleCode as keyof typeof ROLE_CONFIG] || ROLE_CONFIG.GUEST;
   // ...
+};
+```
+
+### 7.3 도메인 배지 컴포넌트
+
+```tsx
+// components/DomainBadge.tsx
+const DOMAIN_CONFIG = {
+  ESG: { label: 'ESG 실사', color: 'green', icon: '🌱' },
+  SAFETY: { label: '안전보건', color: 'red', icon: '🦺' },
+  COMPLIANCE: { label: '컴플라이언스', color: 'blue', icon: '📋' },
+};
+
+interface DomainBadgeProps {
+  domainCode: 'ESG' | 'SAFETY' | 'COMPLIANCE';
+  showIcon?: boolean;
+}
+
+export const DomainBadge = ({ domainCode, showIcon = true }: DomainBadgeProps) => {
+  const config = DOMAIN_CONFIG[domainCode];
+
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-medium bg-${config.color}-100 text-${config.color}-800`}>
+      {showIcon && config.icon} {config.label}
+    </span>
+  );
+};
+```
+
+### 7.4 도메인 선택 컴포넌트
+
+```tsx
+// components/DomainSelector.tsx
+interface DomainSelectorProps {
+  value: string | null;
+  onChange: (domain: string) => void;
+  userDomainRoles?: UserDomainRole[];
+  filterByRole?: string;  // 특정 역할이 있는 도메인만 표시
+}
+
+export const DomainSelector = ({ value, onChange, userDomainRoles, filterByRole }: DomainSelectorProps) => {
+  const availableDomains = userDomainRoles
+    ?.filter(dr => !filterByRole || dr.roleCode === filterByRole)
+    .map(dr => dr.domainCode) || ['ESG', 'SAFETY', 'COMPLIANCE'];
+
+  return (
+    <select value={value || ''} onChange={(e) => onChange(e.target.value)}>
+      <option value="">전체 도메인</option>
+      {availableDomains.map(code => (
+        <option key={code} value={code}>
+          {DOMAIN_CONFIG[code].label}
+        </option>
+      ))}
+    </select>
+  );
 };
 ```
 
@@ -595,7 +701,178 @@ interface ImportMeta {
 
 ---
 
-## 10. 체크리스트
+## 10. AI Run API 연동
+
+### 10.1 AI Run API 타입 정의
+
+```typescript
+// types/aiRun.ts
+
+interface AiPreviewRequest {
+  fileIds: number[];
+}
+
+interface SlotStatus {
+  slotName: string;
+  required: boolean;
+  submitted: boolean;
+}
+
+interface SlotHint {
+  fileId: string;
+  slotName: string;
+  confidence?: number;
+}
+
+interface Clarification {
+  targetSlot: string;
+  code: string;
+  message: string;
+}
+
+interface RunPreviewResponse {
+  packageId: string;
+  requiredSlotStatus: SlotStatus[];
+  slotHints: SlotHint[];
+  missingRequiredSlots: string[];  // 미제출 필수 슬롯 목록
+}
+
+interface SlotResult {
+  slotName: string;
+  status: 'VALID' | 'INVALID' | 'MISSING';
+  message?: string;
+  extractedData?: Record<string, any>;
+}
+
+interface AiAnalysisResultResponse {
+  resultId: number;
+  diagnosticId: number;
+  domainCode: string;
+  packageId: string;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+  whySummary: string;
+  resultJson: string;
+  analyzedAt: string;
+}
+```
+
+### 10.2 AI Run API 함수
+
+```typescript
+// api/aiRun.ts
+import { apiClient } from './client';
+import { BaseResponse } from '../types/api';
+
+export const aiRunPreview = async (
+  diagnosticId: number,
+  fileIds: number[]
+): Promise<RunPreviewResponse> => {
+  const response = await apiClient.post<BaseResponse<RunPreviewResponse>>(
+    `/ai/run/diagnostics/${diagnosticId}/preview`,
+    { fileIds }
+  );
+  return response.data.data;
+};
+
+export const aiRunSubmit = async (diagnosticId: number): Promise<void> => {
+  await apiClient.post(`/ai/run/diagnostics/${diagnosticId}/submit`);
+};
+
+export const getAiRunResult = async (
+  diagnosticId: number
+): Promise<AiAnalysisResultResponse> => {
+  const response = await apiClient.get<BaseResponse<AiAnalysisResultResponse>>(
+    `/ai/run/diagnostics/${diagnosticId}/result`
+  );
+  return response.data.data;
+};
+
+export const getAiRunHistory = async (
+  diagnosticId: number
+): Promise<AiAnalysisResultResponse[]> => {
+  const response = await apiClient.get<BaseResponse<AiAnalysisResultResponse[]>>(
+    `/ai/run/diagnostics/${diagnosticId}/history`
+  );
+  return response.data.data;
+};
+```
+
+### 10.3 AI Run Custom Hooks
+
+```typescript
+// hooks/useAiRun.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as aiRunApi from '../api/aiRun';
+
+export const QUERY_KEYS = {
+  AI_RUN: {
+    RESULT: (diagnosticId: number) => ['aiRun', 'result', diagnosticId] as const,
+    HISTORY: (diagnosticId: number) => ['aiRun', 'history', diagnosticId] as const,
+  },
+};
+
+export const useAiRunPreview = () => {
+  return useMutation({
+    mutationFn: ({ diagnosticId, fileIds }: { diagnosticId: number; fileIds: number[] }) =>
+      aiRunApi.aiRunPreview(diagnosticId, fileIds),
+  });
+};
+
+export const useAiRunSubmit = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (diagnosticId: number) => aiRunApi.aiRunSubmit(diagnosticId),
+    onSuccess: (_, diagnosticId) => {
+      // 제출 후 결과 polling 시작을 위해 무효화
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId) });
+    },
+  });
+};
+
+export const useAiRunResult = (diagnosticId: number, enabled = true) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId),
+    queryFn: () => aiRunApi.getAiRunResult(diagnosticId),
+    enabled,
+    refetchInterval: (query) => {
+      // 결과가 아직 없으면(404 → error) 5초마다 재조회
+      // NOTE: verdict에 'PENDING' 값은 없음. AI 분석 완료 전에는 result 자체가 없음(404).
+      if (query?.state?.error || !query?.state?.data) {
+        return 5000;
+      }
+      return false;
+    },
+    retry: false,  // 404는 polling으로 처리, retry 불필요
+  });
+};
+
+export const useAiRunHistory = (diagnosticId: number) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.AI_RUN.HISTORY(diagnosticId),
+    queryFn: () => aiRunApi.getAiRunHistory(diagnosticId),
+  });
+};
+```
+
+### 10.4 AI Run 에러 핸들링
+
+```typescript
+// 에러 핸들러에 AI Run 에러 코드 추가
+const ERROR_HANDLERS: Record<string, ErrorConfig> = {
+  // ... 기존 에러 핸들러 ...
+
+  // AI Run API 에러
+  'AI001': { action: 'toast', customMessage: 'AI 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' },
+  'AI002': { action: 'toast', customMessage: '이미 분석이 진행 중입니다. 완료 후 다시 시도해주세요.' },
+  'AI003': { action: 'toast', customMessage: 'AI 분석 결과가 없습니다. 먼저 분석을 요청해주세요.' },
+};
+```
+
+---
+
+## 11. 체크리스트
 
 ### API 연동 전 체크리스트
 
