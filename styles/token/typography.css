@@ -1,0 +1,280 @@
+/**
+ * @file typography.css
+ * @description SmartChain 디자인 시스템의 타이포그래피 토큰 정의
+ * @details
+ * - Categories: Display, Heading, Title, Body, Detail, Label
+ * - Font Family: HD:Bold, HD:Medium (현대중공업 전용 폰트)
+ * - Units: 1rem = 10px 기준으로 작성됨 (Root Font Size 62.5% 가정)
+ * 
+ * @note
+ * - Figma에서 추출한 실제 폰트 사이즈에 맞춰 조정
+ * - HD:Bold - 타이틀, 버튼, 라벨에 사용
+ * - HD:Medium - Body 텍스트, Input에 사용
+ */
+
+@font-face {
+  font-family: 'HD:Bold';
+  src: url('/fonts/HD-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HD:Medium';
+  src: url('/fonts/HD-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'HD:Light';
+  src: url('/fonts/HD-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* 1. Display */
+  --font-display-large: 6.4rem;
+  --font-display-medium: 4.8rem;
+  --font-display-small: 4.0rem;
+
+  /* 2. Heading */
+  --font-heading-large: 3.2rem;
+  --font-heading-medium: 2.8rem;
+  --font-heading-small: 2.4rem;
+
+  /* 3. Title */
+  --font-title-xxlarge: 2.4rem;
+  --font-title-xlarge: 2.2rem;
+  --font-title-large: 2.0rem;
+  --font-title-medium: 1.8rem;
+  --font-title-small: 1.6rem;
+  --font-title-xsmall: 1.4rem;
+
+  /* 4. Body */
+  --font-body-large: 1.8rem;
+  --font-body-medium: 1.6rem;
+  --font-body-small: 1.4rem;
+
+  /* 5. Detail */
+  --font-detail-large: 1.6rem;
+  --font-detail-medium: 1.4rem;
+  --font-detail-small: 1.2rem;
+
+  /* 6. Label */
+  --font-label-large: 1.6rem;
+  --font-label-medium: 1.4rem;
+  --font-label-small: 1.2rem;
+  --font-label-xsmall: 1.1rem;
+
+  /* 7. Custom Font Families (현대중공업) */
+  --font-family-light: 'HD:Light', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-bold: 'HD:Bold', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-medium: 'HD:Medium', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@layer utilities {
+  /* ----------------------------------------------------------------
+     1. Display
+     Usage: 화면에서 가장 큰 텍스트, 마케팅 용도 (FORWARD TO GREEN)
+     ---------------------------------------------------------------- */
+  .font-display-large {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-display-large);
+    font-weight: 700;
+    line-height: 130%;
+    letter-spacing: -1.5px;
+  }
+
+  .font-display-medium {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-display-medium);
+    font-weight: 700;
+    line-height: 130%;
+    letter-spacing: -0.5px;
+  }
+
+  .font-display-small {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-display-small);
+    font-weight: 700;
+    line-height: 130%;
+    letter-spacing: -0.5px;
+  }
+
+  /* ----------------------------------------------------------------
+     2. Heading
+     Usage: 페이지 단위 타이틀 (SmartChain 로고 텍스트)
+     ---------------------------------------------------------------- */
+  .font-heading-large {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-heading-large);
+    font-weight: 700;
+    line-height: 135%;
+    letter-spacing: -0.5px;
+  }
+
+  .font-heading-medium {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-heading-medium);
+    font-weight: 700;
+    line-height: 135%;
+    letter-spacing: 0;
+  }
+
+  .font-heading-small {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-heading-small);
+    font-weight: 700;
+    line-height: 135%;
+    letter-spacing: 0;
+  }
+
+  /* ----------------------------------------------------------------
+     3. Title
+     Usage: 템플릿/모듈 단위 역할 및 기능 강조
+     ---------------------------------------------------------------- */
+  .font-title-xxlarge {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-xxlarge);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  .font-title-xlarge {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-xlarge);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  .font-title-large {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-large);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  .font-title-medium {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-medium);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  .font-title-small {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-small);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  .font-title-xsmall {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-title-xsmall);
+    font-weight: 700;
+    line-height: 140%;
+    letter-spacing: 0;
+  }
+
+  /* ----------------------------------------------------------------
+     4. Body
+     Usage: 본문 텍스트
+     ---------------------------------------------------------------- */
+  .font-body-large {
+    font-family: var(--font-family-medium);
+    font-size: var(--font-body-large);
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0;
+  }
+
+  .font-body-medium {
+    font-family: var(--font-family-medium);
+    font-size: var(--font-body-medium);
+    font-weight: 500;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  .font-body-small {
+    font-family: var(--font-family-medium);
+    font-size: var(--font-body-small);
+    font-weight: 500;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  /* ----------------------------------------------------------------
+     5. Detail
+     Usage: 추가 정보 또는 작은 항목 텍스트
+     ---------------------------------------------------------------- */
+  .font-detail-large {
+    font-family: var(--font-family-bold);
+    font-size: var(--font-detail-large);
+    font-weight: 700;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  .font-detail-medium {
+    font-family: var(--font-family-medium);
+    font-size: var(--font-detail-medium);
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  .font-detail-small {
+    font-family: var(--font-family-medium);
+    font-size: var(--font-detail-small);
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  /* ----------------------------------------------------------------
+     6. Label
+     Usage: 구성 요소 내부 텍스트 (Button, Label, Chips)
+     ---------------------------------------------------------------- */
+  .font-label-large {
+    font-family: var(--font-family-light);
+    font-size: var(--font-label-large);
+    font-weight: 300;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  .font-label-medium {
+    font-family: var(--font-family-light);
+    font-size: var(--font-label-medium);
+    font-weight: 300;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  .font-label-small {
+    font-family: var(--font-family-light);
+    font-size: var(--font-label-small);
+    font-weight: 300;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+
+  .font-label-xsmall {
+    font-family: var(--font-family-light);
+    font-size: var(--font-label-xsmall);
+    font-weight: 300;
+    line-height: 150%;
+    letter-spacing: 0;
+  }
+}

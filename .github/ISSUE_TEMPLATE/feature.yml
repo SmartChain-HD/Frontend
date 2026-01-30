@@ -1,0 +1,83 @@
+name: "✨ Feature"
+description: "기능 구현(페이지/컴포넌트/API 연동)"
+title: "[FEAT] "
+labels: ["feature"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: 작업 유형
+      options:
+        - UI 구현 (Figma → 화면)
+        - API 연동 (react-query + axios)
+        - 라우팅/구조 변경
+        - 리팩터링/디자인 시스템
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표 / 배경
+      description: "왜 필요한지, 사용자/비즈니스 가치"
+      placeholder: "- (예) 역할 요청 목록 페이지 구현\n- (예) 승인/거절 플로우 제공"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 범위 (In / Out)
+      value: |
+        **In**
+        - 
+        
+        **Out**
+        - 
+    validations:
+      required: true
+
+  - type: textarea
+    id: api
+    attributes:
+      label: 연동할 API (있다면)
+      description: "SSOT(OpenAPI/문서) 기준으로 endpoint/method/요청/응답 간단히"
+      placeholder: |
+        - GET /api/v1/...
+          - Request: ...
+          - Response: BaseResponse<...>
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 작업 항목 (Checklist)
+      value: |
+        - [ ] 라우트/페이지 생성
+        - [ ] 컴포넌트 분리(2회 이상 재사용 시)
+        - [ ] 상태 처리(loading/empty/error)
+        - [ ] API 연동 시: queryKeys 추가 + hooks 작성 + invalidation
+        - [ ] 문서/스크린샷 업데이트(필요 시)
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건 (Acceptance Criteria)
+      placeholder: |
+        - Figma와 레이아웃/타이포/간격이 유사함
+        - fetch/axios 직접 호출 없음(규칙 준수)
+        - BaseResponse<T> unwrap / ErrorResponse 처리 준수
+        - lint/build 통과
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 참고/메모
+      placeholder: "- 관련 이슈/PR 링크\n- 논의 포인트"
+    validations:
+      required: false

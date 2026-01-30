@@ -1,0 +1,71 @@
+name: "🐛 Bug"
+description: "버그/오류 수정"
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 현상 요약
+      placeholder: "무슨 문제가 발생하는지 1~2줄"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: 재현 방법
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 동작
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: 환경
+      placeholder: "OS/브라우저/버전, dev/prod, branch 등"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 로그/스크린샷
+      description: "콘솔 에러, 네트워크 탭, 화면 캡쳐"
+    validations:
+      required: false
+
+  - type: textarea
+    id: suspected
+    attributes:
+      label: 원인 추정 / 관련 코드
+      placeholder: "관련 파일/라인/커밋/PR"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 체크
+      options:
+        - label: 같은 현상을 로컬에서 재현했다
+          required: false
+        - label: 관련 이슈/PR을 검색했다
+          required: false

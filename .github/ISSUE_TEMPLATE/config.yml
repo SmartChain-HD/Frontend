@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Docs - API Contract (SSOT)
+    url: https://github.com/SmartChain-ESG/Frontend/blob/main/docs/API_CONTRACT_SSOT.md
+    about: API 계약/응답 래퍼/에러코드 기준
+  - name: Docs - FE Integration Rules
+    url: https://github.com/<ORG>/<REPO>/blob/main/docs/FE_INTEGRATION_RULES.md
+    about: axios/react-query/queryKeys 등 FE 연동 규칙
