@@ -27,6 +27,7 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
 
   // Role errors
   R004: { action: 'toast', customMessage: '유효하지 않은 역할입니다.' },
+  R005: { action: 'toast', customMessage: '유효하지 않은 처리 결과입니다. APPROVED 또는 REJECTED만 허용됩니다.' },
 
   // Not found
   U003: { action: 'redirect', redirectTo: '/not-found' },

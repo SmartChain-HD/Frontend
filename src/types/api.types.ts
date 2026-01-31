@@ -312,6 +312,7 @@ export interface RoleApprovalItemDto {
   user: UserSimpleDto;
   company: CompanySimpleDto;
   requestedRole: RoleSimpleDto;
+  domain?: DomainOptionDto;
   status: RequestStatus;
   reason?: string;
   requestedAt: string;
@@ -323,6 +324,7 @@ export interface RoleApprovalDetailResponse {
   accessRequestId: number;
   user: UserSimpleDto;
   requestedRole: RoleSimpleDto;
+  domain?: DomainOptionDto;
   company: CompanySimpleDto;
   status: RequestStatus;
   reason?: string;
