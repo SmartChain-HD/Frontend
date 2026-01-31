@@ -29,11 +29,14 @@ export default function DiagnosticsListPage() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [domainFilter, setDomainFilter] = useState<string>('');
+  const [keyword, setKeyword] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isError, refetch } = useDiagnosticsList({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
     domainCode: domainFilter || undefined,
+    keyword: keyword || undefined,
     page,
     size: 10,
   });
@@ -102,6 +105,26 @@ export default function DiagnosticsListPage() {
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
+
+          {/* 검색 */}
+          <div className="flex gap-[8px] ml-auto">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { setKeyword(searchInput); setPage(0); }
+              }}
+              placeholder="검색어를 입력하세요"
+              className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] bg-white w-[240px]"
+            />
+            <button
+              onClick={() => { setKeyword(searchInput); setPage(0); }}
+              className="px-[16px] py-[8px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-xsmall hover:opacity-90 transition-colors"
+            >
+              검색
+            </button>
+          </div>
         </div>
 
         {/* 테이블 */}
