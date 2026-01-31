@@ -168,6 +168,12 @@ export default function DiagnosticDetailPage() {
           >
             파일 관리
           </button>
+          <button
+            onClick={() => navigate(`/diagnostics/${diagnosticId}/ai-analysis`)}
+            className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
+          >
+            AI 분석
+          </button>
           {canSubmit && (
             <button
               onClick={() => setShowSubmitModal(true)}
