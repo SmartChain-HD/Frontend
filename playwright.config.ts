@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const STORAGE_STATE = path.join(__dirname, 'tests/.auth/storageState.json');
 const APPROVER_STORAGE_STATE = path.join(__dirname, 'tests/.auth/approverStorageState.json');
+const REVIEWER_STORAGE_STATE = path.join(__dirname, 'tests/.auth/reviewerStorageState.json');
 
 export default defineConfig({
   testDir: './tests',
@@ -29,6 +30,10 @@ export default defineConfig({
       testMatch: /approver-auth\.setup\.ts/,
     },
     {
+      name: 'reviewer-setup',
+      testMatch: /reviewer-auth\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
@@ -43,6 +48,14 @@ export default defineConfig({
         storageState: APPROVER_STORAGE_STATE,
       },
       dependencies: ['approver-setup'],
+    },
+    {
+      name: 'reviewer',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: REVIEWER_STORAGE_STATE,
+      },
+      dependencies: ['reviewer-setup'],
     },
   ],
   webServer: {
