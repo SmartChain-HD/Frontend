@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { FileText, Image as ImageIcon, Upload, X, CheckCircle2 } from 'lucide-react';
 
