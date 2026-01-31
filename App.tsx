@@ -19,6 +19,9 @@ import PermissionManagementPage from './features/permission/PermissionManagement
 import NotificationsPage from './features/notifications/NotificationsPage';
 import ApprovalsListPage from './features/approvals/ApprovalsListPage';
 import ApprovalDetailPage from './features/approvals/ApprovalDetailPage';
+import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
+import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
+import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,6 +91,32 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PermissionManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Diagnostics */}
+      <Route
+        path="/diagnostics"
+        element={
+          <ProtectedRoute>
+            <DiagnosticsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/new"
+        element={
+          <ProtectedRoute>
+            <DiagnosticCreatePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id"
+        element={
+          <ProtectedRoute>
+            <DiagnosticDetailPage />
           </ProtectedRoute>
         }
       />
