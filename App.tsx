@@ -16,6 +16,7 @@ import DocumentReviewPage from './features/documents/DocumentReviewPage';
 import PermissionRequestPage from './features/permission/PermissionRequestPage';
 import PermissionStatusPage from './features/permission/PermissionStatusPage';
 import PermissionManagementPage from './features/permission/PermissionManagementPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PermissionManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Notifications */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />
