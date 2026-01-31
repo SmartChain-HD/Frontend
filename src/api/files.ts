@@ -3,9 +3,18 @@ import type { BaseResponse } from '../types/api.types';
 
 export interface UploadFileResponse {
   fileId: number;
-  jobId: string;
   fileName: string;
-  message: string;
+  originalFileName: string;
+  fileUrl: string;
+  fileType: string;
+  mimeType: string;
+  fileSize: number;
+  fileSizeLabel: string;
+  uploadStatus: string;
+  errorMessage: string | null;
+  uploadedAt: string;
+  jobId: string;
+  statusCheckUrl: string;
 }
 
 export interface ParsingResultResponse {

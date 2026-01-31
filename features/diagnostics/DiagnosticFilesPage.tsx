@@ -92,7 +92,7 @@ export default function DiagnosticFilesPage() {
           ...prev,
           {
             id: result.fileId,
-            name: result.fileName,
+            name: result.originalFileName || result.fileName,
             jobId: result.jobId,
             status: 'PENDING',
           },
@@ -170,7 +170,7 @@ export default function DiagnosticFilesPage() {
         <div>
           <h1 className="font-heading-small text-[var(--color-text-primary)]">파일 업로드</h1>
           <p className="font-body-medium text-[var(--color-text-tertiary)] mt-[8px]">
-            {diagnostic.title}
+            {diagnostic.campaign?.title || diagnostic.diagnosticCode}
           </p>
         </div>
 

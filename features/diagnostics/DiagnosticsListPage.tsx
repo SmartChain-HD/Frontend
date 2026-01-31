@@ -160,20 +160,22 @@ export default function DiagnosticsListPage() {
                   className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">
-                    {item.title}
+                    {item.summary || item.campaign?.title || '-'}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
-                    {DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
+                    {item.domain?.name || DOMAIN_LABELS[item.domain?.code as DomainCode] || '-'}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
-                    {item.companyName}
+                    {item.campaign?.title || '-'}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]">
-                    {item.period}
+                    {item.period?.startDate && item.period?.endDate
+                      ? `${item.period.startDate} ~ ${item.period.endDate}`
+                      : '-'}
                   </td>
                   <td className="px-[16px] py-[14px] text-center">
-                    <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
-                      {STATUS_LABELS[item.status]}
+                    <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                      {item.statusLabel || STATUS_LABELS[item.status] || item.status}
                     </span>
                   </td>
                 </tr>

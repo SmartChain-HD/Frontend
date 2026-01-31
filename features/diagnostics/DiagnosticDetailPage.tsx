@@ -106,9 +106,9 @@ export default function DiagnosticDetailPage() {
 
         {/* 제목 + 상태 */}
         <div className="flex items-start justify-between gap-[16px]">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.title}</h1>
-          <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[diagnostic.status]}`}>
-            {STATUS_LABELS[diagnostic.status]}
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.campaign?.title || diagnostic.diagnosticCode}</h1>
+          <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[diagnostic.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+            {diagnostic.statusLabel || STATUS_LABELS[diagnostic.status] || diagnostic.status}
           </span>
         </div>
 
@@ -116,12 +116,12 @@ export default function DiagnosticDetailPage() {
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
           <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">진단 정보</h2>
           <div className="grid grid-cols-2 gap-[20px]">
-            <InfoRow label="도메인" value={DOMAIN_LABELS[diagnostic.domainCode as DomainCode] || diagnostic.domainCode} />
-            <InfoRow label="회사명" value={diagnostic.company.companyName} />
-            <InfoRow label="기안자" value={diagnostic.drafter.name} />
+            <InfoRow label="도메인" value={diagnostic.domain?.name || DOMAIN_LABELS[diagnostic.domain?.code as DomainCode] || '-'} />
+            <InfoRow label="회사명" value={diagnostic.company?.companyName || '-'} />
+            <InfoRow label="기안자" value={diagnostic.createdBy?.name || '-'} />
             <InfoRow label="생성일" value={new Date(diagnostic.createdAt).toLocaleDateString('ko-KR')} />
-            <InfoRow label="진단 시작일" value={new Date(diagnostic.periodStartDate).toLocaleDateString('ko-KR')} />
-            <InfoRow label="진단 종료일" value={new Date(diagnostic.periodEndDate).toLocaleDateString('ko-KR')} />
+            <InfoRow label="진단 시작일" value={diagnostic.period?.startDate ? new Date(diagnostic.period.startDate).toLocaleDateString('ko-KR') : '-'} />
+            <InfoRow label="진단 종료일" value={diagnostic.period?.endDate ? new Date(diagnostic.period.endDate).toLocaleDateString('ko-KR') : '-'} />
             {diagnostic.submittedAt && (
               <InfoRow label="제출일" value={new Date(diagnostic.submittedAt).toLocaleDateString('ko-KR')} />
             )}
