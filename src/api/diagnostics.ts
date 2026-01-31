@@ -50,9 +50,10 @@ export interface DiagnosticHistoryItem {
   comment?: string;
 }
 
-interface DiagnosticListParams {
+export interface DiagnosticListParams {
   domainCode?: string;
   status?: DiagnosticStatus;
+  keyword?: string;
   page?: number;
   size?: number;
 }
