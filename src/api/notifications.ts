@@ -11,8 +11,14 @@ export interface NotificationItem {
   link?: string;
 }
 
+export interface NotificationListParams {
+  isRead?: boolean;
+  page?: number;
+  size?: number;
+}
+
 export const getNotifications = async (
-  params: { page?: number; size?: number } = {}
+  params: NotificationListParams = {}
 ): Promise<PagedData<NotificationItem>> => {
   const response = await apiClient.get<BaseResponse<PagedData<NotificationItem>>>('/v1/notifications', {
     params: { page: 0, size: 20, ...params },
@@ -22,4 +28,8 @@ export const getNotifications = async (
 
 export const markAsRead = async (ids: number[]): Promise<void> => {
   await apiClient.patch('/v1/notifications/read', { notificationIds: ids });
+};
+
+export const markAllAsRead = async (): Promise<void> => {
+  await apiClient.patch('/v1/notifications/read', { readAll: true });
 };
