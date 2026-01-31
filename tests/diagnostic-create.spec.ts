@@ -1,25 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { DiagnosticCreatePage } from './pages/DiagnosticCreatePage';
 
-// 테스트 계정 정보
-const TEST_ACCOUNT = {
-  email: 'drafter1@techpartner.co.kr',
-  password: 'Test1234!',
-};
-
+// 인증은 auth.setup.ts의 storageState를 통해 처리됨
 test.describe('이슈 #69: 진단 생성 프로세스 테스트', () => {
-  test.beforeEach(async ({ page }) => {
-    // 로그인 페이지로 이동
-    await page.goto('/login');
-
-    // 실제 로그인 수행
-    await page.getByPlaceholder('이메일을 입력해주세요').fill(TEST_ACCOUNT.email);
-    await page.getByPlaceholder('비밀번호를 입력해주세요').fill(TEST_ACCOUNT.password);
-    await page.getByRole('button', { name: '로그인', exact: true }).click();
-
-    // 대시보드로 이동 확인
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
-  });
 
   test('제목, 도메인, 기간 입력 후 제출 → 성공 확인', async ({ page }) => {
     const diagnosticPage = new DiagnosticCreatePage(page);
