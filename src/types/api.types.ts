@@ -279,6 +279,7 @@ export interface RoleRequestResponse {
 export interface RoleRequestStatusDto {
   accessRequestId: number;
   requestedRole: RoleSimpleDto;
+  domain?: DomainOptionDto;
   company: CompanySimpleDto;
   status: RequestStatus;
   statusLabel: string;
