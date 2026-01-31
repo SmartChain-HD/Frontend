@@ -52,3 +52,10 @@ export const getDownloadUrl = async (fileId: number): Promise<string> => {
 export const deleteFile = async (fileId: number): Promise<void> => {
   await apiClient.delete(`/v1/files/${fileId}`);
 };
+
+export const getPackageUrl = async (diagnosticId: number): Promise<string> => {
+  const response = await apiClient.get<BaseResponse<{ url: string }>>(
+    `/v1/files/diagnostics/${diagnosticId}/package-url`
+  );
+  return response.data.data.url;
+};
