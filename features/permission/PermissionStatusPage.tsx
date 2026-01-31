@@ -1,34 +1,29 @@
 import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import GuestLayout from '../../shared/layout/GuestLayout';
+import { useMyRoleRequests } from '../../src/hooks/useRoles';
+import { useAuthStore } from '../../src/store/authStore';
+import { REQUEST_STATUS_LABELS } from '../../src/types/api.types';
 
 export default function PermissionStatusPage() {
-  const [requestDetails, setRequestDetails] = useState<{
-    role: string;
-    company: string;
-    date: string;
-  } | null>(null);
+  const { data: requestStatus, isLoading } = useMyRoleRequests();
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    const role = localStorage.getItem('requestedRole');
-    const company = localStorage.getItem('requestedCompany');
-    // Mock date if not stored
-    const date = new Date().toLocaleString('ko-KR', { 
-        year: 'numeric', month: '2-digit', day: '2-digit', 
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
-    }).replace(/\./g, '-').replace(/ /g, ' '); 
+  if (isLoading) {
+    return (
+      <GuestLayout>
+        <div className="flex justify-center items-center h-[500px]">Loading...</div>
+      </GuestLayout>
+    );
+  }
 
-    if (role && company) {
-        setRequestDetails({ role: role === 'drafter' ? '기안자' : '결재자', company, date });
-    }
-  }, []);
-
-  if (!requestDetails) {
-      return (
-        <GuestLayout>
-            <div className="flex justify-center items-center h-[500px]">Loading...</div>
-        </GuestLayout>
-      );
+  if (!requestStatus) {
+    return (
+      <GuestLayout>
+        <div className="flex justify-center items-center h-[500px]">
+          <p className="font-body-medium text-[#868e96]">권한 요청 내역이 없습니다.</p>
+        </div>
+      </GuestLayout>
+    );
   }
 
   return (
@@ -42,7 +37,7 @@ export default function PermissionStatusPage() {
                  <div className="bg-[#eff4fc] rounded-[24px] p-[24px] border border-[#b0cbef] flex gap-[10px] items-start">
                     <AlertCircle className="w-[24px] h-[24px] text-[#002554]" />
                     <p className="font-body-medium text-[#002554]">
-                        권한요청 승인 대기 중입니다.
+                        {REQUEST_STATUS_LABELS[requestStatus.status] || '권한요청 승인 대기 중입니다.'}
                     </p>
                 </div>
 
@@ -53,20 +48,30 @@ export default function PermissionStatusPage() {
                     <div className="flex flex-col gap-[12px]">
                         <div className="flex flex-col">
                             <p className="font-title-small mb-1">요청일시</p>
-                            <p className="font-body-medium">{requestDetails.date}</p>
+                            <p className="font-body-medium">{requestStatus.requestedAt}</p>
                         </div>
                         <div className="flex flex-col">
                             <p className="font-title-small mb-1">요청권한</p>
-                            <p className="font-body-medium">{requestDetails.role}</p>
+                            <p className="font-body-medium">{requestStatus.requestedRole?.name}</p>
                         </div>
                         <div className="flex flex-col">
                             <p className="font-title-small mb-1">회사명</p>
-                            <p className="font-body-medium">{requestDetails.company}</p>
+                            <p className="font-body-medium">{requestStatus.company?.companyName}</p>
                         </div>
                         <div className="flex flex-col">
                             <p className="font-title-small mb-1">이름</p>
-                            <p className="font-body-medium">김방문</p>
+                            <p className="font-body-medium">{user?.name || '사용자'}</p>
                         </div>
+                        <div className="flex flex-col">
+                            <p className="font-title-small mb-1">상태</p>
+                            <p className="font-body-medium">{requestStatus.statusLabel}</p>
+                        </div>
+                        {requestStatus.rejectReason && (
+                          <div className="flex flex-col">
+                            <p className="font-title-small mb-1">반려 사유</p>
+                            <p className="font-body-medium text-red-600">{requestStatus.rejectReason}</p>
+                          </div>
+                        )}
                     </div>
                 </div>
 
