@@ -47,7 +47,13 @@ export const useSubmitDiagnostic = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: diagnosticsApi.submitDiagnostic,
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: diagnosticsApi.DiagnosticSubmitRequest;
+    }) => diagnosticsApi.submitDiagnostic(id, data),
     onSuccess: () => {
       toast.success('기안이 제출되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] });

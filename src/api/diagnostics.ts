@@ -65,8 +65,16 @@ export const createDiagnostic = async (data: DiagnosticCreateRequest): Promise<D
   return response.data.data;
 };
 
-export const submitDiagnostic = async (id: number): Promise<void> => {
-  await apiClient.post(`/v1/diagnostics/${id}/submit`);
+export interface DiagnosticSubmitRequest {
+  approverId: number;
+  comment?: string;
+}
+
+export const submitDiagnostic = async (
+  id: number,
+  data: DiagnosticSubmitRequest
+): Promise<void> => {
+  await apiClient.post(`/v1/diagnostics/${id}/submit`, data);
 };
 
 export const getDiagnosticHistory = async (id: number): Promise<DiagnosticHistoryItem[]> => {
