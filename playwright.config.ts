@@ -5,6 +5,7 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const STORAGE_STATE = path.join(__dirname, 'tests/.auth/storageState.json');
+const APPROVER_STORAGE_STATE = path.join(__dirname, 'tests/.auth/approverStorageState.json');
 
 export default defineConfig({
   testDir: './tests',
@@ -24,12 +25,24 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
+      name: 'approver-setup',
+      testMatch: /approver-auth\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE,
       },
       dependencies: ['setup'],
+    },
+    {
+      name: 'approver',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: APPROVER_STORAGE_STATE,
+      },
+      dependencies: ['approver-setup'],
     },
   ],
   webServer: {
