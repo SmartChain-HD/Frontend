@@ -23,6 +23,7 @@ import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
 import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
+import DiagnosticAiAnalysisPage from './features/diagnostics/DiagnosticAiAnalysisPage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 
@@ -128,6 +129,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DiagnosticFilesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id/ai-analysis"
+        element={
+          <ProtectedRoute>
+            <DiagnosticAiAnalysisPage />
           </ProtectedRoute>
         }
       />
