@@ -29,7 +29,7 @@ export default function CompliancePage({ userRole }: CompliancePageProps) {
   const navigate = useNavigate();
 
   const handleUpload = () => {
-    navigate('/dashboard/compliance/upload');
+    navigate('/diagnostics/new');
   };
 
   const handleRowClick = (index: number) => {
