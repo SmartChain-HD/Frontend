@@ -261,7 +261,7 @@ export interface UserDomainRole {
 // --- 권한 요청 생성 ---
 export interface RoleRequestCreateDto {
   requestedRole: RoleCode;
-  domainCode: DomainCode;
+  domainId: DomainCode;
   companyId: number;
   reason?: string;
 }
