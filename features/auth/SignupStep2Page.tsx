@@ -1,49 +1,97 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { Logo } from '../../shared/components/Logo';
 import { Input } from '../../shared/components/Input';
 import { Button } from '../../shared/components/Button';
 import { useRegister, useCheckEmail, useSendVerification, useVerifyEmail } from '../../src/hooks/useAuth';
+import { registerSchema, type RegisterFormData } from '../../src/validation/auth';
+
+const VERIFICATION_TIMEOUT_SECONDS = 180; // 3분
 
 export default function SignupStep2Page() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const termsAgreed = (location.state as { termsAgreed?: boolean })?.termsAgreed;
+
   const registerMutation = useRegister();
   const checkEmailMutation = useCheckEmail();
   const sendVerificationMutation = useSendVerification();
   const verifyEmailMutation = useVerifyEmail();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    passwordConfirm: ''
-  });
   const [verificationCode, setVerificationCode] = useState('');
   const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
   const [showVerificationInput, setShowVerificationInput] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (field === 'email') {
-      setEmailAvailable(null);
-      setEmailVerified(false);
-      setShowVerificationInput(false);
-    }
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: 'onBlur',
+  });
+
+  const watchedEmail = watch('email');
+
+  // 이메일 변경 시 인증 상태 초기화
+  useEffect(() => {
+    setEmailAvailable(null);
+    setEmailVerified(false);
+    setShowVerificationInput(false);
+    setVerificationCode('');
+    setRemainingSeconds(0);
+  }, [watchedEmail]);
+
+  // 인증코드 타이머
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [remainingSeconds]);
+
+  const formatTime = useCallback((seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }, []);
+
+  // 약관 미동의 시 Step1으로 리다이렉트
+  if (!termsAgreed) {
+    return <Navigate to="/signup/step1" replace />;
+  }
 
   const handleCheckAndSendVerification = () => {
-    if (!formData.email) return;
+    if (!watchedEmail) {
+      toast.error('이메일을 입력해주세요.');
+      return;
+    }
 
     checkEmailMutation.mutate(
-      { email: formData.email },
+      { email: watchedEmail },
       {
         onSuccess: (data) => {
           if (data.available) {
             setEmailAvailable(true);
             sendVerificationMutation.mutate(
-              { email: formData.email },
+              { email: watchedEmail },
               {
-                onSuccess: () => {
+                onSuccess: (res) => {
                   setShowVerificationInput(true);
+                  setRemainingSeconds(res.expiresInSeconds || VERIFICATION_TIMEOUT_SECONDS);
                 },
               }
             );
@@ -56,36 +104,40 @@ export default function SignupStep2Page() {
   };
 
   const handleVerifyCode = () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast.error('6자리 인증코드를 입력해주세요.');
+      return;
+    }
+
+    if (remainingSeconds <= 0) {
+      toast.error('인증코드가 만료되었습니다. 다시 요청해주세요.');
+      return;
+    }
+
     verifyEmailMutation.mutate(
-      { email: formData.email, verificationCode },
+      { email: watchedEmail, verificationCode },
       {
         onSuccess: (data) => {
           if (data.verified) {
             setEmailVerified(true);
+            setRemainingSeconds(0);
           }
         },
       }
     );
   };
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = (data: RegisterFormData) => {
     if (!emailVerified) {
-      alert('이메일 인증을 완료해주세요.');
-      return;
-    }
-
-    if (formData.password !== formData.passwordConfirm) {
-      alert('비밀번호가 일치하지 않습니다.');
+      toast.error('이메일 인증을 완료해주세요.');
       return;
     }
 
     registerMutation.mutate({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      passwordConfirm: formData.passwordConfirm,
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      passwordConfirm: data.passwordConfirm,
       terms: {
         privacyPolicyAgreed: true,
         serviceTermsAgreed: true,
@@ -93,115 +145,156 @@ export default function SignupStep2Page() {
     });
   };
 
+  const isVerificationLoading = checkEmailMutation.isPending || sendVerificationMutation.isPending;
+
   return (
-    <div className="absolute bg-[var(--color-page-bg)] content-stretch flex flex-col h-[1080px] items-start left-0 overflow-clip p-[70px] top-0 w-[1920px]">
-      <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-h-px min-w-px relative shadow-[var(--shadow-card)] w-full">
-        <div className="bg-white flex-[1_0_0] min-h-px min-w-px relative rounded-[var(--radius-card)] w-full">
+    <div className="bg-[var(--color-page-bg)] min-h-screen w-full flex items-center justify-center p-4 lg:p-[70px]">
+      <div className="w-full max-w-[1776px] shadow-[var(--shadow-card)]">
+        <div className="bg-white rounded-[var(--radius-card)] w-full">
           <div className="flex flex-col items-end justify-end overflow-clip rounded-[inherit] size-full">
-            <form onSubmit={handleSignup} className="content-stretch flex flex-col items-end justify-end p-[24px] relative size-full">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end justify-end p-[24px] relative size-full">
               {/* Main Content */}
-              <div className="flex-[1_0_0] min-h-px min-w-px relative rounded-[var(--radius-card)] w-full">
+              <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)] w-full">
                 <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="content-stretch flex flex-col items-start p-[24px] relative size-full">
-                    <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
+                  <div className="flex flex-col items-start p-[24px] size-full">
+                    <div className="flex flex-col gap-[24px] items-start shrink-0 w-full">
                       {/* Logo */}
-                      <div className="content-stretch flex items-center py-[24px] relative shrink-0 w-full">
+                      <div className="flex items-center py-[24px] shrink-0 w-full">
                         <Logo size="small" />
                       </div>
 
                       {/* Step Title */}
-                      <div className="content-stretch flex flex-col gap-[12px] items-start not-italic relative shrink-0 text-[var(--color-text-primary)]">
-                        <p className="css-ew64yg font-title-xxlarge leading-[0]">
+                      <div className="flex flex-col gap-[12px] items-start shrink-0 text-[var(--color-text-primary)]">
+                        <p className="font-title-xxlarge leading-[0]">
                           <span className="leading-[1.4] text-[var(--color-primary-main)]">2단계</span>
                           <span className="leading-[1.4]">/2단계</span>
                         </p>
-                        <p className="css-ew64yg font-heading-small leading-[1.35]">개인정보입력</p>
+                        <p className="font-heading-small leading-[1.35]">개인정보입력</p>
                       </div>
 
                       {/* Form */}
-                      <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-full">
-                        <div className="content-stretch flex flex-col gap-[24px] items-center justify-center relative shrink-0 w-[480px]">
+                      <div className="flex flex-col items-center justify-center shrink-0 w-full">
+                        <div className="flex flex-col gap-[24px] items-center justify-center shrink-0 w-full max-w-[480px]">
                           {/* Name */}
-                          <Input
-                            label="이름"
-                            type="text"
-                            placeholder="이름을 입력해주세요."
-                            value={formData.name}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
-                            containerClassName="w-full"
-                            required
-                          />
+                          <div className="w-full">
+                            <Input
+                              label="이름"
+                              type="text"
+                              placeholder="이름을 입력해주세요."
+                              containerClassName="w-full"
+                              {...register('name')}
+                            />
+                            {errors.name && (
+                              <p className="text-red-500 font-detail-small mt-1">{errors.name.message}</p>
+                            )}
+                          </div>
 
                           {/* Email with Verification Button */}
-                          <div className="content-stretch flex gap-[10px] items-end relative shrink-0 w-full">
-                            <Input
-                              label="이메일"
-                              type="email"
-                              placeholder="회사 이메일을 입력해주세요."
-                              value={formData.email}
-                              onChange={(e) => handleInputChange('email', e.target.value)}
-                              containerClassName="w-[360px]"
-                              required
-                            />
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              className="h-[56px]"
-                              onClick={handleCheckAndSendVerification}
-                              disabled={checkEmailMutation.isPending || sendVerificationMutation.isPending || emailVerified}
-                            >
-                              {emailVerified ? '인증완료' : '인증요청'}
-                            </Button>
-                          </div>
-                          {emailAvailable === false && (
-                            <p className="text-red-500 font-detail-small w-full">이미 사용 중인 이메일입니다.</p>
-                          )}
-
-                          {/* Verification Code Input */}
-                          {showVerificationInput && !emailVerified && (
-                            <div className="content-stretch flex gap-[10px] items-end relative shrink-0 w-full">
+                          <div className="w-full">
+                            <div className="flex gap-[10px] items-end w-full">
                               <Input
-                                label="인증코드"
-                                type="text"
-                                placeholder="6자리 인증코드를 입력해주세요."
-                                value={verificationCode}
-                                onChange={(e) => setVerificationCode(e.target.value)}
-                                containerClassName="w-[360px]"
-                                maxLength={6}
+                                label="이메일"
+                                type="email"
+                                placeholder="회사 이메일을 입력해주세요."
+                                containerClassName="flex-1"
+                                {...register('email')}
                               />
                               <Button
                                 type="button"
                                 variant="secondary"
                                 className="h-[56px]"
-                                onClick={handleVerifyCode}
-                                disabled={verifyEmailMutation.isPending}
+                                onClick={handleCheckAndSendVerification}
+                                disabled={isVerificationLoading || emailVerified}
                               >
-                                확인
+                                {emailVerified ? '인증완료' : isVerificationLoading ? '확인중...' : '인증요청'}
                               </Button>
+                            </div>
+                            {errors.email && (
+                              <p className="text-red-500 font-detail-small mt-1">{errors.email.message}</p>
+                            )}
+                            {emailAvailable === false && (
+                              <p className="text-red-500 font-detail-small mt-1">이미 사용 중인 이메일입니다.</p>
+                            )}
+                            {emailAvailable === true && !emailVerified && (
+                              <p className="text-[var(--color-success-main)] font-detail-small mt-1">사용 가능한 이메일입니다. 인증코드를 확인해주세요.</p>
+                            )}
+                            {emailVerified && (
+                              <p className="text-[var(--color-success-main)] font-detail-small mt-1">이메일 인증이 완료되었습니다.</p>
+                            )}
+                          </div>
+
+                          {/* Verification Code Input */}
+                          {showVerificationInput && !emailVerified && (
+                            <div className="w-full">
+                              <div className="flex gap-[10px] items-end w-full">
+                                <div className="flex-1 relative">
+                                  <Input
+                                    label="인증코드"
+                                    type="text"
+                                    placeholder="6자리 인증코드를 입력해주세요."
+                                    containerClassName="w-full"
+                                    value={verificationCode}
+                                    onChange={(e) => setVerificationCode(e.target.value)}
+                                    maxLength={6}
+                                  />
+                                  {remainingSeconds > 0 && (
+                                    <span className="absolute right-4 top-[42px] font-detail-small text-[var(--color-state-error-text)]">
+                                      {formatTime(remainingSeconds)}
+                                    </span>
+                                  )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  className="h-[56px]"
+                                  onClick={handleVerifyCode}
+                                  disabled={verifyEmailMutation.isPending || remainingSeconds <= 0}
+                                >
+                                  {verifyEmailMutation.isPending ? '확인중...' : '확인'}
+                                </Button>
+                              </div>
+                              {remainingSeconds <= 0 && (
+                                <p className="text-[var(--color-state-error-text)] font-detail-small mt-1">
+                                  인증코드가 만료되었습니다.
+                                  <button
+                                    type="button"
+                                    className="ml-2 underline text-[var(--color-primary-main)]"
+                                    onClick={handleCheckAndSendVerification}
+                                  >
+                                    재발송
+                                  </button>
+                                </p>
+                              )}
                             </div>
                           )}
 
                           {/* Password */}
-                          <Input
-                            label="비밀번호"
-                            type="password"
-                            placeholder="비밀번호를 입력해주세요."
-                            value={formData.password}
-                            onChange={(e) => handleInputChange('password', e.target.value)}
-                            containerClassName="w-full"
-                            required
-                          />
+                          <div className="w-full">
+                            <Input
+                              label="비밀번호"
+                              type="password"
+                              placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+                              containerClassName="w-full"
+                              {...register('password')}
+                            />
+                            {errors.password && (
+                              <p className="text-red-500 font-detail-small mt-1">{errors.password.message}</p>
+                            )}
+                          </div>
 
                           {/* Password Confirm */}
-                          <Input
-                            label="비밀번호 확인"
-                            type="password"
-                            placeholder="비밀번호를 다시 입력해주세요."
-                            value={formData.passwordConfirm}
-                            onChange={(e) => handleInputChange('passwordConfirm', e.target.value)}
-                            containerClassName="w-full"
-                            required
-                          />
+                          <div className="w-full">
+                            <Input
+                              label="비밀번호 확인"
+                              type="password"
+                              placeholder="비밀번호를 다시 입력해주세요."
+                              containerClassName="w-full"
+                              {...register('passwordConfirm')}
+                            />
+                            {errors.passwordConfirm && (
+                              <p className="text-red-500 font-detail-small mt-1">{errors.passwordConfirm.message}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -210,17 +303,27 @@ export default function SignupStep2Page() {
               </div>
 
               {/* Submit Button */}
-              <div className="relative shrink-0 w-full">
+              <div className="shrink-0 w-full">
                 <div className="flex flex-col items-end size-full">
-                  <div className="content-stretch flex flex-col items-end p-[24px] relative w-full">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="large"
-                      disabled={registerMutation.isPending}
-                    >
-                      {registerMutation.isPending ? '가입 중...' : '회원가입'}
-                    </Button>
+                  <div className="flex flex-col items-end p-[24px] w-full">
+                    <div className="flex gap-[12px]">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="large"
+                        onClick={() => navigate('/signup/step1')}
+                      >
+                        이전
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="large"
+                        disabled={registerMutation.isPending || !emailVerified}
+                      >
+                        {registerMutation.isPending ? '가입 중...' : '회원가입'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
