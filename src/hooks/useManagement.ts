@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import * as managementApi from '../api/management';
+import type { UserListParams, CompanyListParams, RegisterCompanyRequest } from '../api/management';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { handleApiError } from '../utils/errorHandler';
 import type { ErrorResponse } from '../types/api.types';
@@ -13,17 +14,17 @@ export const usePermissionsDashboard = () => {
   });
 };
 
-export const useUsers = (params?: { page?: number; size?: number }) => {
+export const useUsers = (params?: UserListParams) => {
   return useQuery({
     queryKey: QUERY_KEYS.MANAGEMENT.USERS(params),
     queryFn: () => managementApi.getUsers(params),
   });
 };
 
-export const useCompanies = () => {
+export const useCompanies = (params?: CompanyListParams) => {
   return useQuery({
-    queryKey: QUERY_KEYS.MANAGEMENT.COMPANIES,
-    queryFn: managementApi.getCompanies,
+    queryKey: QUERY_KEYS.MANAGEMENT.COMPANIES_LIST(params),
+    queryFn: () => managementApi.getCompanies(params),
   });
 };
 
@@ -75,6 +76,21 @@ export const useUpdateUserStatus = () => {
       managementApi.updateUserStatus(userId, data),
     onSuccess: () => {
       toast.success('상태가 변경되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['management'] });
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      handleApiError(error);
+    },
+  });
+};
+
+export const useRegisterCompany = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: RegisterCompanyRequest) => managementApi.registerCompany(data),
+    onSuccess: () => {
+      toast.success('회사가 등록되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['management'] });
     },
     onError: (error: AxiosError<ErrorResponse>) => {

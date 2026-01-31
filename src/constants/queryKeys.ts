@@ -25,6 +25,7 @@ export const QUERY_KEYS = {
     PERMISSIONS_DASHBOARD: ['management', 'permissionsDashboard'] as const,
     USERS: (params?: object) => ['management', 'users', params] as const,
     COMPANIES: ['management', 'companies'] as const,
+    COMPANIES_LIST: (params?: object) => ['management', 'companiesList', params] as const,
     ACTIVITY_LOGS: (params?: object) => ['management', 'activityLogs', params] as const,
   },
   NOTIFICATIONS: {

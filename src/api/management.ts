@@ -12,16 +12,45 @@ export interface UserListItem {
   name: string;
   email: string;
   role: string;
+  roleCode: string;
   company?: string;
-  status: string;
+  companyId?: number;
+  status: 'ACTIVE' | 'INACTIVE';
   lastLoginAt?: string;
+  createdAt?: string;
 }
 
 export interface CompanyListItem {
   companyId: number;
   companyName: string;
-  companyType: string;
+  companyType: 'SUPPLIER' | 'CONTRACTOR';
   userCount: number;
+  createdAt?: string;
+}
+
+export interface UserListParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  roleCode?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+  companyId?: number;
+}
+
+export interface CompanyListParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  companyType?: 'SUPPLIER' | 'CONTRACTOR';
+}
+
+export interface RegisterCompanyRequest {
+  companyName: string;
+  companyType: 'SUPPLIER' | 'CONTRACTOR';
+  businessNumber?: string;
+  address?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface ActivityLogItem {
@@ -41,7 +70,7 @@ export const getPermissionsDashboard = async (): Promise<PermissionsDashboardRes
 };
 
 export const getUsers = async (
-  params: { page?: number; size?: number } = {}
+  params: UserListParams = {}
 ): Promise<PagedData<UserListItem>> => {
   const response = await apiClient.get<BaseResponse<PagedData<UserListItem>>>('/v1/management/users', {
     params: { page: 0, size: 10, ...params },
@@ -49,8 +78,19 @@ export const getUsers = async (
   return response.data.data;
 };
 
-export const getCompanies = async (): Promise<CompanyListItem[]> => {
-  const response = await apiClient.get<BaseResponse<CompanyListItem[]>>('/v1/management/companies');
+export const getCompanies = async (
+  params: CompanyListParams = {}
+): Promise<PagedData<CompanyListItem>> => {
+  const response = await apiClient.get<BaseResponse<PagedData<CompanyListItem>>>('/v1/management/companies', {
+    params: { page: 0, size: 10, ...params },
+  });
+  return response.data.data;
+};
+
+export const registerCompany = async (
+  data: RegisterCompanyRequest
+): Promise<CompanyListItem> => {
+  const response = await apiClient.post<BaseResponse<CompanyListItem>>('/v1/management/companies', data);
   return response.data.data;
 };
 
