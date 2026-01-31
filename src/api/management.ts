@@ -58,8 +58,26 @@ export interface ActivityLogItem {
   userId: number;
   userName: string;
   action: string;
+  actionType: string;
   target: string;
+  targetId?: number;
+  ipAddress?: string;
   createdAt: string;
+}
+
+export interface ActivityLogParams {
+  page?: number;
+  size?: number;
+  userId?: number;
+  fromDate?: string;
+  toDate?: string;
+  actionType?: string;
+}
+
+export interface ExportActivityLogsRequest {
+  format: 'CSV' | 'EXCEL';
+  fromDate?: string;
+  toDate?: string;
 }
 
 export const getPermissionsDashboard = async (): Promise<PermissionsDashboardResponse> => {
@@ -95,13 +113,22 @@ export const registerCompany = async (
 };
 
 export const getActivityLogs = async (
-  params: { page?: number; size?: number } = {}
+  params: ActivityLogParams = {}
 ): Promise<PagedData<ActivityLogItem>> => {
   const response = await apiClient.get<BaseResponse<PagedData<ActivityLogItem>>>(
     '/v1/management/activity-logs',
     { params: { page: 0, size: 20, ...params } }
   );
   return response.data.data;
+};
+
+export const exportActivityLogs = async (
+  data: ExportActivityLogsRequest
+): Promise<Blob> => {
+  const response = await apiClient.post('/v1/management/activity-logs/export', data, {
+    responseType: 'blob',
+  });
+  return response.data;
 };
 
 export const updatePermission = async (
