@@ -30,7 +30,7 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
   const navigate = useNavigate();
 
   const handleUpload = () => {
-    navigate('/dashboard/safety/upload');
+    navigate('/diagnostics/new');
   };
 
   const handleRowClick = (index: number) => {

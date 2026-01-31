@@ -37,7 +37,8 @@ export default function DiagnosticCreatePage() {
   const onSubmit = async (data: DiagnosticCreateFormData) => {
     createMutation.mutate(data, {
       onSuccess: (result) => {
-        navigate(`/diagnostics/${result.diagnosticId}`);
+        const domainPath = data.domainCode.toLowerCase();
+        navigate(`/dashboard/${domainPath}/upload?diagnosticId=${result.diagnosticId}`);
       },
     });
   };

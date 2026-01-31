@@ -243,8 +243,7 @@ export default function HomePage({ userRole }: HomePageProps) {
   }, [userRole, diagnosticsQuery, approvalsQuery, reviewsListQuery]);
 
   const handleCreateDraft = () => {
-    const domainPath = activeTab.toLowerCase();
-    navigate(`/dashboard/${domainPath}/upload`);
+    navigate('/diagnostics/new');
   };
 
   const handleRowClick = (id: number, domain: string) => {

@@ -29,7 +29,7 @@ export default function ESGPage({ userRole }: ESGPageProps) {
   const navigate = useNavigate();
 
   const handleUpload = () => {
-    navigate('/dashboard/esg/upload');
+    navigate('/diagnostics/new');
   };
 
   const handleRowClick = (index: number) => {
