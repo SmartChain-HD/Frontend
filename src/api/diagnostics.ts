@@ -3,25 +3,35 @@ import type { BaseResponse, PagedData, DiagnosticStatus } from '../types/api.typ
 
 export interface DiagnosticListItem {
   diagnosticId: number;
-  title: string;
-  domainCode: string;
-  companyName: string;
-  period: string;
-  submittedAt?: string;
+  diagnosticCode: string;
+  domain: { domainId: number; code: string; name: string };
+  campaign: { campaignId: number; campaignCode: string; title: string };
+  summary: string;
+  period: { startDate: string; endDate: string };
+  deadline: string;
   status: DiagnosticStatus;
-  riskLevel?: string;
+  statusLabel: string;
+  progress: { qualitative: number; quantitative: number; overall: number };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DiagnosticDetail {
   diagnosticId: number;
-  title: string;
-  domainCode: string;
-  company: { companyId: number; companyName: string };
-  drafter: { userId: number; name: string };
+  diagnosticCode: string;
+  domain: { domainId: number; code: string; name: string };
+  campaign: { campaignId: number; campaignCode: string; title: string; disclosureStandards?: string[] };
+  company: { companyId: number; companyName: string; industryCode?: string | null };
+  period: { startDate: string; endDate: string };
+  deadline: string;
   status: DiagnosticStatus;
-  periodStartDate: string;
-  periodEndDate: string;
+  statusLabel: string;
+  qualitativeProgress: number;
+  quantitativeProgress: number;
+  overallProgress: number;
+  createdBy: { userId: number; name: string };
   createdAt: string;
+  updatedAt: string;
   submittedAt?: string;
 }
 
