@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { LogoWithSubtitle } from '../../shared/components/Logo';
+import type { AxiosError } from 'axios';
 import { useLogin } from '../../src/hooks/useAuth';
 import { useAuthStore } from '../../src/store/authStore';
 import { loginSchema, type LoginFormData } from '../../src/validation/auth';
+import type { ErrorResponse } from '../../src/types/api.types';
 import svgPaths from "../../imports/svg-1z9x9otd1u";
 import { imgGroup } from "../../imports/svg-cdk78";
 
@@ -99,15 +100,19 @@ function LoginLeftPanel() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
-  const [formError, setFormError] = useState('');
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
+  // 이미 인증된 사용자는 대시보드로 리다이렉트
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const onSubmit = (data: LoginFormData) => {
-    setFormError('');
     loginMutation.mutate(data);
   };
 
@@ -220,8 +225,10 @@ export default function LoginPage() {
                         <p className="text-red-500 font-detail-small mt-1">{errors.password.message}</p>
                       )}
                     </div>
-                    {formError && (
-                      <p className="text-red-500 font-body-small">{formError}</p>
+                    {loginMutation.isError && (
+                      <p className="text-red-500 font-body-small">
+                        {(loginMutation.error as AxiosError<ErrorResponse>)?.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.'}
+                      </p>
                     )}
                     <p className="font-detail-medium leading-none text-[var(--color-text-tertiary)] text-right w-full cursor-pointer hover:text-[var(--color-primary-main)]">
                         아이디 찾기 / 비밀번호 초기화

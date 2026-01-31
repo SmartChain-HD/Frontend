@@ -16,7 +16,7 @@ export const useLogin = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       const user = data.user;
-      // Redirect based on role
+      toast.success(`${user.name}님, 환영합니다.`);
       if (!user.role || user.role.code === 'GUEST') {
         navigate('/permission/request');
       } else {
