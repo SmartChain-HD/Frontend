@@ -22,6 +22,8 @@ import ApprovalDetailPage from './features/approvals/ApprovalDetailPage';
 import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
 import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
+import ReviewsListPage from './features/reviews/ReviewsListPage';
+import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -135,6 +137,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ApprovalDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Reviews */}
+      <Route
+        path="/reviews"
+        element={
+          <ProtectedRoute>
+            <ReviewsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reviews/:id"
+        element={
+          <ProtectedRoute>
+            <ReviewDetailPage />
           </ProtectedRoute>
         }
       />

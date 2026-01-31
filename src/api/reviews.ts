@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { BaseResponse, PagedData, ReviewStatus } from '../types/api.types';
+import type { BaseResponse, PagedData, ReviewStatus, RiskLevel } from '../types/api.types';
 
 export interface ReviewDashboardResponse {
   totalCompanies: number;
@@ -15,22 +15,43 @@ export interface ReviewListItem {
   title: string;
   domainCode: string;
   companyName: string;
+  drafterName: string;
   submittedAt: string;
   status: ReviewStatus;
-  riskLevel?: string;
+  riskLevel?: RiskLevel;
+  score?: number;
 }
 
 export interface ReviewDetail extends ReviewListItem {
   aiVerdict?: string;
   whySummary?: string;
   comment?: string;
+  categoryCommentE?: string;
+  categoryCommentS?: string;
+  categoryCommentG?: string;
 }
 
-interface ReviewListParams {
+export interface ReviewListParams {
   domainCode?: string;
   status?: ReviewStatus;
+  riskLevel?: RiskLevel;
+  companyId?: number;
   page?: number;
   size?: number;
+}
+
+export interface SubmitReviewData {
+  decision: 'APPROVED' | 'REVISION_REQUIRED';
+  score?: number;
+  comment?: string;
+  categoryCommentE?: string;
+  categoryCommentS?: string;
+  categoryCommentG?: string;
+}
+
+export interface JobResponse {
+  jobId: string;
+  status: 'PENDING';
 }
 
 export const getReviewsDashboard = async (): Promise<ReviewDashboardResponse> => {
@@ -52,23 +73,28 @@ export const getReviewDetail = async (id: number): Promise<ReviewDetail> => {
   return response.data.data;
 };
 
-export const processReview = async (
+export const submitReview = async (
   id: number,
-  data: { decision: 'APPROVED' | 'REVISION_REQUIRED'; comment?: string }
+  data: SubmitReviewData
 ): Promise<void> => {
   await apiClient.patch(`/v1/reviews/${id}`, data);
 };
 
-export const generateReport = async (id: number): Promise<void> => {
-  await apiClient.post(`/v1/reviews/${id}/report`);
+export const generateReport = async (id: number): Promise<JobResponse> => {
+  const response = await apiClient.post<BaseResponse<JobResponse>>(`/v1/reviews/${id}/report`);
+  return response.data.data;
 };
 
-export const bulkReport = async (ids: number[]): Promise<void> => {
-  await apiClient.post('/v1/reviews/bulk-report', { reviewIds: ids });
+export const bulkReport = async (reviewIds: number[]): Promise<JobResponse> => {
+  const response = await apiClient.post<BaseResponse<JobResponse>>('/v1/reviews/bulk-report', { reviewIds });
+  return response.data.data;
 };
 
-export const exportReviews = async (params?: ReviewListParams): Promise<Blob> => {
-  const response = await apiClient.post('/v1/reviews/export', params, {
+export const exportReviews = async (
+  format: 'EXCEL' | 'CSV',
+  reviewIds: number[]
+): Promise<Blob> => {
+  const response = await apiClient.post('/v1/reviews/export', { format, reviewIds }, {
     responseType: 'blob',
   });
   return response.data;

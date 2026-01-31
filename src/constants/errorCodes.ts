@@ -39,6 +39,9 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   // Server
   S001: { action: 'toast', customMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
 
+  // Review
+  RV001: { action: 'toast', customMessage: '심사 건을 찾을 수 없습니다.' },
+
   // AI
   AI001: { action: 'toast', customMessage: 'AI 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' },
   AI002: { action: 'toast', customMessage: '이미 분석이 진행 중입니다. 완료 후 다시 시도해주세요.' },

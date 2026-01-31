@@ -2,16 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import * as reviewsApi from '../api/reviews';
+import type { ReviewListParams, SubmitReviewData } from '../api/reviews';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { handleApiError } from '../utils/errorHandler';
-import type { ErrorResponse, ReviewStatus } from '../types/api.types';
-
-interface ReviewListParams {
-  domainCode?: string;
-  status?: ReviewStatus;
-  page?: number;
-  size?: number;
-}
+import type { ErrorResponse } from '../types/api.types';
 
 export const useReviewsDashboard = () => {
   return useQuery({
@@ -35,12 +29,12 @@ export const useReviewDetail = (id: number) => {
   });
 };
 
-export const useProcessReview = () => {
+export const useSubmitReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { decision: 'APPROVED' | 'REVISION_REQUIRED'; comment?: string } }) =>
-      reviewsApi.processReview(id, data),
+    mutationFn: ({ id, data }: { id: number; data: SubmitReviewData }) =>
+      reviewsApi.submitReview(id, data),
     onSuccess: () => {
       toast.success('심사 처리가 완료되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
@@ -55,7 +49,19 @@ export const useGenerateReport = () => {
   return useMutation({
     mutationFn: reviewsApi.generateReport,
     onSuccess: () => {
-      toast.success('보고서가 생성되었습니다.');
+      toast.success('리포트 생성이 요청되었습니다.');
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      handleApiError(error);
+    },
+  });
+};
+
+export const useBulkReport = () => {
+  return useMutation({
+    mutationFn: reviewsApi.bulkReport,
+    onSuccess: () => {
+      toast.success('일괄 리포트 생성이 요청되었습니다.');
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       handleApiError(error);
@@ -65,14 +71,17 @@ export const useGenerateReport = () => {
 
 export const useExportReviews = () => {
   return useMutation({
-    mutationFn: reviewsApi.exportReviews,
-    onSuccess: (blob) => {
+    mutationFn: ({ format, reviewIds }: { format: 'EXCEL' | 'CSV'; reviewIds: number[] }) =>
+      reviewsApi.exportReviews(format, reviewIds),
+    onSuccess: (blob, { format }) => {
+      const ext = format === 'CSV' ? 'csv' : 'xlsx';
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'reviews_export.xlsx';
+      a.download = `reviews_export.${ext}`;
       a.click();
       window.URL.revokeObjectURL(url);
+      toast.success('파일이 다운로드되었습니다.');
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       handleApiError(error);
