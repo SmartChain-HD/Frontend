@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "auth-storage",
+          "value": "{\"state\":{\"accessToken\":\"mock-access-token-for-testing\",\"refreshToken\":\"mock-refresh-token-for-testing\",\"user\":{\"userId\":1,\"email\":\"tester@example.com\",\"name\":\"테스터\",\"role\":{\"code\":\"DRAFTER\",\"name\":\"기안자\"},\"domainRoles\":[{\"domainCode\":\"ESG\",\"domainName\":\"ESG 실사\",\"roleCode\":\"DRAFTER\",\"roleName\":\"기안자\"}],\"company\":{\"companyId\":1,\"companyName\":\"테스트회사\"}},\"isAuthenticated\":true},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}
