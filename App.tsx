@@ -28,6 +28,7 @@ import ReviewsListPage from './features/reviews/ReviewsListPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 import UserManagementPage from './features/management/UserManagementPage';
 import CompanyManagementPage from './features/management/CompanyManagementPage';
+import ActivityLogPage from './features/management/ActivityLogPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -115,6 +116,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <CompanyManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/management/activity-logs"
+        element={
+          <ProtectedRoute>
+            <ActivityLogPage />
           </ProtectedRoute>
         }
       />
