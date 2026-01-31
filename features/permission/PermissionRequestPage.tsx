@@ -33,11 +33,19 @@ export default function PermissionRequestPage() {
       alert('회사를 선택해주세요.');
       return;
     }
+    
+    const tempDomainIdMap: Record<string, number> = {
+      'ESG': 1,        // 실제 DB ID가 1이어야 함
+      'SAFETY': 2,     // 실제 DB ID가 2이어야 함
+      'COMPLIANCE': 3, // 실제 DB ID가 3이어야 함
+    };
+
+    const numericId = tempDomainIdMap[selectedDomain];
 
     createRequest.mutate(
       {
         requestedRole: selectedRole,
-        domainCode: selectedDomain,
+        domainId: numericId as any,
         companyId: selectedCompanyId,
         reason: reason.trim() || undefined,
       },
