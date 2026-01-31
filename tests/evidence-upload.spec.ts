@@ -11,7 +11,7 @@ const DUMMY_PDF = path.join(DUMMY_DIR, 'TestCompany_202601_테스트문서.pdf')
 const DUMMY_DOC = path.join(DUMMY_DIR, 'TestCompany_202601_테스트메모.pdf');
 
 /** 진단 목록에서 첫 번째 진단의 파일 업로드 페이지로 이동 */
-async function goToFilesPage(page: import('@playwright/test').Page): Promise<boolean> {
+async function goToFilesPage(page: import('@playwright/test').Page): Promise<'editable' | 'readonly' | false> {
   await page.goto('/diagnostics', { waitUntil: 'networkidle' });
 
   // "진단 관리" 헤더가 보이는지 확인 (페이지 렌더링 확인)
@@ -38,7 +38,10 @@ async function goToFilesPage(page: import('@playwright/test').Page): Promise<boo
   await expect(page).toHaveURL(/\/diagnostics\/\d+\/files/, { timeout: 10000 });
   await expect(page.getByText('파일 업로드').first()).toBeVisible({ timeout: 10000 });
 
-  return true;
+  // canEdit 여부 판별: 업로드 영역이 있으면 editable, 경고 배너가 있으면 readonly
+  const hasUploadArea = await page.getByText('파일을 드래그하거나 클릭하여 업로드')
+    .isVisible().catch(() => false);
+  return hasUploadArea ? 'editable' : 'readonly';
 }
 
 test.describe('이슈 #70 - 증빙파일 업로드 및 관리 테스트', () => {
@@ -84,21 +87,32 @@ test.describe('이슈 #70 - 증빙파일 업로드 및 관리 테스트', () => 
   });
 
   test('파일 업로드 페이지가 정상 렌더링된다', async ({ page }) => {
-    const ok = await goToFilesPage(page);
-    if (!ok) {
+    const result = await goToFilesPage(page);
+    if (!result) {
       test.skip(true, '진단 항목이 없어 테스트를 건너뜁니다');
       return;
     }
 
-    await expect(page.getByText('파일을 드래그하거나 클릭하여 업로드')).toBeVisible();
-    await expect(page.getByText(/PDF, JPG, PNG/)).toBeVisible();
+    // 파일명 가이드는 canEdit 여부와 무관하게 항상 표시
     await expect(page.getByText('파일명 가이드')).toBeVisible();
+
+    if (result === 'editable') {
+      await expect(page.getByText('파일을 드래그하거나 클릭하여 업로드')).toBeVisible();
+      await expect(page.getByText(/PDF, JPG, PNG/)).toBeVisible();
+    } else {
+      // readonly 상태: 경고 배너 표시
+      await expect(page.getByText(/파일 업로드\/삭제가 불가/)).toBeVisible();
+    }
   });
 
   test('더미 파일을 업로드하면 파일 목록에 표시된다', async ({ page }) => {
-    const ok = await goToFilesPage(page);
-    if (!ok) {
+    const result = await goToFilesPage(page);
+    if (!result) {
       test.skip(true, '진단 항목이 없어 테스트를 건너뜁니다');
+      return;
+    }
+    if (result === 'readonly') {
+      test.skip(true, '진단 상태가 WRITING/RETURNED이 아니어서 업로드 불가');
       return;
     }
 
@@ -112,9 +126,13 @@ test.describe('이슈 #70 - 증빙파일 업로드 및 관리 테스트', () => 
   });
 
   test('업로드된 파일의 삭제 버튼이 동작한다', async ({ page }) => {
-    const ok = await goToFilesPage(page);
-    if (!ok) {
+    const result = await goToFilesPage(page);
+    if (!result) {
       test.skip(true, '진단 항목이 없어 테스트를 건너뜁니다');
+      return;
+    }
+    if (result === 'readonly') {
+      test.skip(true, '진단 상태가 WRITING/RETURNED이 아니어서 삭제 불가');
       return;
     }
 
@@ -138,9 +156,13 @@ test.describe('이슈 #70 - 증빙파일 업로드 및 관리 테스트', () => 
   });
 
   test('여러 파일을 동시에 업로드할 수 있다', async ({ page }) => {
-    const ok = await goToFilesPage(page);
-    if (!ok) {
+    const result = await goToFilesPage(page);
+    if (!result) {
       test.skip(true, '진단 항목이 없어 테스트를 건너뜁니다');
+      return;
+    }
+    if (result === 'readonly') {
+      test.skip(true, '진단 상태가 WRITING/RETURNED이 아니어서 업로드 불가');
       return;
     }
 

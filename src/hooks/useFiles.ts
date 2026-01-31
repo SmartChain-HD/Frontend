@@ -6,6 +6,14 @@ import { QUERY_KEYS } from '../constants/queryKeys';
 import { handleApiError } from '../utils/errorHandler';
 import type { ErrorResponse } from '../types/api.types';
 
+export const useDiagnosticFiles = (diagnosticId: number) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.FILES.LIST(diagnosticId),
+    queryFn: () => filesApi.getDiagnosticFiles(diagnosticId),
+    enabled: diagnosticId > 0,
+  });
+};
+
 export const useUploadFile = () => {
   const queryClient = useQueryClient();
 

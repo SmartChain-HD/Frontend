@@ -17,6 +17,29 @@ export interface UploadFileResponse {
   statusCheckUrl: string;
 }
 
+/** 백엔드 파싱 상태: WAITING → PROCESSING → SUCCESS | FAILED */
+export type ParsingStatus = 'WAITING' | 'PROCESSING' | 'SUCCESS' | 'FAILED';
+
+export interface DiagnosticFileItem {
+  fileId: number;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  parsingStatus: ParsingStatus;
+  parsedDataUrl: string;
+  uploadedAt: string;
+}
+
+export const getDiagnosticFiles = async (
+  diagnosticId: number
+): Promise<DiagnosticFileItem[]> => {
+  const response = await apiClient.get<BaseResponse<DiagnosticFileItem[]>>(
+    `/v1/diagnostics/${diagnosticId}/files`
+  );
+  return response.data.data;
+};
+
 export interface ParsingResultResponse {
   fileId: number;
   fileName: string;
