@@ -24,6 +24,8 @@ import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
+import UserManagementPage from './features/management/UserManagementPage';
+import CompanyManagementPage from './features/management/CompanyManagementPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,6 +95,24 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PermissionManagementPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Management Routes */}
+      <Route
+        path="/management/users"
+        element={
+          <ProtectedRoute>
+            <UserManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/management/companies"
+        element={
+          <ProtectedRoute>
+            <CompanyManagementPage />
           </ProtectedRoute>
         }
       />
