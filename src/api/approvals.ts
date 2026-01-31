@@ -41,7 +41,7 @@ export const getApprovalDetail = async (id: number): Promise<ApprovalDetail> => 
 
 export const processApproval = async (
   id: number,
-  data: { decision: 'APPROVED' | 'REJECTED'; comment?: string }
+  data: { decision: 'APPROVED' | 'REJECTED'; comment?: string; rejectReason?: string }
 ): Promise<void> => {
   await apiClient.patch(`/v1/approvals/${id}`, data);
 };

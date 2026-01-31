@@ -32,7 +32,7 @@ export const useProcessApproval = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { decision: 'APPROVED' | 'REJECTED'; comment?: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { decision: 'APPROVED' | 'REJECTED'; comment?: string; rejectReason?: string } }) =>
       approvalsApi.processApproval(id, data),
     onSuccess: () => {
       toast.success('결재 처리가 완료되었습니다.');
