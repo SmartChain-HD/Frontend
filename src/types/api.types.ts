@@ -48,6 +48,9 @@ export interface PagedData<T> {
 /** 역할 코드 */
 export type RoleCode = 'GUEST' | 'DRAFTER' | 'APPROVER' | 'REVIEWER';
 
+/** 도메인 코드 */
+export type DomainCode = 'ESG' | 'SAFETY' | 'COMPLIANCE';
+
 /** 권한 요청 상태 */
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -220,7 +223,9 @@ export interface EmailVerificationResponse {
 // --- 권한 요청 페이지 정보 ---
 export interface RoleRequestPageResponse {
   currentRole: RoleSimpleDto;
+  currentDomainRoles: UserDomainRole[];
   availableRoles: RoleOptionDto[];
+  availableDomains: DomainOptionDto[];
   availableCompanies: CompanyOptionDto[];
   pendingRequest?: RoleRequestStatusDto;
 }
@@ -239,9 +244,24 @@ export interface CompanyOptionDto {
   companyType: string;
 }
 
+/** 도메인 옵션 DTO */
+export interface DomainOptionDto {
+  code: DomainCode;
+  name: string;
+}
+
+/** 사용자 도메인별 역할 */
+export interface UserDomainRole {
+  domainCode: DomainCode;
+  domainName: string;
+  roleCode: RoleCode;
+  roleName: string;
+}
+
 // --- 권한 요청 생성 ---
 export interface RoleRequestCreateDto {
   requestedRole: RoleCode;
+  domainCode: DomainCode;
   companyId: number;
   reason?: string;
 }
@@ -393,4 +413,16 @@ export const ROLE_DESCRIPTIONS: Record<Exclude<RoleCode, 'GUEST'>, string> = {
   DRAFTER: 'ESG 자가 진단 데이터 업로드',
   APPROVER: '회사 정보 관리, ESG 파일 관리, 협력사 권한 관리',
   REVIEWER: '심사, 보고서 발행, 권한 관리',
+};
+
+export const DOMAIN_LABELS: Record<DomainCode, string> = {
+  ESG: 'ESG 실사',
+  SAFETY: '안전보건',
+  COMPLIANCE: '컴플라이언스',
+};
+
+export const DOMAIN_DESCRIPTIONS: Record<DomainCode, string> = {
+  ESG: 'ESG 증빙 자동 파싱 및 AI 리포트 생성',
+  SAFETY: 'AI 기반 현장 안전점검(TBM) 자동 검증',
+  COMPLIANCE: 'LLM 기반 하도급 계약서 자동 검토',
 };

@@ -23,7 +23,10 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
 
   // Duplicates
   U002: { action: 'toast' },
-  R003: { action: 'toast' },
+  R003: { action: 'toast', customMessage: '이미 대기 중인 권한 요청이 있습니다.' },
+
+  // Role errors
+  R004: { action: 'toast', customMessage: '유효하지 않은 역할입니다.' },
 
   // Not found
   U003: { action: 'redirect', redirectTo: '/not-found' },
