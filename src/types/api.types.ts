@@ -154,6 +154,7 @@ export interface UserInfoDto {
   email: string;
   name: string;
   role?: RoleInfoDto;
+  domainRoles?: UserDomainRole[];
   company?: CompanyInfoDto;
 }
 
@@ -261,7 +262,7 @@ export interface UserDomainRole {
 // --- 권한 요청 생성 ---
 export interface RoleRequestCreateDto {
   requestedRole: RoleCode;
-  domainId: DomainCode;
+  domainCode: DomainCode;
   companyId: number;
   reason?: string;
 }
