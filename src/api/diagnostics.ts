@@ -27,6 +27,7 @@ export interface DiagnosticDetail {
 
 export interface DiagnosticCreateRequest {
   title: string;
+  campaignId: number;
   domainCode: string;
   periodStartDate: string;
   periodEndDate: string;

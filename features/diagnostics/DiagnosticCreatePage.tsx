@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateDiagnostic } from '../../src/hooks/useDiagnostics';
+import { useCampaigns } from '../../src/hooks/useCampaigns';
 import { diagnosticCreateSchema, type DiagnosticCreateFormData } from '../../src/validation/diagnostic';
 import type { DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
@@ -17,6 +17,7 @@ const DOMAIN_OPTIONS: { value: DomainCode; label: string }[] = [
 export default function DiagnosticCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateDiagnostic();
+  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
 
   const {
     register,
@@ -26,6 +27,7 @@ export default function DiagnosticCreatePage() {
     resolver: zodResolver(diagnosticCreateSchema),
     defaultValues: {
       title: '',
+      campaignId: undefined,
       domainCode: undefined,
       periodStartDate: '',
       periodEndDate: '',
@@ -75,6 +77,30 @@ export default function DiagnosticCreatePage() {
               />
               {errors.title && (
                 <p className="mt-[4px] font-body-small text-red-500">{errors.title.message}</p>
+              )}
+            </div>
+
+            {/* 캠페인 */}
+            <div>
+              <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
+                캠페인 <span className="text-red-500">*</span>
+              </label>
+              <select
+                {...register('campaignId', { valueAsNumber: true })}
+                className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)] bg-white ${
+                  errors.campaignId ? 'border-red-500' : 'border-[var(--color-border-default)]'
+                }`}
+                disabled={campaignsLoading}
+              >
+                <option value="">캠페인을 선택하세요</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.campaignId} value={campaign.campaignId}>
+                    {campaign.title}
+                  </option>
+                ))}
+              </select>
+              {errors.campaignId && (
+                <p className="mt-[4px] font-body-small text-red-500">{errors.campaignId.message}</p>
               )}
             </div>
 
