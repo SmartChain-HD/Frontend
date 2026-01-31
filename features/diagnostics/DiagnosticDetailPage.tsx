@@ -161,16 +161,22 @@ export default function DiagnosticDetailPage() {
         )}
 
         {/* 액션 버튼 */}
-        {canSubmit && (
-          <div className="flex justify-end gap-[12px]">
+        <div className="flex justify-end gap-[12px]">
+          <button
+            onClick={() => navigate(`/diagnostics/${diagnosticId}/files`)}
+            className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
+          >
+            파일 관리
+          </button>
+          {canSubmit && (
             <button
               onClick={() => setShowSubmitModal(true)}
               className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
             >
               결재자에게 제출
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* 제출 모달 */}

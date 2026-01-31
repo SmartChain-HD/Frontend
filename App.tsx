@@ -22,6 +22,7 @@ import ApprovalDetailPage from './features/approvals/ApprovalDetailPage';
 import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
 import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
+import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 
@@ -119,6 +120,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DiagnosticDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id/files"
+        element={
+          <ProtectedRoute>
+            <DiagnosticFilesPage />
           </ProtectedRoute>
         }
       />
