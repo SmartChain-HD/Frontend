@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router';
 import svgPaths from '../../imports/svg-h10djjhihc';
+import { useLogout } from '../../src/hooks/useAuth';
 
 interface HeaderProps {
   userName: string;
@@ -14,12 +14,10 @@ const roleLabels = {
 };
 
 export default function Header({ userName, userRole }: HeaderProps) {
-  const navigate = useNavigate();
+  const logoutMutation = useLogout();
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    navigate('/login');
+    logoutMutation.mutate();
   };
 
   return (
