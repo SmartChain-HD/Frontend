@@ -4,6 +4,7 @@ import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviewsDashboard, useReviews } from '../../src/hooks/useReviews';
+import { useNotifications, useMarkAsRead } from '../../src/hooks/useNotifications';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
 
 interface HomePageProps {
@@ -103,43 +104,110 @@ function ErrorState({ message, onRetry }: { message: string; onRetry?: () => voi
   );
 }
 
+// Format time helper for notification feed
+function formatNotificationTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  const diffHour = Math.floor(diffMs / 3_600_000);
+  const diffDay = Math.floor(diffMs / 86_400_000);
+
+  if (diffMin < 1) return '방금 전';
+  if (diffMin < 60) return `${diffMin}분 전`;
+  if (diffHour < 24) return `${diffHour}시간 전`;
+  if (diffDay < 7) return `${diffDay}일 전`;
+  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
 // Notification Feed Component
 function NotificationFeed() {
-  const notifications = [
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-    { time: '10:15 AM', message: '[A협력사] 안전교육 미이수 인원 (3명) 확인' },
-  ];
+  const navigate = useNavigate();
+  const { data, isLoading, isError } = useNotifications({ page: 0, size: 10 });
+  const markAsReadMutation = useMarkAsRead();
+  const notifications = data?.content || [];
+
+  const handleClickNotification = (notificationId: number, read: boolean, link?: string) => {
+    if (!read) {
+      markAsReadMutation.mutate([notificationId]);
+    }
+    if (link) {
+      navigate(link);
+    }
+  };
+
+  const handleViewAll = () => {
+    navigate('/notifications');
+  };
 
   return (
     <div className="bg-white rounded-[20px] p-[44px] h-[555px] overflow-auto">
-      <p className="font-title-large text-[#212529] mb-[32px]">
-        실시간 알림 피드
-      </p>
-      <div className="relative">
-        {notifications.map((notif, index) => (
-          <div key={index} className="relative mb-[32px] pl-[28px]">
-            {/* Timeline dot */}
-            <div className="absolute left-0 top-[2px] w-[16px] h-[16px]">
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
-                <circle cx="8" cy="8" r="5" fill="#DC2626" />
-              </svg>
-            </div>
-            {/* Timeline line */}
-            {index < notifications.length - 1 && (
-              <div className="absolute left-[7.5px] top-[18px] w-[1px] h-[32px] bg-[#ADB5BD]" />
-            )}
-            {/* Content */}
-            <div>
-              <p className="font-body-small text-[#adb5bd] mb-[8px]">{notif.time}</p>
-              <p className="font-body-medium text-[#212529]">{notif.message}</p>
-            </div>
-          </div>
-        ))}
+      <div className="flex items-center justify-between mb-[32px]">
+        <p className="font-title-large text-[#212529]">
+          실시간 알림 피드
+        </p>
+        <button
+          onClick={handleViewAll}
+          className="font-detail-medium text-[var(--color-primary-main)] hover:underline"
+        >
+          전체보기
+        </button>
       </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-[60px]">
+          <div className="w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {isError && (
+        <div className="text-center py-[60px]">
+          <p className="font-body-medium text-[var(--color-state-error-text)]">
+            알림을 불러오는 데 실패했습니다.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !isError && notifications.length === 0 && (
+        <div className="text-center py-[60px]">
+          <p className="font-body-medium text-[var(--color-text-tertiary)]">
+            알림이 없습니다.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !isError && notifications.length > 0 && (
+        <div className="relative">
+          {notifications.map((notif, index) => (
+            <div
+              key={notif.notificationId}
+              onClick={() => handleClickNotification(notif.notificationId, notif.read, notif.link)}
+              className={`relative mb-[32px] pl-[28px] cursor-pointer ${notif.link ? 'hover:opacity-80' : ''}`}
+            >
+              {/* Timeline dot */}
+              <div className="absolute left-0 top-[2px] w-[16px] h-[16px]">
+                <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
+                  <circle cx="8" cy="8" r="5" fill={notif.read ? '#ADB5BD' : '#DC2626'} />
+                </svg>
+              </div>
+              {/* Timeline line */}
+              {index < notifications.length - 1 && (
+                <div className="absolute left-[7.5px] top-[18px] w-[1px] h-[32px] bg-[#ADB5BD]" />
+              )}
+              {/* Content */}
+              <div>
+                <p className="font-body-small text-[#adb5bd] mb-[8px]">{formatNotificationTime(notif.createdAt)}</p>
+                <p className={`font-title-xsmall mb-[4px] ${notif.read ? 'text-[#495057]' : 'text-[#212529]'}`}>
+                  {notif.title}
+                </p>
+                <p className={`font-body-medium ${notif.read ? 'text-[#868e96]' : 'text-[#212529]'}`}>
+                  {notif.message}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
