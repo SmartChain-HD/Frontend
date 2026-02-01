@@ -18,6 +18,15 @@ export default function PermissionRequestPage() {
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
   const companies = pageData?.availableCompanies || [];
+
+  // 결재자 역할은 ESG 도메인에서만 선택 가능
+  const handleDomainChange = (domain: DomainCode) => {
+    setSelectedDomain(domain);
+    // ESG가 아닌 도메인으로 변경 시 결재자가 선택되어 있으면 기안자로 변경
+    if (domain !== 'ESG' && selectedRole === 'APPROVER') {
+      setSelectedRole('DRAFTER');
+    }
+  };
   const selectedCompany = companies.find((c) => c.companyId === selectedCompanyId);
 
   const handleSubmit = () => {
@@ -119,7 +128,8 @@ export default function PermissionRequestPage() {
                             </div>
                         </div>
 
-                        {/* Approver Card */}
+                        {/* Approver Card - ESG 도메인에서만 노출 */}
+                        {selectedDomain === 'ESG' && (
                         <div
                             onClick={() => setSelectedRole('APPROVER')}
                             className={`cursor-pointer w-[240px] h-[240px] rounded-[20px] p-[12px] flex flex-col relative border transition-all ${
@@ -144,6 +154,7 @@ export default function PermissionRequestPage() {
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
                 </div>
 
@@ -154,7 +165,7 @@ export default function PermissionRequestPage() {
                         <div className="flex gap-[16px]">
                             {/* ESG Card */}
                             <div
-                                onClick={() => setSelectedDomain('ESG')}
+                                onClick={() => handleDomainChange('ESG')}
                                 className={`cursor-pointer w-[180px] h-[140px] rounded-[16px] p-[12px] flex flex-col items-center justify-center gap-[8px] border transition-all ${
                                     selectedDomain === 'ESG'
                                     ? 'bg-[#ecfdf5] border-[#10b981]'
@@ -168,7 +179,7 @@ export default function PermissionRequestPage() {
 
                             {/* Safety Card */}
                             <div
-                                onClick={() => setSelectedDomain('SAFETY')}
+                                onClick={() => handleDomainChange('SAFETY')}
                                 className={`cursor-pointer w-[180px] h-[140px] rounded-[16px] p-[12px] flex flex-col items-center justify-center gap-[8px] border transition-all ${
                                     selectedDomain === 'SAFETY'
                                     ? 'bg-[#fef2f2] border-[#ef4444]'
@@ -182,7 +193,7 @@ export default function PermissionRequestPage() {
 
                             {/* Compliance Card */}
                             <div
-                                onClick={() => setSelectedDomain('COMPLIANCE')}
+                                onClick={() => handleDomainChange('COMPLIANCE')}
                                 className={`cursor-pointer w-[180px] h-[140px] rounded-[16px] p-[12px] flex flex-col items-center justify-center gap-[8px] border transition-all ${
                                     selectedDomain === 'COMPLIANCE'
                                     ? 'bg-[#eff6ff] border-[#3b82f6]'
