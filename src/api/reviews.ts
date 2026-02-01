@@ -11,15 +11,39 @@ export interface ReviewDashboardResponse {
 
 export interface ReviewListItem {
   reviewId: number;
-  diagnosticId: number;
-  title: string;
+  reviewIdLabel: string;
+  diagnostic: {
+    diagnosticId: number;
+    diagnosticCode: string;
+  };
+  company: {
+    companyId: number;
+    companyName: string;
+    companyType: string;
+  };
   domainCode: string;
-  companyName: string;
-  drafterName: string;
-  submittedAt: string;
-  status: ReviewStatus;
+  domainName: string;
+  score: number | null;
   riskLevel?: RiskLevel;
-  score?: number;
+  riskLevelLabel?: string;
+  riskColorClass?: string;
+  status: ReviewStatus;
+  statusLabel: string;
+  submittedAt: string;
+  files: {
+    diagnosticPdfUrl: string | null;
+    dataPackageUrl: string | null;
+    modificationLogUrl: string | null;
+    aiReportUrl: string | null;
+    hasDiagnosticPdf: boolean;
+    hasDataPackage: boolean;
+    hasModificationLog: boolean;
+    hasAiReport: boolean;
+  };
+  assignedTo: {
+    userId: number;
+    name: string;
+  };
 }
 
 export interface ReviewDetail extends ReviewListItem {

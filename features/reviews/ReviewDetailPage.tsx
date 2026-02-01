@@ -116,7 +116,7 @@ export default function ReviewDetailPage() {
 
         {/* 제목 + 상태 */}
         <div className="flex items-start justify-between gap-[16px]">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">{review.title}</h1>
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">{review.reviewIdLabel || `R-${review.reviewId}`}</h1>
           <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[review.status]}`}>
             {STATUS_LABELS[review.status]}
           </span>
@@ -125,9 +125,9 @@ export default function ReviewDetailPage() {
         {/* 기본 정보 */}
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
           <div className="grid grid-cols-2 gap-[20px]">
-            <InfoRow label="도메인" value={DOMAIN_LABELS[review.domainCode as DomainCode] || review.domainCode} />
-            <InfoRow label="회사명" value={review.companyName} />
-            <InfoRow label="기안자" value={review.drafterName} />
+            <InfoRow label="도메인" value={review.domainName || DOMAIN_LABELS[review.domainCode as DomainCode] || review.domainCode} />
+            <InfoRow label="회사명" value={review.company?.companyName || '-'} />
+            <InfoRow label="진단코드" value={review.diagnostic?.diagnosticCode || '-'} />
             <InfoRow label="제출일" value={new Date(review.submittedAt).toLocaleDateString('ko-KR')} />
             {risk && <InfoRow label="위험 등급" value={risk.label} valueClassName={risk.style} />}
             {review.score != null && <InfoRow label="점수" value={String(review.score)} />}

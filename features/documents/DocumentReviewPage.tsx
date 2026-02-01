@@ -149,7 +149,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 <div className="flex items-center gap-[8px]">
                   <span className="font-body-small text-[#868e96]">협력사:</span>
                   <span className="font-title-small text-[#212529]">
-                    {review.companyName}
+                    {review.company?.companyName || '-'}
                   </span>
                 </div>
                 <div className="w-[1px] h-[16px] bg-[#dee2e6]"></div>
@@ -161,7 +161,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 </div>
               </div>
               <p className="font-body-small text-[#868e96] mt-[8px]">
-                Ref: {review.title}
+                Ref: {review.reviewIdLabel || review.diagnostic?.diagnosticCode || '-'}
               </p>
             </div>
           </div>

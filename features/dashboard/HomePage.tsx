@@ -376,10 +376,10 @@ export default function HomePage({ userRole }: HomePageProps) {
           onClick={() => handleReviewClick(item.reviewId, item.domainCode)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.companyName || '-'}
+            {item.company?.companyName || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {item.title}
+            {item.domainName || item.domainCode}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {formatDate(item.submittedAt)}

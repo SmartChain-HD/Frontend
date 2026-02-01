@@ -225,13 +225,13 @@ export default function ReviewsListPage() {
                     className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]"
                     onClick={() => navigate(`/reviews/${item.reviewId}`)}
                   >
-                    {item.title}
+                    {item.reviewIdLabel || `R-${item.reviewId}`}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
-                    {DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
+                    {item.domainName || DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
-                    {item.companyName}
+                    {item.company?.companyName || '-'}
                   </td>
                   <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
                     {item.riskLevel ? (
