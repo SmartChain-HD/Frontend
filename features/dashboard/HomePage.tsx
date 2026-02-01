@@ -250,6 +250,10 @@ export default function HomePage({ userRole }: HomePageProps) {
     navigate(`/diagnostics/${id}`);
   };
 
+  const handleApprovalClick = (id: number) => {
+    navigate(`/approvals/${id}`);
+  };
+
   const handleReviewClick = (id: number, domain: string) => {
     const domainPath = domain.toLowerCase();
     navigate(`/dashboard/${domainPath}/review/${id}`);
@@ -331,22 +335,22 @@ export default function HomePage({ userRole }: HomePageProps) {
         <tr
           key={item.approvalId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleReviewClick(item.approvalId, item.domainCode)}
+          onClick={() => handleApprovalClick(item.approvalId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.companyName || '-'}
+            {item.requester?.name || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {item.title}
+            {item.diagnostic?.title || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {formatDate(item.submittedAt)}
+            {formatDate(item.requestedAt)}
           </td>
           <td className="py-[16px] px-[16px] text-center">
             <span
               className={`inline-block px-[12px] py-[4px] rounded-[6px] font-title-xsmall ${approvalStatusColors[item.status]}`}
             >
-              {approvalStatusLabels[item.status]}
+              {item.statusLabel || approvalStatusLabels[item.status]}
             </span>
           </td>
         </tr>

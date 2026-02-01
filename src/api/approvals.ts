@@ -3,19 +3,28 @@ import type { BaseResponse, PagedData, ApprovalStatus } from '../types/api.types
 
 export interface ApprovalListItem {
   approvalId: number;
-  diagnosticId: number;
-  title: string;
+  diagnostic: {
+    diagnosticId: number;
+    diagnosticCode: string;
+    title: string;
+    qualitativeProgress: number;
+    quantitativeProgress: number;
+    overallScore: number | null;
+  };
+  requester: {
+    userId: number;
+    name: string;
+    email: string;
+  };
   domainCode: string;
-  companyName: string;
-  drafterName: string;
-  submittedAt: string;
+  domainName: string;
   status: ApprovalStatus;
-}
-
-export interface ApprovalDetail extends ApprovalListItem {
-  riskLevel?: string;
-  aiVerdict?: string;
-  comment?: string;
+  statusLabel: string;
+  requestComment: string | null;
+  requestedAt: string;
+  processedAt: string | null;
+  processedBy: string | null;
+  approverComment: string | null;
 }
 
 interface ApprovalListParams {
@@ -34,8 +43,8 @@ export const getApprovals = async (
   return response.data.data;
 };
 
-export const getApprovalDetail = async (id: number): Promise<ApprovalDetail> => {
-  const response = await apiClient.get<BaseResponse<ApprovalDetail>>(`/v1/approvals/${id}`);
+export const getApprovalDetail = async (id: number): Promise<ApprovalListItem> => {
+  const response = await apiClient.get<BaseResponse<ApprovalListItem>>(`/v1/approvals/${id}`);
   return response.data.data;
 };
 
