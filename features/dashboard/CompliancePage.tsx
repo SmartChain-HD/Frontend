@@ -257,16 +257,16 @@ export default function CompliancePage({ userRole }: CompliancePageProps) {
               <thead>
                 <tr className="border-b border-[#dee2e6]">
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    협력사 명
+                    {userRole === 'approver' ? '기안자' : '협력사 명'}
                   </th>
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    기간
+                    {userRole === 'approver' ? '진단명' : userRole === 'drafter' ? '캠페인' : '기간'}
                   </th>
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    제출일
+                    {userRole === 'approver' ? '요청일' : '제출일'}
                   </th>
                   <th className="text-center py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    결과
+                    상태
                   </th>
                 </tr>
               </thead>
