@@ -27,6 +27,7 @@ export interface ParsingResultResponse {
 
 export interface UploadOptions {
   onUploadProgress?: (progress: number) => void;
+  signal?: AbortSignal;
 }
 
 export const uploadFile = async (
@@ -43,6 +44,7 @@ export const uploadFile = async (
     {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 300000,
+      signal: options?.signal,
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total && options?.onUploadProgress) {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);

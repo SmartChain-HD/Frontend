@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +19,14 @@ export default function DiagnosticCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateDiagnostic();
   const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      createMutation.reset();
+    };
+  }, []);
 
   const {
     register,
@@ -37,6 +46,7 @@ export default function DiagnosticCreatePage() {
   const onSubmit = async (data: DiagnosticCreateFormData) => {
     createMutation.mutate(data, {
       onSuccess: (result) => {
+        if (!isMountedRef.current) return;
         const domainPath = data.domainCode.toLowerCase();
         navigate(`/dashboard/${domainPath}/upload?diagnosticId=${result.diagnosticId}`);
       },
