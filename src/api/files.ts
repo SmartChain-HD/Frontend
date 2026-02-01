@@ -25,9 +25,14 @@ export interface ParsingResultResponse {
   extractedText?: string;
 }
 
+export interface UploadOptions {
+  onUploadProgress?: (progress: number) => void;
+}
+
 export const uploadFile = async (
   diagnosticId: number,
-  file: File
+  file: File,
+  options?: UploadOptions
 ): Promise<UploadFileResponse> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -37,7 +42,13 @@ export const uploadFile = async (
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 60000,
+      timeout: 300000,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && options?.onUploadProgress) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          options.onUploadProgress(percentCompleted);
+        }
+      },
     }
   );
   return response.data.data;
