@@ -1,61 +1,64 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-import { AlertCircle, FileText, Image as ImageIcon, ArrowLeft, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, X } from 'lucide-react';
+import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
 
 interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
 }
 
-interface FileAnalysis {
-  fileName: string;
-  type: 'pdf' | 'image';
-  aiResult: 'pass' | 'need_fix' | 'fail';
-  resultLabel: string;
-  issues: string;
+const riskLevelLabels: Record<string, string> = {
+  HIGH: '고위험 (HIGH)',
+  MEDIUM: '중위험 (MEDIUM)',
+  LOW: '저위험 (LOW)',
+};
+
+const riskLevelColors: Record<string, string> = {
+  HIGH: 'bg-[#dc2626]',
+  MEDIUM: 'bg-[#e65100]',
+  LOW: 'bg-[#008233]',
+};
+
+const aiVerdictLabels: Record<string, string> = {
+  PASS: '적합 (PASS)',
+  NEED_FIX: '보완 필요 (NEED FIX)',
+  FAIL: '부적합 (FAIL)',
+};
+
+const aiVerdictBadgeColors: Record<string, string> = {
+  PASS: 'bg-[#f0fdf4] text-[#008233]',
+  NEED_FIX: 'bg-[#fff3e0] text-[#e65100]',
+  FAIL: 'bg-[#fef2f2] text-[#b91c1c]',
+};
+
+const aiVerdictEmoji: Record<string, string> = {
+  PASS: '🟢',
+  NEED_FIX: '⚠️',
+  FAIL: '🔴',
+};
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}년 ${month}월 ${day}일`;
 }
 
-const mockData = {
-  period: '2026년 01월',
-  refNumber: 'PKG_VENDOR123_SITE1_2026-01',
-  companyName: '(주)ABC건설',
-  submittedDate: '2026년 01월 09일',
-  riskLevel: 'high',
-  riskLabel: '고위험 (HIGH)',
-  aiEvaluation: 'need_fix',
-  aiLabel: '보완 필요 (NEED FIX)',
-  keyIssue: '필수 항목 누락 + 재출된 문서에서 핵심 정보 확인 필요',
-  files: [
-    {
-      fileName: 'TBM 활동 일지 (safety.tbm)',
-      type: 'pdf' as const,
-      aiResult: 'need_fix' as const,
-      resultLabel: '결함 발견 (NEED_FIX)',
-      issues: '서명 식별 불가 (SIGNATURE_UNCLEAR)',
-    },
-    {
-      fileName: '소방 점검표 (safety.fire.inspection)',
-      type: 'image' as const,
-      aiResult: 'pass' as const,
-      resultLabel: '적합 (PASS)',
-      issues: '특이사항 없음 (No Issues)',
-    },
-  ],
-};
-
-const fileTypeIcons = {
-  pdf: FileText,
-  image: ImageIcon,
-};
-
-const aiResultColors = {
-  pass: 'text-[#008233] bg-[#f0fdf4]',
-  need_fix: 'text-[#e65100] bg-[#fff3e0]',
-  fail: 'text-[#b91c1c] bg-[#fef2f2]',
-};
+function formatPeriod(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월`;
+}
 
 export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps) {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const reviewId = Number(id) || 0;
+
+  const { data: review, isLoading, isError } = useReviewDetail(reviewId);
+  const submitReview = useSubmitReview();
+
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -63,33 +66,72 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
     navigate('/dashboard/safety');
   };
 
-  const handleBackToDashboard = () => {
-    navigate('/dashboard');
-  };
-
   const handleReject = () => {
     setShowRejectModal(true);
   };
 
   const handleApprove = () => {
-    alert('원청 제출이 완료되었습니다.');
-    navigate('/dashboard/safety');
+    submitReview.mutate(
+      { id: reviewId, data: { decision: 'APPROVED' } },
+      { onSuccess: () => navigate('/dashboard/safety') }
+    );
   };
 
   const handleRequestFix = () => {
-    if (!rejectReason.trim()) {
-      alert('사유를 입력해주세요.');
-      return;
-    }
-    alert('보완 요청이 전송되었습니다.');
-    setShowRejectModal(false);
-    navigate('/dashboard/safety');
+    if (!rejectReason.trim()) return;
+    submitReview.mutate(
+      { id: reviewId, data: { decision: 'REVISION_REQUIRED', comment: rejectReason } },
+      {
+        onSuccess: () => {
+          setShowRejectModal(false);
+          navigate('/dashboard/safety');
+        },
+      }
+    );
   };
 
   const handleSubmitToApprover = () => {
-    alert('결재자에게 제출되었습니다.');
-    navigate('/dashboard/safety');
+    submitReview.mutate(
+      { id: reviewId, data: { decision: 'APPROVED' } },
+      { onSuccess: () => navigate('/dashboard/safety') }
+    );
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[400px]">
+          <div className="animate-spin rounded-full h-[32px] w-[32px] border-b-2 border-[#003087]" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isError || !review) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[400px] gap-[16px]">
+          <AlertCircle className="w-[48px] h-[48px] text-[#dc2626]" />
+          <p className="font-title-medium text-[#212529]">데이터를 불러올 수 없습니다.</p>
+          <button
+            onClick={handleBackToList}
+            className="px-[24px] py-[12px] bg-[#6c757d] text-white rounded-[8px] font-title-small hover:bg-[#5a6268] transition-colors"
+          >
+            목록으로 돌아가기
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const riskLevel = review.riskLevel ?? 'MEDIUM';
+  const riskLabel = riskLevelLabels[riskLevel] ?? riskLevel;
+  const riskColor = riskLevelColors[riskLevel] ?? 'bg-[#e65100]';
+  const aiVerdict = review.aiVerdict ?? 'NEED_FIX';
+  const aiLabel = aiVerdictLabels[aiVerdict] ?? aiVerdict;
+  const aiBadgeColor = aiVerdictBadgeColors[aiVerdict] ?? 'bg-[#fff3e0] text-[#e65100]';
+  const aiEmoji = aiVerdictEmoji[aiVerdict] ?? '⚠️';
+  const isMutating = submitReview.isPending;
 
   return (
     <DashboardLayout>
@@ -100,102 +142,49 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
             <div>
               <div className="flex items-center gap-[16px] mb-[8px]">
                 <h1 className="font-heading-medium text-[#212529]">
-                  {mockData.period} 제출 결과 조회
+                  {formatPeriod(review.submittedAt)} 제출 결과 조회
                 </h1>
               </div>
               <div className="flex items-center gap-[16px]">
                 <div className="flex items-center gap-[8px]">
                   <span className="font-body-small text-[#868e96]">협력사:</span>
                   <span className="font-title-small text-[#212529]">
-                    {mockData.companyName}
+                    {review.companyName}
                   </span>
                 </div>
                 <div className="w-[1px] h-[16px] bg-[#dee2e6]"></div>
                 <div className="flex items-center gap-[8px]">
                   <span className="font-body-small text-[#868e96]">제출일:</span>
                   <span className="font-title-small text-[#212529]">
-                    {mockData.submittedDate}
+                    {formatDate(review.submittedAt)}
                   </span>
                 </div>
               </div>
               <p className="font-body-small text-[#868e96] mt-[8px]">
-                Ref: {mockData.refNumber}
+                Ref: {review.title}
               </p>
             </div>
           </div>
 
           {/* Risk Alert Box */}
-          <div className="bg-[#dc2626] rounded-[16px] p-[32px] mb-[32px]">
+          <div className={`${riskColor} rounded-[16px] p-[32px] mb-[32px]`}>
             <div className="flex items-start gap-[16px]">
               <AlertCircle className="w-[32px] h-[32px] text-white flex-shrink-0 mt-[4px]" />
               <div className="flex-1">
                 <div className="flex items-center gap-[12px] mb-[12px]">
                   <h2 className="font-heading-small text-white">
-                    🔴 {mockData.riskLabel}
+                    🔴 {riskLabel}
                   </h2>
-                  <span className="inline-block px-[12px] py-[6px] bg-[#fff3e0] rounded-[8px] font-title-small text-[#e65100]">
-                    ⚠️ {mockData.aiLabel}
+                  <span className={`inline-block px-[12px] py-[6px] rounded-[8px] font-title-small ${aiBadgeColor}`}>
+                    {aiEmoji} {aiLabel}
                   </span>
                 </div>
-                <p className="font-body-medium text-white">
-                  Key 이슈: {mockData.keyIssue}
-                </p>
+                {review.whySummary && (
+                  <p className="font-body-medium text-white">
+                    Key 이슈: {review.whySummary}
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
-
-          {/* Detailed Analysis Section */}
-          <div className="bg-white rounded-[20px] p-[44px] mb-[24px]">
-            <h2 className="font-title-large text-[#212529] mb-[32px]">
-              항목별 상세 분석 (Detailed Slot Analysis)
-            </h2>
-
-            <div className="grid grid-cols-2 gap-[24px]">
-              {mockData.files.map((file, index) => {
-                const Icon = fileTypeIcons[file.type];
-                return (
-                  <div
-                    key={index}
-                    className="bg-[#1e293b] rounded-[12px] p-[24px] border border-[#334155]"
-                  >
-                    <div className="flex items-start gap-[16px] mb-[16px]">
-                      <Icon className="w-[24px] h-[24px] text-white flex-shrink-0 mt-[2px]" />
-                      <div className="flex-1">
-                        <p className="font-title-small text-white mb-[8px]">
-                          {file.fileName}
-                        </p>
-                        <div className="flex items-center gap-[8px]">
-                          <div
-                            className={`w-[12px] h-[12px] rounded-full ${
-                              file.aiResult === 'pass'
-                                ? 'bg-[#00ad1d]'
-                                : file.aiResult === 'need_fix'
-                                ? 'bg-[#e65100]'
-                                : 'bg-[#dc2626]'
-                            }`}
-                          />
-                          <span
-                            className={`font-title-xsmall ${
-                              file.aiResult === 'pass'
-                                ? 'text-[#00ad1d]'
-                                : file.aiResult === 'need_fix'
-                                ? 'text-[#e65100]'
-                                : 'text-[#dc2626]'
-                            }`}
-                          >
-                            {file.resultLabel}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="border-t border-[#334155] pt-[16px]">
-                      <p className="font-body-small text-[#94a3b8]">
-                        {file.issues}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
 
@@ -212,7 +201,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 </button>
                 <button
                   onClick={handleSubmitToApprover}
-                  className="px-[32px] py-[14px] bg-[#003087] text-white rounded-[8px] font-title-small hover:bg-[#002554] transition-colors"
+                  disabled={isMutating}
+                  className="px-[32px] py-[14px] bg-[#003087] text-white rounded-[8px] font-title-small hover:bg-[#002554] transition-colors disabled:opacity-50"
                 >
                   결재자에게 제출 (Submit to Approver)
                 </button>
@@ -236,7 +226,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 </button>
                 <button
                   onClick={handleApprove}
-                  className="px-[32px] py-[14px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors"
+                  disabled={isMutating}
+                  className="px-[32px] py-[14px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
                 >
                   원청 제출 (Submit to Client)
                 </button>
@@ -294,7 +285,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
               </button>
               <button
                 onClick={handleRequestFix}
-                className="px-[24px] py-[12px] bg-[#dc2626] text-white rounded-[8px] font-title-small hover:bg-[#b91c1c] transition-colors"
+                disabled={isMutating || !rejectReason.trim()}
+                className="px-[24px] py-[12px] bg-[#dc2626] text-white rounded-[8px] font-title-small hover:bg-[#b91c1c] transition-colors disabled:opacity-50"
               >
                 보완 요청 전송
               </button>
