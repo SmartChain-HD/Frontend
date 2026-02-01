@@ -9,6 +9,7 @@ import type { ErrorResponse, DiagnosticStatus } from '../types/api.types';
 interface DiagnosticsListParams {
   domainCode?: string;
   status?: DiagnosticStatus;
+  keyword?: string;
   page?: number;
   size?: number;
 }
