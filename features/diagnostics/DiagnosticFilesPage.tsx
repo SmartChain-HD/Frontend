@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useParsingResult, useDeleteFile } from '../../src/hooks/useFiles';
@@ -229,6 +229,13 @@ export default function DiagnosticFilesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   // Job polling for files in processing state
   const processingFile = uploadedFiles.find(f => f.uploadStatus === 'processing');
@@ -302,7 +309,10 @@ export default function DiagnosticFilesPage() {
       ]);
 
       try {
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
         const result = await filesApi.uploadFile(diagnosticId, file, {
+          signal: controller.signal,
           onUploadProgress: (progress) => {
             setUploadedFiles(prev =>
               prev.map(f => f.id === tempId
