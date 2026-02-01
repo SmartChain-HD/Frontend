@@ -1,26 +1,40 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-
-interface SidebarProps {
-  userRole: 'receiver' | 'drafter' | 'approver';
-}
+import { useAuthStore } from '../../src/store/authStore';
+import type { DomainCode } from '../../src/types/api.types';
 
 interface MenuItem {
   label: string;
   path: string;
+  domainCode?: DomainCode;
 }
 
-export default function Sidebar({ userRole }: SidebarProps) {
+const DOMAIN_MENU_ITEMS: MenuItem[] = [
+  { label: '안전보건', path: '/dashboard/safety', domainCode: 'SAFETY' },
+  { label: '컴플라이언스', path: '/dashboard/compliance', domainCode: 'COMPLIANCE' },
+  { label: 'ESG', path: '/dashboard/esg', domainCode: 'ESG' },
+];
+
+export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, isGuest, getAccessibleDomains } = useAuthStore();
 
-  const menuItems: MenuItem[] = [
-    { label: '홈', path: '/dashboard' },
-    { label: '안전보건', path: '/dashboard/safety' },
-    { label: '컴플라이언스', path: '/dashboard/compliance' },
-    { label: 'ESG', path: '/dashboard/esg' },
-  ];
+  const isUserGuest = isGuest();
+  const accessibleDomains = getAccessibleDomains();
 
-  if (userRole === 'receiver') {
+  if (isUserGuest) {
+    return null;
+  }
+
+  const menuItems: MenuItem[] = [{ label: '홈', path: '/dashboard' }];
+
+  DOMAIN_MENU_ITEMS.forEach((item) => {
+    if (item.domainCode && accessibleDomains.includes(item.domainCode)) {
+      menuItems.push(item);
+    }
+  });
+
+  if (user?.role?.code === 'REVIEWER') {
     menuItems.push({ label: '권한 관리', path: '/dashboard/permission' });
   }
 

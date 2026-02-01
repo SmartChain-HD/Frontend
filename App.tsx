@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { useAuthStore } from './src/store/authStore';
 import { useMe } from './src/hooks/useAuth';
+import type { DomainCode } from './src/types/api.types';
 import OnboardingPage from './features/onboarding/OnboardingPage';
 import LoginPage from './features/auth/LoginPage';
 import SignupStep1Page from './features/auth/SignupStep1Page';
@@ -53,6 +54,43 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function MemberRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isGuest } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isGuest()) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+interface DomainProtectedRouteProps {
+  children: React.ReactNode;
+  domainCode: DomainCode;
+}
+
+function DomainProtectedRoute({ children, domainCode }: DomainProtectedRouteProps) {
+  const { isAuthenticated, isGuest, hasDomainAccess } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isGuest()) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  if (!hasDomainAccess(domainCode)) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   const { user } = useAuthStore();
 
@@ -96,9 +134,9 @@ function AppRoutes() {
       <Route
         path="/dashboard/permission"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <PermissionManagementPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
@@ -106,25 +144,25 @@ function AppRoutes() {
       <Route
         path="/management/users"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <UserManagementPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/management/companies"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <CompanyManagementPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/management/activity-logs"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <ActivityLogPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
@@ -132,41 +170,41 @@ function AppRoutes() {
       <Route
         path="/diagnostics"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <DiagnosticsListPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/diagnostics/new"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <DiagnosticCreatePage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/diagnostics/:id"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <DiagnosticDetailPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/diagnostics/:id/files"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <DiagnosticFilesPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/diagnostics/:id/ai-analysis"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <DiagnosticAiAnalysisPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
@@ -174,17 +212,17 @@ function AppRoutes() {
       <Route
         path="/approvals"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <ApprovalsListPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/approvals/:id"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <ApprovalDetailPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
@@ -192,17 +230,17 @@ function AppRoutes() {
       <Route
         path="/reviews"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <ReviewsListPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/reviews/:id"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <ReviewDetailPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
@@ -210,93 +248,97 @@ function AppRoutes() {
       <Route
         path="/notifications"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <NotificationsPage />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
 
-      {/* Protected Routes */}
+      {/* Dashboard Routes */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <MemberRoute>
             <HomePage userRole={legacyRole} />
-          </ProtectedRoute>
+          </MemberRoute>
         }
       />
       <Route
         path="/dashboard/safety"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="SAFETY">
             <SafetyPage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
       <Route
         path="/dashboard/compliance"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="COMPLIANCE">
             <CompliancePage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
       <Route
         path="/dashboard/esg"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="ESG">
             <ESGPage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
 
-      {/* Document Routes */}
+      {/* Document Routes - Safety */}
       <Route
         path="/dashboard/safety/upload"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="SAFETY">
             <FileUploadPage />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
       <Route
         path="/dashboard/safety/review/:id"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="SAFETY">
             <DocumentReviewPage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
+
+      {/* Document Routes - Compliance */}
       <Route
         path="/dashboard/compliance/upload"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="COMPLIANCE">
             <FileUploadPage />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
       <Route
         path="/dashboard/compliance/review/:id"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="COMPLIANCE">
             <DocumentReviewPage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
+
+      {/* Document Routes - ESG */}
       <Route
         path="/dashboard/esg/upload"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="ESG">
             <FileUploadPage />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
       <Route
         path="/dashboard/esg/review/:id"
         element={
-          <ProtectedRoute>
+          <DomainProtectedRoute domainCode="ESG">
             <DocumentReviewPage userRole={legacyRole} />
-          </ProtectedRoute>
+          </DomainProtectedRoute>
         }
       />
 

@@ -1,11 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserInfoDto } from '../types/api.types';
+import type { UserInfoDto, DomainCode, UserDomainRole } from '../types/api.types';
 
-export interface UserDomainRole {
-  domainCode: 'ESG' | 'SAFETY' | 'COMPLIANCE';
-  roleCode: 'DRAFTER' | 'APPROVER' | 'REVIEWER';
-}
+export type { UserDomainRole };
 
 export interface AuthUser extends UserInfoDto {
   domainRoles?: UserDomainRole[];
@@ -19,6 +16,9 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: AuthUser) => void;
   logout: () => void;
+  isGuest: () => boolean;
+  hasDomainAccess: (domainCode: DomainCode) => boolean;
+  getAccessibleDomains: () => DomainCode[];
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,6 +41,28 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
         }),
+
+      isGuest: () => {
+        const state = useAuthStore.getState();
+        if (!state.user?.role) return true;
+        return state.user.role.code === 'GUEST';
+      },
+
+      hasDomainAccess: (domainCode: DomainCode) => {
+        const state = useAuthStore.getState();
+        if (!state.user?.domainRoles || state.user.domainRoles.length === 0) {
+          return false;
+        }
+        return state.user.domainRoles.some((dr) => dr.domainCode === domainCode);
+      },
+
+      getAccessibleDomains: () => {
+        const state = useAuthStore.getState();
+        if (!state.user?.domainRoles || state.user.domainRoles.length === 0) {
+          return [];
+        }
+        return state.user.domainRoles.map((dr) => dr.domainCode);
+      },
     }),
     {
       name: 'auth-storage',

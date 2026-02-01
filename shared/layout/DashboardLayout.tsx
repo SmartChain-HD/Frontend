@@ -9,7 +9,7 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user } = useAuthStore();
+  const { user, isGuest } = useAuthStore();
 
   const userRole = (() => {
     if (!user?.role) return 'drafter' as const;
@@ -20,12 +20,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   })();
 
   const userName = user?.name || '사용자';
+  const isUserGuest = isGuest();
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen flex flex-col">
       <Header userName={userName} userRole={userRole} />
       <div className="flex flex-1 relative">
-        <Sidebar userRole={userRole} />
+        {!isUserGuest && <Sidebar />}
         <div className="flex-1 min-w-0">
           {children}
         </div>
