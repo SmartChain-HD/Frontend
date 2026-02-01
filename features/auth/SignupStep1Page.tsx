@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Logo } from '../../shared/components/Logo';
 import { Checkbox, RadioButton } from '../../shared/components/FormControls';
+import { Button } from '../../shared/components/Button';
 
 export default function SignupStep1Page() {
   const navigate = useNavigate();
@@ -114,14 +115,26 @@ export default function SignupStep1Page() {
                       <div aria-hidden="true" className="absolute border border-[var(--color-primary-border)] border-solid inset-0 pointer-events-none rounded-[24px]" />
                     </div>
 
-                    {/* Next Button */}
+                    {/* Navigation Buttons */}
                     <div className="flex justify-end w-full mt-4">
-                      <button
-                        onClick={handleNext}
-                        className="bg-[var(--color-primary-main)] text-white font-body-large px-10 py-4 rounded-[var(--radius-default)] hover:bg-[var(--color-primary-dark)] transition-colors"
-                      >
-                        다음
-                      </button>
+                      <div className="flex gap-[12px]">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="large"
+                          onClick={() => navigate('/login')}
+                        >
+                          이전
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="large"
+                          onClick={handleNext}
+                        >
+                          다음
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
