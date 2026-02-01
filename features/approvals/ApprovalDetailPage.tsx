@@ -17,11 +17,6 @@ const STATUS_STYLES: Record<ApprovalStatus, string> = {
   REJECTED: 'bg-red-50 text-red-700 border-red-200',
 };
 
-const RISK_LABELS: Record<string, { label: string; style: string }> = {
-  LOW: { label: '낮음', style: 'text-green-600' },
-  MEDIUM: { label: '보통', style: 'text-yellow-600' },
-  HIGH: { label: '높음', style: 'text-red-600' },
-};
 
 export default function ApprovalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +86,6 @@ export default function ApprovalDetailPage() {
 
   const isWaiting = approval.status === 'WAITING';
   const isApproved = approval.status === 'APPROVED';
-  const risk = approval.riskLevel ? RISK_LABELS[approval.riskLevel] : null;
 
   return (
     <DashboardLayout>
@@ -109,31 +103,36 @@ export default function ApprovalDetailPage() {
 
         {/* 제목 + 상태 */}
         <div className="flex items-start justify-between gap-[16px]">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">{approval.title}</h1>
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">{approval.diagnostic?.title || '-'}</h1>
           <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[approval.status]}`}>
-            {STATUS_LABELS[approval.status]}
+            {approval.statusLabel || STATUS_LABELS[approval.status]}
           </span>
         </div>
 
         {/* 기본 정보 */}
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
           <div className="grid grid-cols-2 gap-[20px]">
-            <InfoRow label="도메인" value={DOMAIN_LABELS[approval.domainCode as DomainCode] || approval.domainCode} />
-            <InfoRow label="회사명" value={approval.companyName} />
-            <InfoRow label="기안자" value={approval.drafterName} />
-            <InfoRow label="제출일" value={new Date(approval.submittedAt).toLocaleDateString('ko-KR')} />
-            {risk && (
-              <InfoRow label="위험 등급" value={risk.label} valueClassName={risk.style} />
-            )}
-            {approval.aiVerdict && (
-              <InfoRow label="AI 판정" value={approval.aiVerdict} />
+            <InfoRow label="도메인" value={approval.domainName || DOMAIN_LABELS[approval.domainCode as DomainCode] || approval.domainCode} />
+            <InfoRow label="진단코드" value={approval.diagnostic?.diagnosticCode || '-'} />
+            <InfoRow label="기안자" value={approval.requester?.name || '-'} />
+            <InfoRow label="기안자 이메일" value={approval.requester?.email || '-'} />
+            <InfoRow label="요청일" value={approval.requestedAt ? new Date(approval.requestedAt).toLocaleDateString('ko-KR') : '-'} />
+            {approval.processedAt && (
+              <InfoRow label="처리일" value={new Date(approval.processedAt).toLocaleDateString('ko-KR')} />
             )}
           </div>
 
-          {approval.comment && (
+          {approval.requestComment && (
             <div className="mt-[20px] pt-[20px] border-t border-[var(--color-border-default)]">
-              <p className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px]">코멘트</p>
-              <p className="font-body-medium text-[var(--color-text-primary)] whitespace-pre-wrap">{approval.comment}</p>
+              <p className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px]">요청 코멘트</p>
+              <p className="font-body-medium text-[var(--color-text-primary)] whitespace-pre-wrap">{approval.requestComment}</p>
+            </div>
+          )}
+
+          {approval.approverComment && (
+            <div className="mt-[20px] pt-[20px] border-t border-[var(--color-border-default)]">
+              <p className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px]">결재자 코멘트</p>
+              <p className="font-body-medium text-[var(--color-text-primary)] whitespace-pre-wrap">{approval.approverComment}</p>
             </div>
           )}
         </div>
