@@ -9,6 +9,7 @@ import { useLogin } from '../../src/hooks/useAuth';
 import { useAuthStore } from '../../src/store/authStore';
 import { loginSchema, type LoginFormData } from '../../src/validation/auth';
 import type { ErrorResponse } from '../../src/types/api.types';
+import { getLoginErrorMessage } from '../../src/utils/errorHandler';
 import svgPaths from "../../imports/svg-1z9x9otd1u";
 import { imgGroup } from "../../imports/svg-cdk78";
 
@@ -162,7 +163,7 @@ export default function LoginPage() {
                     </div>
                     {loginMutation.isError && (
                       <p className="text-red-500 font-body-small">
-                        {(loginMutation.error as AxiosError<ErrorResponse>)?.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.'}
+                        {getLoginErrorMessage(loginMutation.error as AxiosError<ErrorResponse>)}
                       </p>
                     )}
                     <p className="font-detail-medium leading-none text-[var(--color-text-tertiary)] text-right w-full cursor-pointer hover:text-[var(--color-primary-main)]">
