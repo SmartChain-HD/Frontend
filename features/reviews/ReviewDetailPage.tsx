@@ -127,7 +127,7 @@ export default function ReviewDetailPage() {
           <div className="grid grid-cols-2 gap-[20px]">
             <InfoRow label="도메인" value={review.domainName || DOMAIN_LABELS[review.domainCode as DomainCode] || review.domainCode} />
             <InfoRow label="회사명" value={review.company?.companyName || '-'} />
-            <InfoRow label="진단코드" value={review.diagnostic?.diagnosticCode || '-'} />
+            <InfoRow label="기안코드" value={review.diagnostic?.diagnosticCode || '-'} />
             <InfoRow label="제출일" value={new Date(review.submittedAt).toLocaleDateString('ko-KR')} />
             {risk && <InfoRow label="위험 등급" value={risk.label} valueClassName={risk.style} />}
             {review.score != null && <InfoRow label="점수" value={String(review.score)} />}

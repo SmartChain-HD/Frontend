@@ -414,7 +414,7 @@ export const ROLE_LABELS: Record<RoleCode, string> = {
 };
 
 export const ROLE_DESCRIPTIONS: Record<Exclude<RoleCode, 'GUEST'>, string> = {
-  DRAFTER: 'ESG 자가 진단 데이터 업로드',
+  DRAFTER: 'ESG 자가 기안 데이터 업로드',
   APPROVER: '회사 정보 관리, ESG 파일 관리, 협력사 권한 관리',
   REVIEWER: '심사, 보고서 발행, 권한 관리',
 };

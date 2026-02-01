@@ -67,12 +67,12 @@ export default function DiagnosticsListPage() {
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[1200px] mx-auto w-full">
         {/* 헤더 */}
         <div className="flex items-center justify-between">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">진단 관리</h1>
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">기안 관리</h1>
           <button
             onClick={() => navigate('/diagnostics/new')}
             className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
           >
-            + 새 진단 생성
+            + 새 기안 생성
           </button>
         </div>
 
@@ -153,7 +153,7 @@ export default function DiagnosticsListPage() {
                   <td colSpan={5} className="text-center py-[60px]">
                     <div className="flex flex-col items-center gap-[12px]">
                       <p className="font-body-medium text-[var(--color-state-error-text)]">
-                        진단 목록을 불러오는 데 실패했습니다.
+                        기안 목록을 불러오는 데 실패했습니다.
                       </p>
                       <button
                         onClick={() => refetch()}
@@ -170,7 +170,7 @@ export default function DiagnosticsListPage() {
                 <tr>
                   <td colSpan={5} className="text-center py-[60px]">
                     <p className="font-body-medium text-[var(--color-text-tertiary)]">
-                      진단 내역이 없습니다.
+                      기안 내역이 없습니다.
                     </p>
                   </td>
                 </tr>

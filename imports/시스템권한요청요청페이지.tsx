@@ -162,7 +162,7 @@ function AssignmentAdd() {
           </div>
           <p className="font-['HD:Medium',sans-serif] leading-none not-italic relative shrink-0 text-[#008233] text-[14px]">기안자</p>
           <div className="font-['HD:Medium',sans-serif] leading-none not-italic relative shrink-0 text-[#008233] text-[12px] text-center whitespace-nowrap">
-            <p className="mb-0">ESG 진단표 작성</p>
+            <p className="mb-0">ESG 기안표 작성</p>
             <p>기안 관리</p>
           </div>
         </div>
@@ -225,7 +225,7 @@ function AssignmentAdd1() {
           <AssignmentTurnedIn />
           <p className="font-['HD:Medium',sans-serif] leading-none not-italic relative shrink-0 text-[#adb5bd] text-[14px]">결재자</p>
           <div className="font-['HD:Medium',sans-serif] leading-none not-italic relative shrink-0 text-[#adb5bd] text-[12px] text-center whitespace-nowrap">
-            <p className="mb-0">ESG 진단표 검토</p>
+            <p className="mb-0">ESG 기안표 검토</p>
             <p>협력사 내 권한 관리</p>
           </div>
         </div>

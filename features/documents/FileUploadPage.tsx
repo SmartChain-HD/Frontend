@@ -91,7 +91,7 @@ export default function FileUploadPage() {
 
   const handleFilesUpload = async (files: File[]) => {
     if (!diagnosticId) {
-      alert('진단 정보가 없습니다. 다시 시도해주세요.');
+      alert('기안 정보가 없습니다. 다시 시도해주세요.');
       return;
     }
 
@@ -153,7 +153,7 @@ export default function FileUploadPage() {
           <div className="max-w-[1468px] mx-auto">
             <div className="bg-white rounded-[20px] p-[44px] text-center">
               <p className="font-body-medium text-red-500 mb-[16px]">
-                진단 정보가 없습니다.
+                기안 정보가 없습니다.
               </p>
               <button
                 onClick={() => navigate('/diagnostics/new')}

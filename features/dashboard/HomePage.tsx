@@ -512,7 +512,7 @@ export default function HomePage({ userRole }: HomePageProps) {
           <div className="bg-white rounded-[20px] p-6 md:p-11 overflow-hidden">
             <h2 className="font-title-large text-[#212529] mb-[32px]">
               {userRole === 'receiver' && '협력사 리스크 현황'}
-              {userRole === 'drafter' && '내 진단 목록'}
+              {userRole === 'drafter' && '내 기안 목록'}
               {userRole === 'approver' && '결재 대기 목록'}
             </h2>
 
