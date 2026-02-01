@@ -246,7 +246,11 @@ export default function HomePage({ userRole }: HomePageProps) {
     navigate('/diagnostics/new');
   };
 
-  const handleRowClick = (id: number, domain: string) => {
+  const handleDiagnosticClick = (id: number) => {
+    navigate(`/diagnostics/${id}`);
+  };
+
+  const handleReviewClick = (id: number, domain: string) => {
     const domainPath = domain.toLowerCase();
     navigate(`/dashboard/${domainPath}/review/${id}`);
   };
@@ -289,7 +293,7 @@ export default function HomePage({ userRole }: HomePageProps) {
         <tr
           key={item.diagnosticId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.diagnosticId, item.domain?.code || activeTab)}
+          onClick={() => handleDiagnosticClick(item.diagnosticId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.summary || '-'}
@@ -327,7 +331,7 @@ export default function HomePage({ userRole }: HomePageProps) {
         <tr
           key={item.approvalId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.approvalId, item.domainCode)}
+          onClick={() => handleReviewClick(item.approvalId, item.domainCode)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.companyName || '-'}
@@ -365,7 +369,7 @@ export default function HomePage({ userRole }: HomePageProps) {
         <tr
           key={item.reviewId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.reviewId, item.domainCode)}
+          onClick={() => handleReviewClick(item.reviewId, item.domainCode)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.companyName || '-'}

@@ -74,7 +74,11 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
     navigate('/diagnostics/new');
   };
 
-  const handleRowClick = (id: number) => {
+  const handleDiagnosticClick = (id: number) => {
+    navigate(`/diagnostics/${id}`);
+  };
+
+  const handleReviewClick = (id: number) => {
     navigate(`/dashboard/safety/review/${id}`);
   };
 
@@ -126,7 +130,7 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
         <tr
           key={item.diagnosticId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.diagnosticId)}
+          onClick={() => handleDiagnosticClick(item.diagnosticId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.summary || '-'}
@@ -163,7 +167,7 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
         <tr
           key={item.approvalId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.approvalId)}
+          onClick={() => handleReviewClick(item.approvalId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.companyName || '-'}
@@ -200,7 +204,7 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
         <tr
           key={item.reviewId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.reviewId)}
+          onClick={() => handleReviewClick(item.reviewId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
             {item.companyName || '-'}
