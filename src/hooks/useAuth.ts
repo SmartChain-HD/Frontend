@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as authApi from '../api/auth';
+import { getMyRoleRequests } from '../api/roles';
 import { useAuthStore } from '../store/authStore';
 import type { AuthUser } from '../store/authStore';
 import { QUERY_KEYS } from '../constants/queryKeys';
@@ -14,10 +15,19 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const user = data.user;
       toast.success(`${user.name}님, 환영합니다.`);
       if (!user.role || user.role.code === 'GUEST') {
+        try {
+          const myRequest = await getMyRoleRequests();
+          if (myRequest && myRequest.status === 'PENDING') {
+            navigate('/permission/status');
+            return;
+          }
+        } catch {
+          // 요청 조회 실패 시 기본 권한 요청 페이지로 이동
+        }
         navigate('/permission/request');
       } else {
         navigate('/dashboard');
