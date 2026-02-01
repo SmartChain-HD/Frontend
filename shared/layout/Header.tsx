@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import svgPaths from '../../imports/svg-h10djjhihc';
 import { useLogout } from '../../src/hooks/useAuth';
 import { useNotifications, useUnreadCount, useMarkAsRead } from '../../src/hooks/useNotifications';
+import { useAuthStore } from '../../src/store/authStore';
 
 interface HeaderProps {
   userName: string;
@@ -14,6 +15,12 @@ const roleLabels = {
   drafter: '기안자',
   approver: '결재자',
   guest: '게스트',
+};
+
+const domainShortLabels: Record<string, string> = {
+  ESG: 'ESG',
+  SAFETY: '안전',
+  COMPLIANCE: '컴플',
 };
 
 function formatShortTime(dateStr: string): string {
@@ -111,6 +118,8 @@ export default function Header({ userName, userRole }: HeaderProps) {
   const { data: unreadCount } = useUnreadCount();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuthStore();
+  const domainRoles = user?.domainRoles || [];
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -156,11 +165,26 @@ export default function Header({ userName, userRole }: HeaderProps) {
           <p className="font-body-medium text-white">
             {userName}
           </p>
-          <div className="bg-[#f0fdf4] flex items-center justify-center px-[8px] py-[4px] rounded-[6px] border border-[#008233]">
-            <p className="font-title-small text-[#008233]">
-              {roleLabels[userRole]}
-            </p>
-          </div>
+          {domainRoles.length > 0 ? (
+            <div className="flex items-center gap-[4px]">
+              {domainRoles.map((dr) => (
+                <div
+                  key={dr.domainCode}
+                  className="bg-[#f0fdf4] flex items-center justify-center px-[8px] py-[4px] rounded-[6px] border border-[#008233]"
+                >
+                  <p className="font-title-small text-[#008233]">
+                    {domainShortLabels[dr.domainCode] || dr.domainName}-{dr.roleName}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-[#f0fdf4] flex items-center justify-center px-[8px] py-[4px] rounded-[6px] border border-[#008233]">
+              <p className="font-title-small text-[#008233]">
+                {roleLabels[userRole]}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Notification Icon with Badge */}
