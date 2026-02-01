@@ -14,7 +14,7 @@ export class DiagnosticAiAnalysisPage {
     this.page = page;
     this.pageTitle = page.getByRole('heading', { name: 'AI 분석' });
     this.loadingSpinner = page.locator('.animate-spin');
-    this.backButton = page.getByText('진단 상세로 돌아가기');
+    this.backButton = page.getByText('기안 상세로 돌아가기');
     this.runAnalysisButton = page.getByRole('button', { name: /AI 분석 실행|분석 중/ });
     this.slotStatusSection = page.getByRole('heading', { name: '필수 항목 현황' }).locator('..');
     this.analysisResultSection = page.getByRole('heading', { name: '분석 결과' }).locator('..');

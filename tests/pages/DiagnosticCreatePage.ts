@@ -14,17 +14,17 @@ export class DiagnosticCreatePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.titleInput = page.getByPlaceholder('진단 제목을 입력하세요');
+    this.titleInput = page.getByPlaceholder('기안 제목을 입력하세요');
     // 캠페인 select는 "캠페인을 선택하세요" 옵션을 가진 select
     this.campaignSelect = page.locator('select').filter({ has: page.locator('option:text("캠페인을 선택하세요")') });
     // 도메인 select는 "도메인을 선택하세요" 옵션을 가진 select
     this.domainSelect = page.locator('select').filter({ has: page.locator('option:text("도메인을 선택하세요")') });
     this.startDateInput = page.locator('input[type="date"]').first();
     this.endDateInput = page.locator('input[type="date"]').last();
-    this.submitButton = page.getByRole('button', { name: '진단 생성' });
+    this.submitButton = page.getByRole('button', { name: '기안 생성' });
     this.cancelButton = page.getByRole('button', { name: '취소' });
     this.backButton = page.getByRole('button', { name: '목록으로' });
-    this.pageTitle = page.getByRole('heading', { name: '새 진단 생성' });
+    this.pageTitle = page.getByRole('heading', { name: '새 기안 생성' });
   }
 
   async goto() {

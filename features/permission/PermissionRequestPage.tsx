@@ -122,7 +122,7 @@ export default function PermissionRequestPage() {
                                 <ClipboardList className={`w-[70px] h-[80px] ${selectedRole === 'DRAFTER' ? 'text-[#009619]' : 'text-[#adb5bd]'}`} />
                                 <p className={`font-body-small ${selectedRole === 'DRAFTER' ? 'text-[#008233]' : 'text-[#adb5bd]'}`}>기안자</p>
                                 <div className={`font-detail-small text-center ${selectedRole === 'DRAFTER' ? 'text-[#008233]' : 'text-[#adb5bd]'}`}>
-                                    <p>ESG 진단표 작성</p>
+                                    <p>ESG 기안표 작성</p>
                                     <p>기안 관리</p>
                                 </div>
                             </div>
@@ -149,7 +149,7 @@ export default function PermissionRequestPage() {
                                 <CheckSquare className={`w-[80px] h-[80px] ${selectedRole === 'APPROVER' ? 'text-[#009619]' : 'text-[#adb5bd]'}`} />
                                 <p className={`font-body-small ${selectedRole === 'APPROVER' ? 'text-[#008233]' : 'text-[#adb5bd]'}`}>결재자</p>
                                 <div className={`font-detail-small text-center ${selectedRole === 'APPROVER' ? 'text-[#008233]' : 'text-[#adb5bd]'}`}>
-                                    <p>ESG 진단표 검토</p>
+                                    <p>ESG 기안표 검토</p>
                                     <p>협력사 내 권한 관리</p>
                                 </div>
                             </div>

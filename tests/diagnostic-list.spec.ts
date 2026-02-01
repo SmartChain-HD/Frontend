@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import http from 'http';
 
 // ---------- API 유틸 ----------
@@ -82,7 +82,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
 
     // 헤더 확인
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 테이블 행이 1개 이상 존재
     const rows = page.locator('table tbody tr');
@@ -92,7 +92,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
 
   test('페이지네이션이 동작한다 (다음/이전 페이지 이동)', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 페이지네이션 영역 확인 — "1 / N" 형태
     const pageInfo = page.locator('text=/\\d+ \\/ \\d+/');
@@ -120,7 +120,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
 
   test('상태별 필터링 탭이 동작한다', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // "작성중" 탭 클릭 → API에 status=WRITING 전달 확인
     const writingTab = page.getByRole('button', { name: '작성중' });
@@ -149,7 +149,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
 
   test('도메인별 필터링이 동작한다', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 도메인 필터 셀렉트 확인
     const domainSelect = page.locator('select');
@@ -163,7 +163,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
     const rows = page.locator('table tbody tr');
     expect(await rows.count()).toBeGreaterThanOrEqual(1);
     const firstRowText = await rows.first().textContent();
-    expect(firstRowText).not.toContain('진단 내역이 없습니다');
+    expect(firstRowText).not.toContain('기안 내역이 없습니다');
 
     // 전체 도메인으로 복귀
     await domainSelect.selectOption('');
@@ -172,7 +172,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
 
   test('검색 키워드 입력 → 결과 반영 확인', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 검색 입력 필드 확인
     const searchInput = page.getByPlaceholder('검색어를 입력하세요');
@@ -197,7 +197,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
 
   test('빈 결과 시 "데이터 없음" 메시지가 표시된다', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 결과가 없을 가능성이 높은 필터 조합: "완료" 상태 + "컴플라이언스" 도메인
     await page.getByRole('button', { name: '완료' }).click();
@@ -207,7 +207,7 @@ test.describe('이슈 #73 - 진단 목록 조회 및 필터링 테스트', () =>
     await domainSelect.selectOption('COMPLIANCE');
     await page.waitForTimeout(1000);
 
-    // "진단 내역이 없습니다" 메시지 확인
-    await expect(page.getByText('진단 내역이 없습니다')).toBeVisible({ timeout: 10000 });
+    // "기안 내역이 없습니다" 메시지 확인
+    await expect(page.getByText('기안 내역이 없습니다')).toBeVisible({ timeout: 10000 });
   });
 });

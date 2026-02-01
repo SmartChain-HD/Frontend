@@ -260,7 +260,7 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
                     {userRole === 'approver' ? '기안자' : '협력사 명'}
                   </th>
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    {userRole === 'approver' ? '진단명' : userRole === 'drafter' ? '캠페인' : '기간'}
+                    {userRole === 'approver' ? '기안명' : userRole === 'drafter' ? '캠페인' : '기간'}
                   </th>
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                     {userRole === 'approver' ? '요청일' : '제출일'}

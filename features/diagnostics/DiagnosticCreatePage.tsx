@@ -68,7 +68,7 @@ export default function DiagnosticCreatePage() {
         </button>
 
         {/* 제목 */}
-        <h1 className="font-heading-small text-[var(--color-text-primary)]">새 진단 생성</h1>
+        <h1 className="font-heading-small text-[var(--color-text-primary)]">새 기안 생성</h1>
 
         {/* 폼 */}
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
@@ -76,12 +76,12 @@ export default function DiagnosticCreatePage() {
             {/* 제목 */}
             <div>
               <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                진단 제목 <span className="text-red-500">*</span>
+                기안 제목 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 {...register('title')}
-                placeholder="진단 제목을 입력하세요"
+                placeholder="기안 제목을 입력하세요"
                 className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)] ${
                   errors.title ? 'border-red-500' : 'border-[var(--color-border-default)]'
                 }`}
@@ -136,11 +136,11 @@ export default function DiagnosticCreatePage() {
               )}
             </div>
 
-            {/* 진단 기간 */}
+            {/* 기안 기간 */}
             <div className="grid grid-cols-2 gap-[16px]">
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  진단 시작일 <span className="text-red-500">*</span>
+                  기안 시작일 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -156,7 +156,7 @@ export default function DiagnosticCreatePage() {
 
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  진단 종료일 <span className="text-red-500">*</span>
+                  기안 종료일 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -185,7 +185,7 @@ export default function DiagnosticCreatePage() {
                 disabled={isSubmitting || createMutation.isPending}
                 className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] font-title-small text-white hover:opacity-90 transition-colors disabled:opacity-50"
               >
-                {createMutation.isPending ? '생성 중...' : '진단 생성'}
+                {createMutation.isPending ? '생성 중...' : '기안 생성'}
               </button>
             </div>
           </div>

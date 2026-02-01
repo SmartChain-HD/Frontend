@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { DiagnosticCreatePage } from './pages/DiagnosticCreatePage';
 
 // 인증은 auth.setup.ts의 storageState를 통해 처리됨
@@ -17,7 +17,7 @@ test.describe('이슈 #69: 진단 생성 프로세스 테스트', () => {
     await expect(page).toHaveURL('/diagnostics/new');
 
     // 페이지 타이틀 확인
-    await expect(page.getByRole('heading', { name: '새 진단 생성' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '새 기안 생성' })).toBeVisible();
   });
 
   test('제목, 캠페인, 도메인, 기간 입력 후 제출 → 파일 업로드 페이지로 이동', async ({ page }) => {
@@ -109,7 +109,7 @@ test.describe('이슈 #69: 진단 생성 프로세스 테스트', () => {
 
     // 3. 진단 생성 페이지 확인
     await expect(page).toHaveURL('/diagnostics/new');
-    await expect(page.getByRole('heading', { name: '새 진단 생성' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '새 기안 생성' })).toBeVisible();
 
     // 4. 폼 데이터 입력
     const diagnosticPage = new DiagnosticCreatePage(page);

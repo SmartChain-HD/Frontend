@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,15 +14,15 @@ const DUMMY_DOC = path.join(DUMMY_DIR, 'TestCompany_202601_테스트메모.pdf')
 async function goToFilesPage(page: import('@playwright/test').Page): Promise<boolean> {
   await page.goto('/diagnostics', { waitUntil: 'networkidle' });
 
-  // "진단 관리" 헤더가 보이는지 확인 (페이지 렌더링 확인)
+  // "기안 관리" 헤더가 보이는지 확인 (페이지 렌더링 확인)
   try {
-    await page.getByText('진단 관리').waitFor({ state: 'visible', timeout: 15000 });
+    await page.getByText('기안 관리').waitFor({ state: 'visible', timeout: 15000 });
   } catch {
     return false;
   }
 
   // 진단 내역이 없으면 실패
-  const noData = await page.getByText('진단 내역이 없습니다').isVisible().catch(() => false);
+  const noData = await page.getByText('기안 내역이 없습니다').isVisible().catch(() => false);
   if (noData) return false;
 
   // 데이터 행 클릭 — 로딩/에러/빈 행이 아닌 클릭 가능한 행을 기다림
@@ -64,13 +64,13 @@ test.describe('이슈 #70 - 증빙파일 업로드 및 관리 테스트', () => 
   test('진단 목록에서 파일 업로드 페이지로 이동한다', async ({ page }) => {
     await page.goto('/diagnostics', { waitUntil: 'networkidle' });
 
-    // "진단 관리" 헤더 확인
-    await expect(page.getByText('진단 관리')).toBeVisible({ timeout: 15000 });
+    // "기안 관리" 헤더 확인
+    await expect(page.getByText('기안 관리')).toBeVisible({ timeout: 15000 });
 
     // 진단 내역이 없으면 스킵
-    const noData = await page.getByText('진단 내역이 없습니다').isVisible().catch(() => false);
+    const noData = await page.getByText('기안 내역이 없습니다').isVisible().catch(() => false);
     if (noData) {
-      test.skip(true, '진단 내역이 없습니다');
+      test.skip(true, '기안 내역이 없습니다');
       return;
     }
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import http from 'http';
 
 // ---------- API 유틸 ----------
@@ -76,7 +76,7 @@ test.describe('이슈 #72 - 결재 요청 제출 테스트', () => {
 
     // 제출 버튼 클릭 → 모달 오픈
     await page.getByRole('button', { name: '결재자에게 제출' }).click();
-    await expect(page.getByText('진단 제출')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('기안 제출')).toBeVisible({ timeout: 5000 });
 
     // 결재자 ID 입력 (approver userId = 2)
     await page.getByPlaceholder('결재자 ID를 입력하세요').fill('2');

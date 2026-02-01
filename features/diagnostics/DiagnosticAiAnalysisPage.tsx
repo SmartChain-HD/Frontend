@@ -102,7 +102,7 @@ export default function DiagnosticAiAnalysisPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center py-[120px] gap-[16px]">
           <p className="font-body-medium text-[var(--color-state-error-text)]">
-            진단 정보를 불러올 수 없습니다.
+            기안 정보를 불러올 수 없습니다.
           </p>
           <button
             onClick={() => navigate('/diagnostics')}
@@ -129,7 +129,7 @@ export default function DiagnosticAiAnalysisPage() {
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          진단 상세로 돌아가기
+          기안 상세로 돌아가기
         </button>
 
         {/* 헤더 */}

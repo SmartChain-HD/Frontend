@@ -75,7 +75,7 @@ export default function DiagnosticDetailPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center py-[120px] gap-[16px]">
           <p className="font-body-medium text-[var(--color-state-error-text)]">
-            진단 정보를 불러오는 데 실패했습니다.
+            기안 정보를 불러오는 데 실패했습니다.
           </p>
           <button
             onClick={() => navigate('/diagnostics')}
@@ -114,14 +114,14 @@ export default function DiagnosticDetailPage() {
 
         {/* 기본 정보 */}
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
-          <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">진단 정보</h2>
+          <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 정보</h2>
           <div className="grid grid-cols-2 gap-[20px]">
             <InfoRow label="도메인" value={diagnostic.domain?.name || DOMAIN_LABELS[diagnostic.domain?.code as DomainCode] || '-'} />
             <InfoRow label="회사명" value={diagnostic.company?.companyName || '-'} />
             <InfoRow label="기안자" value={diagnostic.createdBy?.name || '-'} />
             <InfoRow label="생성일" value={new Date(diagnostic.createdAt).toLocaleDateString('ko-KR')} />
-            <InfoRow label="진단 시작일" value={diagnostic.period?.startDate ? new Date(diagnostic.period.startDate).toLocaleDateString('ko-KR') : '-'} />
-            <InfoRow label="진단 종료일" value={diagnostic.period?.endDate ? new Date(diagnostic.period.endDate).toLocaleDateString('ko-KR') : '-'} />
+            <InfoRow label="기안 시작일" value={diagnostic.period?.startDate ? new Date(diagnostic.period.startDate).toLocaleDateString('ko-KR') : '-'} />
+            <InfoRow label="기안 종료일" value={diagnostic.period?.endDate ? new Date(diagnostic.period.endDate).toLocaleDateString('ko-KR') : '-'} />
             {diagnostic.submittedAt && (
               <InfoRow label="제출일" value={new Date(diagnostic.submittedAt).toLocaleDateString('ko-KR')} />
             )}
@@ -131,7 +131,7 @@ export default function DiagnosticDetailPage() {
         {/* 이력 */}
         {history && history.length > 0 && (
           <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
-            <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">진단 이력</h2>
+            <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 이력</h2>
             <div className="space-y-[16px]">
               {history.map((item, index) => (
                 <div
@@ -191,7 +191,7 @@ export default function DiagnosticDetailPage() {
           <div className="bg-white rounded-[16px] w-full max-w-[480px] mx-[16px] shadow-xl">
             <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
               <h2 className="font-title-medium text-[var(--color-text-primary)]">
-                진단 제출
+                기안 제출
               </h2>
             </div>
 
