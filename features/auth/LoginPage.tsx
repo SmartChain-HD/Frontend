@@ -116,21 +116,6 @@ export default function LoginPage() {
     loginMutation.mutate(data);
   };
 
-  const handleQuickLogin = (role: 'receiver' | 'drafter' | 'approver', name: string) => {
-    if (!import.meta.env.DEV) return;
-    // Dev-only quick login: set auth store directly for testing
-    const { setTokens, setUser } = useAuthStore.getState();
-    const roleCodeMap = { receiver: 'REVIEWER' as const, drafter: 'DRAFTER' as const, approver: 'APPROVER' as const };
-    setTokens('dev-token', 'dev-refresh');
-    setUser({
-      userId: 1,
-      email: `${name}@dev.local`,
-      name,
-      role: { code: roleCodeMap[role], name: role },
-    });
-    navigate('/dashboard');
-  };
-
   const handleSignup = () => {
     navigate('/signup/step1');
   };
@@ -148,56 +133,6 @@ export default function LoginPage() {
                     <div className="w-full flex justify-center lg:justify-start">
                          <LogoWithSubtitle />
                     </div>
-
-                    {/* Test Login Buttons - DEV only */}
-                    {import.meta.env.DEV && (
-                    <div className="w-full bg-[#e3f2fd] rounded-[12px] p-[20px] border-2 border-[#003087]">
-                    <p className="text-center text-[#002554] font-title-small mb-[16px]">
-                        권한별 테스트 로그인
-                    </p>
-                    <div className="flex flex-col gap-[8px]">
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('receiver', '김수신')}
-                        className="w-full rounded-[8px] bg-[#003087] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#002554]"
-                        >
-                        수신자(원청) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('drafter', '이기안')}
-                        className="w-full rounded-[8px] bg-[#00ad1d] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#008a18]"
-                        >
-                        기안자(협력사) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('approver', '박결재')}
-                        className="w-full rounded-[8px] bg-[#e65100] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#d84315]"
-                        >
-                        결재자(협력사) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => {
-                            if (!import.meta.env.DEV) return;
-                            const { setTokens, setUser } = useAuthStore.getState();
-                            setTokens('dev-token', 'dev-refresh');
-                            setUser({
-                              userId: 4,
-                              email: 'guest@dev.local',
-                              name: '김방문',
-                              role: { code: 'GUEST', name: 'guest' },
-                            });
-                            navigate('/permission/request');
-                        }}
-                        className="w-full rounded-[8px] bg-[#6c757d] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#5a6268]"
-                        >
-                        게스트(신규가입) 로그인
-                        </button>
-                    </div>
-                    </div>
-                    )}
 
                     {/* Form Fields */}
                     <div className="w-full flex flex-col gap-[24px]">
