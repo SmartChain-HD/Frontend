@@ -289,16 +289,16 @@ export default function HomePage({ userRole }: HomePageProps) {
         <tr
           key={item.diagnosticId}
           className="border-b border-[#f1f3f5] hover:bg-[#f8f9fa] cursor-pointer"
-          onClick={() => handleRowClick(item.diagnosticId, item.domainCode)}
+          onClick={() => handleRowClick(item.diagnosticId, item.domain?.code || activeTab)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.companyName || '-'}
+            {item.summary || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {item.title}
+            {item.campaign?.title || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {formatDate(item.submittedAt)}
+            {formatDate(item.createdAt)}
           </td>
           <td className="py-[16px] px-[16px] text-center">
             <span
