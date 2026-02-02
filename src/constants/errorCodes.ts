@@ -14,12 +14,12 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   A004: { action: 'toast' },
 
   // Permission
-  PERM_001: { action: 'toast' },
+  PERM_001: { action: 'redirect', redirectTo: '/dashboard', customMessage: '해당 리소스에 대한 접근 권한이 없습니다' },
   PERM_002: { action: 'toast' },
   PERM_003: { action: 'toast', customMessage: '이미 처리된 요청입니다. 새로고침 해주세요.' },
 
   // Domain
-  DOM002: { action: 'toast', customMessage: '해당 도메인에 대한 권한이 없습니다' },
+  DOM002: { action: 'redirect', redirectTo: '/dashboard', customMessage: '해당 도메인에 대한 권한이 없습니다' },
 
   // Duplicates
   U002: { action: 'toast' },
@@ -39,8 +39,11 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   // Server
   S001: { action: 'toast', customMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
 
+  // Diagnostic
+  D001: { action: 'redirect', redirectTo: '/not-found', customMessage: '기안을 찾을 수 없습니다.' },
+
   // Review
-  RV001: { action: 'toast', customMessage: '심사 건을 찾을 수 없습니다.' },
+  RV001: { action: 'redirect', redirectTo: '/not-found', customMessage: '심사 건을 찾을 수 없습니다.' },
 
   // AI
   AI001: { action: 'toast', customMessage: 'AI 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.' },
