@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   useDiagnosticDetail,
@@ -7,6 +7,9 @@ import {
 } from '../../src/hooks/useDiagnostics';
 import type { DiagnosticStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { handleApiError } from '../../src/utils/errorHandler';
+import type { AxiosError } from 'axios';
+import type { ErrorResponse } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_LABELS: Record<DiagnosticStatus, string> = {
@@ -32,9 +35,15 @@ export default function DiagnosticDetailPage() {
   const navigate = useNavigate();
   const diagnosticId = Number(id);
 
-  const { data: diagnostic, isLoading, isError } = useDiagnosticDetail(diagnosticId);
+  const { data: diagnostic, isLoading, isError, error } = useDiagnosticDetail(diagnosticId);
   const { data: history } = useDiagnosticHistory(diagnosticId);
   const submitMutation = useSubmitDiagnostic();
+
+  useEffect(() => {
+    if (error) {
+      handleApiError(error as AxiosError<ErrorResponse>);
+    }
+  }, [error]);
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [approverId, setApproverId] = useState<number | ''>('');

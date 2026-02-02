@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApprovalDetail, useProcessApproval, useSubmitToReviewer } from '../../src/hooks/useApprovals';
 import type { ApprovalStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { handleApiError } from '../../src/utils/errorHandler';
+import type { AxiosError } from 'axios';
+import type { ErrorResponse } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_LABELS: Record<ApprovalStatus, string> = {
@@ -23,9 +26,15 @@ export default function ApprovalDetailPage() {
   const navigate = useNavigate();
   const approvalId = Number(id);
 
-  const { data: approval, isLoading, isError } = useApprovalDetail(approvalId);
+  const { data: approval, isLoading, isError, error } = useApprovalDetail(approvalId);
   const processApprovalMutation = useProcessApproval();
   const submitToReviewerMutation = useSubmitToReviewer();
+
+  useEffect(() => {
+    if (error) {
+      handleApiError(error as AxiosError<ErrorResponse>);
+    }
+  }, [error]);
 
   const [showModal, setShowModal] = useState<'APPROVED' | 'REJECTED' | null>(null);
   const [comment, setComment] = useState('');

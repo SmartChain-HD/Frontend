@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewDetail, useSubmitReview, useGenerateReport } from '../../src/hooks/useReviews';
 import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { handleApiError } from '../../src/utils/errorHandler';
+import type { AxiosError } from 'axios';
+import type { ErrorResponse } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_LABELS: Record<ReviewStatus, string> = {
@@ -28,9 +31,15 @@ export default function ReviewDetailPage() {
   const navigate = useNavigate();
   const reviewId = Number(id);
 
-  const { data: review, isLoading, isError } = useReviewDetail(reviewId);
+  const { data: review, isLoading, isError, error } = useReviewDetail(reviewId);
   const submitReviewMutation = useSubmitReview();
   const generateReportMutation = useGenerateReport();
+
+  useEffect(() => {
+    if (error) {
+      handleApiError(error as AxiosError<ErrorResponse>);
+    }
+  }, [error]);
 
   const [showModal, setShowModal] = useState(false);
   const [decision, setDecision] = useState<'APPROVED' | 'REVISION_REQUIRED'>('APPROVED');

@@ -9,8 +9,9 @@ const REVIEWER_STORAGE_STATE = path.join(__dirname, '.auth/reviewerStorageState.
 setup('authenticate as REVIEWER and save storageState', async ({ page }) => {
   await page.goto('/login');
 
-  // "수신자(원청) 로그인" 버튼 클릭하여 REVIEWER 역할로 로그인
-  await page.getByRole('button', { name: '수신자(원청) 로그인' }).click();
+  await page.getByPlaceholder('이메일을 입력해주세요.').fill('reviewer.compliance@hdhhi.co.kr');
+  await page.getByPlaceholder('비밀번호를 입력해주세요.').fill('Test1234!');
+  await page.getByRole('button', { name: '로그인', exact: true }).click();
 
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
