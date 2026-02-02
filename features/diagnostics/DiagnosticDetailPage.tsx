@@ -311,7 +311,7 @@ export default function DiagnosticDetailPage() {
             <div className="flex items-center justify-center py-[32px]">
               <div className="w-[24px] h-[24px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : previewData ? (
+          ) : previewData?.requiredSlotStatus ? (
             <div className="mb-[20px]">
               <div className="flex items-center justify-between mb-[8px]">
                 <span className="font-body-medium text-[var(--color-text-secondary)]">필수 항목</span>
