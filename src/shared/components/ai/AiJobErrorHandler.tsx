@@ -1,4 +1,4 @@
-import { cn } from '@shared/utils/cn';
+import { cn } from '../../utils/cn';
 import { useRetryJob } from '../../../hooks/useAiJobs';
 
 interface AiJobErrorHandlerProps {

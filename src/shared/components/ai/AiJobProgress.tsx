@@ -1,4 +1,4 @@
-import { cn } from '@shared/utils/cn';
+import { cn } from '../../utils/cn';
 import type { JobStatus } from '../../../api/aiJobs';
 
 interface AiJobProgressProps {
