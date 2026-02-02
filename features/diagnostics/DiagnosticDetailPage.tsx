@@ -5,11 +5,31 @@ import {
   useDiagnosticHistory,
   useSubmitDiagnostic,
 } from '../../src/hooks/useDiagnostics';
+import {
+  useAiPreview,
+  useSubmitAiRun,
+  useAiResultDetail,
+  useAiHistory,
+} from '../../src/hooks/useAiRun';
+import { parseAiJobError } from '../../src/hooks/useAiJobs';
 import type { DiagnosticStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
 import { handleApiError } from '../../src/utils/errorHandler';
 import type { AxiosError } from 'axios';
 import type { ErrorResponse } from '../../src/types/api.types';
+import type { SlotStatus } from '../../src/api/aiRun';
+import {
+  AiResultSummary,
+  SlotResultList,
+  ClarificationList,
+  AiHistoryTimeline,
+  AiJobErrorHandler,
+  AiServiceFallback,
+} from '../../shared/components/ai';
+import type { SlotResult, Clarification, AiHistoryEntry } from '../../shared/components/ai';
+import { AiJobProgress } from '../../src/shared/components/ai/AiJobProgress';
+import { AiJobNotification } from '../../src/shared/components/ai/AiJobNotification';
+import type { JobStatus } from '../../src/api/aiJobs';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_LABELS: Record<DiagnosticStatus, string> = {
@@ -48,6 +68,79 @@ export default function DiagnosticDetailPage() {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [approverId, setApproverId] = useState<number | ''>('');
   const [comment, setComment] = useState('');
+
+  // AI 분석 상태
+  const previewMutation = useAiPreview();
+  const submitAiMutation = useSubmitAiRun();
+  const { data: aiResultDetail, isLoading: isDetailLoading, refetch: refetchDetail } = useAiResultDetail(diagnosticId);
+  const { data: aiHistory } = useAiHistory(diagnosticId);
+  const [aiJobStatus, setAiJobStatus] = useState<JobStatus | null>(null);
+  const [aiAnalysisError, setAiAnalysisError] = useState<AxiosError<ErrorResponse> | null>(null);
+
+  // preview 호출
+  useEffect(() => {
+    if (diagnosticId > 0) {
+      previewMutation.mutate({ diagnosticId, fileIds: [] });
+    }
+  }, [diagnosticId]);
+
+  // 분석 중 폴링: result가 도착하면 완료 처리
+  useEffect(() => {
+    if (aiJobStatus === 'RUNNING' && aiResultDetail) {
+      setAiJobStatus('SUCCEEDED');
+    }
+  }, [aiResultDetail, aiJobStatus]);
+
+  const handleSubmitAi = () => {
+    setAiJobStatus('PENDING');
+    setAiAnalysisError(null);
+    submitAiMutation.mutate(diagnosticId, {
+      onSuccess: () => {
+        setAiJobStatus('RUNNING');
+        refetchDetail();
+      },
+      onError: (err) => {
+        setAiJobStatus('FAILED');
+        setAiAnalysisError(err as AxiosError<ErrorResponse>);
+      },
+    });
+  };
+
+  const handleRetryAi = () => {
+    setAiAnalysisError(null);
+    handleSubmitAi();
+  };
+
+  const isServiceUnavailable = aiAnalysisError
+    ? parseAiJobError(aiAnalysisError).type === 'SERVICE_UNAVAILABLE'
+    : false;
+
+  const previewData = previewMutation.data;
+  const hasMissingRequired = previewData?.missingRequiredSlots && previewData.missingRequiredSlots.length > 0;
+  const isAiRunning = aiJobStatus === 'PENDING' || aiJobStatus === 'RUNNING';
+
+  // result detail → shared component 타입 변환
+  const slotResults: SlotResult[] = (aiResultDetail?.slotResults ?? []).map((s) => ({
+    slotName: s.slotName,
+    verdict: s.status === 'VALID' ? 'PASS' : s.status === 'INVALID' ? 'NEED_FIX' : 'WARN',
+    reasons: s.message ? [s.message] : [],
+    fileIds: [],
+    fileNames: [],
+  }));
+
+  const clarifications: Clarification[] = (aiResultDetail?.clarifications ?? []).map((c) => ({
+    slotName: c.targetSlot,
+    message: c.message,
+    fileIds: [],
+  }));
+
+  const historyEntries: AiHistoryEntry[] = (aiHistory ?? []).map((h) => ({
+    id: String(h.resultId),
+    verdict: h.verdict as AiHistoryEntry['verdict'],
+    riskLevel: h.riskLevel as AiHistoryEntry['riskLevel'],
+    whySummary: h.whySummary,
+    analyzedAt: h.analyzedAt,
+  }));
 
   const handleSubmit = () => {
     if (!approverId) return;
@@ -181,7 +274,7 @@ export default function DiagnosticDetailPage() {
             onClick={() => navigate(`/diagnostics/${diagnosticId}/ai-analysis`)}
             className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
           >
-            AI 분석
+            AI 분석 상세
           </button>
           {canSubmit && (
             <button
@@ -192,6 +285,110 @@ export default function DiagnosticDetailPage() {
             </button>
           )}
         </div>
+
+        {/* AI 분석 섹션 */}
+        <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
+          <div className="flex items-center justify-between mb-[20px]">
+            <h2 className="font-title-medium text-[var(--color-text-primary)]">AI 분석</h2>
+            <button
+              onClick={handleSubmitAi}
+              disabled={isAiRunning || hasMissingRequired}
+              className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isAiRunning ? (
+                <span className="flex items-center gap-[8px]">
+                  <span className="w-[16px] h-[16px] border-[2px] border-white border-t-transparent rounded-full animate-spin" />
+                  분석 중...
+                </span>
+              ) : (
+                'AI 분석 실행'
+              )}
+            </button>
+          </div>
+
+          {/* 슬롯 현황 (preview) */}
+          {previewMutation.isPending ? (
+            <div className="flex items-center justify-center py-[32px]">
+              <div className="w-[24px] h-[24px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : previewData ? (
+            <div className="mb-[20px]">
+              <div className="flex items-center justify-between mb-[8px]">
+                <span className="font-body-medium text-[var(--color-text-secondary)]">필수 항목</span>
+                <span className="font-title-xsmall text-[var(--color-text-primary)]">
+                  {previewData.requiredSlotStatus.filter((s: SlotStatus) => s.submitted).length} / {previewData.requiredSlotStatus.length}
+                </span>
+              </div>
+              <div className="h-[6px] bg-gray-200 rounded-full overflow-hidden mb-[12px]">
+                <div
+                  className="h-full bg-[var(--color-primary-main)] transition-all"
+                  style={{
+                    width: `${previewData.requiredSlotStatus.length > 0
+                      ? (previewData.requiredSlotStatus.filter((s: SlotStatus) => s.submitted).length / previewData.requiredSlotStatus.length) * 100
+                      : 0}%`
+                  }}
+                />
+              </div>
+              {hasMissingRequired && (
+                <p className="font-body-small text-[var(--color-state-error-text)]">
+                  필수 항목이 누락되어 AI 분석을 실행할 수 없습니다.
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          {/* 진행 상태 */}
+          {aiJobStatus && aiJobStatus !== 'SUCCEEDED' && !aiAnalysisError && (
+            <div className="py-[24px]">
+              <AiJobProgress status={aiJobStatus} />
+            </div>
+          )}
+
+          {/* 토스트 알림 */}
+          {aiJobStatus && (
+            <AiJobNotification status={aiJobStatus} jobId={String(diagnosticId)} />
+          )}
+
+          {/* 에러 처리 */}
+          {isServiceUnavailable ? (
+            <AiServiceFallback onRetry={handleRetryAi} isRetrying={submitAiMutation.isPending} />
+          ) : aiAnalysisError ? (
+            <AiJobErrorHandler
+              error={aiAnalysisError}
+              onRetry={handleRetryAi}
+              isRetrying={submitAiMutation.isPending}
+            />
+          ) : null}
+
+          {/* 분석 결과 */}
+          {!isAiRunning && !aiAnalysisError && aiResultDetail && (
+            <div className="space-y-[20px]">
+              <AiResultSummary
+                verdict={aiResultDetail.verdict as 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX'}
+                riskLevel={aiResultDetail.riskLevel as 'LOW' | 'MEDIUM' | 'HIGH'}
+                whySummary={aiResultDetail.whySummary}
+              />
+              <SlotResultList slotResults={slotResults} />
+              <ClarificationList clarifications={clarifications} />
+            </div>
+          )}
+
+          {/* 결과 없음 */}
+          {!isAiRunning && !aiAnalysisError && !aiResultDetail && !isDetailLoading && (
+            <div className="text-center py-[32px]">
+              <p className="font-body-medium text-[var(--color-text-tertiary)]">
+                아직 분석 결과가 없습니다. AI 분석을 실행해 주세요.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* AI 분석 이력 */}
+        {historyEntries.length > 0 && (
+          <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
+            <AiHistoryTimeline history={historyEntries} />
+          </div>
+        )}
       </div>
 
       {/* 제출 모달 */}
