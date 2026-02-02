@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import {
   useAiPreview,
@@ -7,9 +8,11 @@ import {
   useAiResult,
   useAiHistory,
 } from '../../src/hooks/useAiRun';
-import type { DomainCode, RiskLevel } from '../../src/types/api.types';
+import { useRetryJob, parseAiJobError } from '../../src/hooks/useAiJobs';
+import type { DomainCode, RiskLevel, ErrorResponse } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
 import type { SlotStatus, AiAnalysisResultResponse } from '../../src/api/aiRun';
+import { AiJobErrorHandler, AiServiceFallback } from '../../shared/components/ai';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 type Verdict = 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
@@ -54,11 +57,13 @@ export default function DiagnosticAiAnalysisPage() {
   const { data: diagnostic, isLoading: isDiagnosticLoading } = useDiagnosticDetail(diagnosticId);
   const previewMutation = useAiPreview();
   const submitMutation = useSubmitAiRun();
-  const { data: aiResult, isLoading: isResultLoading, isError: isResultError } = useAiResult(diagnosticId);
+  const { data: aiResult, isLoading: isResultLoading, isError: isResultError, error: resultError, refetch: refetchResult } = useAiResult(diagnosticId);
   const { data: aiHistory } = useAiHistory(diagnosticId);
+  const retryJobMutation = useRetryJob();
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<AxiosError<ErrorResponse> | null>(null);
 
   // Trigger preview on mount
   useEffect(() => {
@@ -77,12 +82,28 @@ export default function DiagnosticAiAnalysisPage() {
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
     setIsAnalyzing(true);
+    setAnalysisError(null);
     submitMutation.mutate(diagnosticId, {
-      onError: () => {
+      onError: (error) => {
         setIsAnalyzing(false);
+        setAnalysisError(error as AxiosError<ErrorResponse>);
       },
     });
   };
+
+  const handleRetryAnalysis = () => {
+    setAnalysisError(null);
+    handleSubmitAiRun();
+  };
+
+  const handleRefetchResult = () => {
+    setAnalysisError(null);
+    refetchResult();
+  };
+
+  const isServiceUnavailable = analysisError
+    ? parseAiJobError(analysisError).type === 'SERVICE_UNAVAILABLE'
+    : false;
 
   const previewData = previewMutation.data;
   const hasMissingRequiredSlots = previewData?.missingRequiredSlots && previewData.missingRequiredSlots.length > 0;
@@ -264,7 +285,18 @@ export default function DiagnosticAiAnalysisPage() {
               </div>
 
               <div className="p-[20px]">
-                {isAnalyzing ? (
+                {isServiceUnavailable ? (
+                  <AiServiceFallback
+                    onRetry={handleRefetchResult}
+                    isRetrying={isResultLoading}
+                  />
+                ) : analysisError ? (
+                  <AiJobErrorHandler
+                    error={analysisError}
+                    onRetry={handleRetryAnalysis}
+                    isRetrying={submitMutation.isPending}
+                  />
+                ) : isAnalyzing ? (
                   <div className="flex flex-col items-center justify-center py-[60px] gap-[16px]">
                     <div className="w-[48px] h-[48px] border-[4px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
                     <p className="font-body-medium text-[var(--color-text-secondary)]">
@@ -278,7 +310,13 @@ export default function DiagnosticAiAnalysisPage() {
                   <div className="flex items-center justify-center py-[60px]">
                     <div className="w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
                   </div>
-                ) : isResultError || !aiResult ? (
+                ) : isResultError ? (
+                  <AiJobErrorHandler
+                    error={resultError as AxiosError<ErrorResponse>}
+                    onRetry={handleRefetchResult}
+                    isRetrying={isResultLoading}
+                  />
+                ) : !aiResult ? (
                   <div className="text-center py-[60px]">
                     <svg className="w-[48px] h-[48px] mx-auto mb-[16px] text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
