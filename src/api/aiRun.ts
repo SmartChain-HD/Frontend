@@ -2,22 +2,20 @@ import { apiClient } from './client';
 import type { BaseResponse } from '../types/api.types';
 
 export interface SlotStatus {
-  slotName: string;
-  required: boolean;
-  submitted: boolean;
+  slot_name: string;
+  status: 'SUBMITTED' | 'MISSING';
 }
 
 export interface SlotHint {
-  fileId: string;
-  slotName: string;
-  confidence?: number;
+  file_id: string;
+  slot_name: string;
 }
 
 export interface RunPreviewResponse {
-  packageId: string;
-  requiredSlotStatus: SlotStatus[];
-  slotHints: SlotHint[];
-  missingRequiredSlots: string[];
+  package_id: string;
+  required_slot_status: SlotStatus[];
+  slot_hint: SlotHint[];
+  missing_required_slots: string[];
 }
 
 export interface SlotResult {
@@ -27,15 +25,37 @@ export interface SlotResult {
   extractedData?: Record<string, unknown>;
 }
 
+// 새 API 응답 타입
+export interface SlotResultDetail {
+  slot_name: string;
+  verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+  reasons: string[];
+  file_ids: string[];
+  file_names: string[];
+  extras?: Record<string, unknown>;
+}
+
+export interface ClarificationDetail {
+  slot_name: string;
+  message: string;
+  file_ids: string[];
+}
+
+export interface AiAnalysisDetails {
+  slot_results: SlotResultDetail[];
+  clarifications: ClarificationDetail[];
+  extras?: Record<string, unknown>;
+}
+
 export interface AiAnalysisResultResponse {
-  resultId: number;
+  id: number;  // 기존 resultId → id
   diagnosticId: number;
   domainCode: string;
   packageId: string;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
   verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
   whySummary: string;
-  resultJson: string;
+  details: AiAnalysisDetails;  // 기존 resultJson → details
   analyzedAt: string;
 }
 
