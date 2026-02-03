@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { LogoWithSubtitle } from '../../shared/components/Logo';
+import PrivacyPolicyModal from '../../shared/components/PrivacyPolicyModal';
 import type { AxiosError } from 'axios';
 import { useLogin } from '../../src/hooks/useAuth';
 import { useAuthStore } from '../../src/store/authStore';
@@ -103,6 +105,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -188,9 +191,14 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <p className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)] mt-auto pt-8">
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacy(true)}
+                  className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)] mt-auto pt-8"
+                >
                     개인정보 처리방침
-                </p>
+                </button>
+                <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
             </form>
         </div>
       </div>
