@@ -5,6 +5,7 @@ import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviewsDashboard, useReviews } from '../../src/hooks/useReviews';
 import { useNotifications, useMarkAsRead } from '../../src/hooks/useNotifications';
+import { useAuthStore } from '../../src/store/authStore';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
 
 interface HomePageProps {
@@ -221,7 +222,17 @@ function formatDate(dateString?: string): string {
 
 export default function HomePage({ userRole }: HomePageProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<DomainCode>('SAFETY');
+  const { getAccessibleDomains } = useAuthStore();
+  const accessibleDomains = getAccessibleDomains();
+
+  // 사용자가 접근 가능한 도메인만 필터링
+  const filteredDomainTabs = useMemo(() => {
+    return domainTabs.filter((tab) => accessibleDomains.includes(tab.key));
+  }, [accessibleDomains]);
+
+  const [activeTab, setActiveTab] = useState<DomainCode>(
+    filteredDomainTabs[0]?.key || 'SAFETY'
+  );
 
   // API calls based on user role
   const diagnosticsQuery = useDiagnosticsList(
@@ -518,7 +529,7 @@ export default function HomePage({ userRole }: HomePageProps) {
 
             {/* Tabs */}
             <div className="flex gap-[8px] mb-[24px] border-b border-[#dee2e6] overflow-x-auto">
-              {domainTabs.map((tab) => (
+              {filteredDomainTabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
