@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import type { DiagnosticStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
@@ -27,8 +27,11 @@ type StatusFilter = DiagnosticStatus | 'ALL';
 
 export default function DiagnosticsListPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialDomainCode = searchParams.get('domainCode') || '';
+
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [domainFilter, setDomainFilter] = useState<string>('');
+  const [domainFilter, setDomainFilter] = useState<string>(initialDomainCode);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(0);

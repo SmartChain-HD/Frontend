@@ -76,11 +76,13 @@ export default function DiagnosticCreatePage() {
   }, [selectedCampaignId, campaigns, setValue]);
 
   const onSubmit = async (data: DiagnosticCreateFormData) => {
+    // 중복 호출 방지
+    if (createMutation.isPending) return;
+
     createMutation.mutate(data, {
       onSuccess: (result) => {
         if (!isMountedRef.current) return;
-        const domainPath = data.domainCode.toLowerCase();
-        navigate(`/dashboard/${domainPath}/upload?diagnosticId=${result.diagnosticId}`);
+        navigate(`/diagnostics/${result.diagnosticId}`);
       },
     });
   };
