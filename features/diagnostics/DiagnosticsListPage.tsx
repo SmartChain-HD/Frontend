@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import type { DiagnosticStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
@@ -27,18 +27,14 @@ type StatusFilter = DiagnosticStatus | 'ALL';
 
 export default function DiagnosticsListPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialDomainCode = searchParams.get('domainCode') || '';
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [domainFilter, setDomainFilter] = useState<string>(initialDomainCode);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isError, refetch } = useDiagnosticsList({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
-    domainCode: domainFilter || undefined,
     keyword: keyword || undefined,
     page,
     size: 10,
@@ -56,13 +52,6 @@ export default function DiagnosticsListPage() {
     { key: 'APPROVED', label: '승인됨' },
     { key: 'REVIEWING', label: '심사중' },
     { key: 'COMPLETED', label: '완료' },
-  ];
-
-  const domainOptions: { value: string; label: string }[] = [
-    { value: '', label: '전체 도메인' },
-    { value: 'ESG', label: DOMAIN_LABELS.ESG },
-    { value: 'SAFETY', label: DOMAIN_LABELS.SAFETY },
-    { value: 'COMPLIANCE', label: DOMAIN_LABELS.COMPLIANCE },
   ];
 
   return (
@@ -97,17 +86,6 @@ export default function DiagnosticsListPage() {
               </button>
             ))}
           </div>
-
-          {/* 도메인 필터 */}
-          <select
-            value={domainFilter}
-            onChange={(e) => { setDomainFilter(e.target.value); setPage(0); }}
-            className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] bg-white"
-          >
-            {domainOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
 
           {/* 검색 */}
           <div className="flex gap-[8px] ml-auto">
