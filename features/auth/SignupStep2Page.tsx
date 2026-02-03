@@ -149,205 +149,201 @@ export default function SignupStep2Page() {
   const isVerificationLoading = checkEmailMutation.isPending || sendVerificationMutation.isPending;
 
   return (
-    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-6 lg:p-10 min-h-0">
-        <div className="w-full max-w-[1400px] h-full max-h-[650px] shadow-[var(--shadow-card)]">
-          <div className="bg-white rounded-[var(--radius-card)] w-full h-full overflow-y-auto">
-          <div className="flex flex-col items-end justify-end overflow-clip rounded-[inherit] size-full">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end justify-end p-3 lg:p-[24px] relative size-full">
-              {/* Main Content */}
-              <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)] w-full">
-                <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="flex flex-col items-start p-3 lg:p-[24px] size-full">
-                    <div className="flex flex-col gap-3 lg:gap-[24px] items-start shrink-0 w-full">
-                      {/* Back Button + Logo */}
-                      <div className="flex items-center gap-[12px] py-[24px] shrink-0 w-full">
-                        <button
-                          type="button"
-                          onClick={() => navigate('/signup/step1')}
-                          className="flex items-center justify-center w-[40px] h-[40px] rounded-full hover:bg-[var(--color-surface-primary)] transition-colors"
-                          aria-label="뒤로가기"
-                        >
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M15 18l-6-6 6-6" />
-                          </svg>
-                        </button>
-                        <Logo size="small" />
-                      </div>
-
-                      {/* Step Title */}
-                      <div className="flex flex-col gap-[12px] items-start shrink-0 text-[var(--color-text-primary)]">
-                        <p className="font-title-xxlarge leading-[0]">
-                          <span className="leading-[1.4] text-[var(--color-primary-main)]">2단계</span>
-                          <span className="leading-[1.4]">/2단계</span>
-                        </p>
-                        <p className="font-heading-small leading-[1.35]">개인정보입력</p>
-                      </div>
-
-                      {/* Form */}
-                      <div className="flex flex-col items-center justify-center shrink-0 w-full">
-                        <div className="flex flex-col gap-3 lg:gap-[24px] items-center justify-center shrink-0 w-full max-w-[480px]">
-                          {/* Name */}
-                          <div className="w-full">
-                            <Input
-                              label="이름"
-                              type="text"
-                              placeholder="이름을 입력해주세요."
-                              containerClassName="w-full"
-                              {...register('name')}
-                            />
-                            {errors.name && (
-                              <p className="text-red-500 font-detail-small mt-1">{errors.name.message}</p>
-                            )}
-                          </div>
-
-                          {/* Email with Verification Button */}
-                          <div className="w-full">
-                            <div className="flex gap-[10px] items-end w-full">
-                              <Input
-                                label="이메일"
-                                type="email"
-                                placeholder="회사 이메일을 입력해주세요."
-                                containerClassName="flex-1"
-                                {...register('email')}
-                              />
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                className="h-[56px]"
-                                onClick={handleCheckAndSendVerification}
-                                disabled={isVerificationLoading || emailVerified}
-                              >
-                                {emailVerified ? '인증완료' : isVerificationLoading ? '확인중...' : '인증요청'}
-                              </Button>
-                            </div>
-                            {errors.email && (
-                              <p className="text-red-500 font-detail-small mt-1">{errors.email.message}</p>
-                            )}
-                            {emailAvailable === false && (
-                              <p className="text-red-500 font-detail-small mt-1">이미 사용 중인 이메일입니다.</p>
-                            )}
-                            {emailAvailable === true && !emailVerified && (
-                              <p className="text-[var(--color-success-main)] font-detail-small mt-1">사용 가능한 이메일입니다. 인증코드를 확인해주세요.</p>
-                            )}
-                            {emailVerified && (
-                              <p className="text-[var(--color-success-main)] font-detail-small mt-1">이메일 인증이 완료되었습니다.</p>
-                            )}
-                          </div>
-
-                          {/* Verification Code Input */}
-                          {showVerificationInput && !emailVerified && (
-                            <div className="w-full">
-                              <div className="flex gap-[10px] items-end w-full">
-                                <div className="flex-1 relative">
-                                  <Input
-                                    label="인증코드"
-                                    type="text"
-                                    placeholder="6자리 인증코드를 입력해주세요."
-                                    containerClassName="w-full"
-                                    value={verificationCode}
-                                    onChange={(e) => setVerificationCode(e.target.value)}
-                                    maxLength={6}
-                                  />
-                                  {remainingSeconds > 0 && (
-                                    <span className="absolute right-4 top-[42px] font-detail-small text-[var(--color-state-error-text)]">
-                                      {formatTime(remainingSeconds)}
-                                    </span>
-                                  )}
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="secondary"
-                                  className="h-[56px]"
-                                  onClick={handleVerifyCode}
-                                  disabled={verifyEmailMutation.isPending || remainingSeconds <= 0}
-                                >
-                                  {verifyEmailMutation.isPending ? '확인중...' : '확인'}
-                                </Button>
-                              </div>
-                              {remainingSeconds <= 0 && (
-                                <p className="text-[var(--color-state-error-text)] font-detail-small mt-1">
-                                  인증코드가 만료되었습니다.
-                                  <button
-                                    type="button"
-                                    className="ml-2 underline text-[var(--color-primary-main)]"
-                                    onClick={handleCheckAndSendVerification}
-                                  >
-                                    재발송
-                                  </button>
-                                </p>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Password */}
-                          <div className="w-full">
-                            <Input
-                              label="비밀번호"
-                              type="password"
-                              placeholder="영문, 숫자, 특수문자 포함 8자 이상"
-                              containerClassName="w-full"
-                              {...register('password')}
-                            />
-                            {errors.password && (
-                              <p className="text-red-500 font-detail-small mt-1">{errors.password.message}</p>
-                            )}
-                          </div>
-
-                          {/* Password Confirm */}
-                          <div className="w-full">
-                            <Input
-                              label="비밀번호 확인"
-                              type="password"
-                              placeholder="비밀번호를 다시 입력해주세요."
-                              containerClassName="w-full"
-                              {...register('passwordConfirm')}
-                            />
-                            {errors.passwordConfirm && (
-                              <p className="text-red-500 font-detail-small mt-1">{errors.passwordConfirm.message}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+    // [1] 전체 화면 고정
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden">
+      
+      {/* [2] 중앙 정렬 컨테이너 */}
+      <div className="flex-1 flex items-center justify-center p-4 min-h-0">
+        
+        {/* [3] 카드 컨테이너: max-h-[85vh]로 화면 높이의 85% 제한 (중요!) */}
+        <div className="w-full max-w-[1400px] bg-white rounded-[24px] shadow-xl flex flex-col max-h-[85vh]">
+          
+          {/* Form: h-full로 설정하여 카드 높이만큼 꽉 채움 */}
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full overflow-hidden">
+            
+            {/* [Header] 고정 */}
+            <div className="shrink-0 p-6 md:p-8 pb-4">
+              <div className="flex items-center gap-3 mb-6">
+                <button
+                  type="button"
+                  onClick={() => navigate('/signup/step1')}
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="뒤로가기"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <Logo size="small" />
               </div>
+              
+              <div className="flex flex-col gap-[12px] items-start shrink-0 text-[var(--color-text-primary)]">
+                <p className="font-title-large leading-[0]">
+                  <span className="leading-[1.4] text-[var(--color-primary-main)]">2단계</span>
+                  <span className="leading-[1.4]">/2단계</span>
+                </p>
+                <p className="font-title-medium leading-[1.35]">개인정보입력</p>
+              </div>
+            </div>
 
-              {/* Submit Button */}
-              <div className="shrink-0 w-full">
-                <div className="flex flex-col items-end size-full">
-                  <div className="flex flex-col items-end p-[24px] w-full">
-                    <div className="flex gap-[12px]">
+            {/* [Body] 스크롤 영역: flex-1 overflow-y-auto */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 pt-2">
+              <div className="w-full max-w-[480px] mx-auto flex flex-col gap-6">
+                
+                {/* 이름 */}
+                <div>
+                  <Input
+                    label="이름"
+                    type="text"
+                    placeholder="이름을 입력해주세요."
+                    containerClassName="w-full"
+                    {...register('name')}
+                  />
+                  {errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                  )}
+                </div>
+
+                {/* 이메일 & 인증 요청 버튼 */}
+                <div>
+                  <div className="flex gap-3 items-end w-full">
+                    <Input
+                      label="이메일"
+                      type="email"
+                      placeholder="회사 이메일을 입력해주세요."
+                      containerClassName="flex-1"
+                      {...register('email')}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-[56px] min-w-[100px]"
+                      onClick={handleCheckAndSendVerification}
+                      disabled={isVerificationLoading || emailVerified}
+                    >
+                      {emailVerified ? '인증완료' : isVerificationLoading ? '확인중...' : '인증요청'}
+                    </Button>
+                  </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  )}
+                  {emailAvailable === false && (
+                    <p className="text-red-500 text-sm mt-1">이미 사용 중인 이메일입니다.</p>
+                  )}
+                  {emailAvailable === true && !emailVerified && (
+                    <p className="text-blue-600 text-sm mt-1">사용 가능한 이메일입니다. 인증코드를 확인해주세요.</p>
+                  )}
+                  {emailVerified && (
+                    <p className="text-green-600 text-sm mt-1">이메일 인증이 완료되었습니다.</p>
+                  )}
+                </div>
+
+                {/* 인증 코드 입력 (조건부 렌더링) - 여기가 늘어나도 스크롤만 생김 */}
+                {showVerificationInput && !emailVerified && (
+                  <div>
+                    <div className="flex gap-3 items-end w-full">
+                      <div className="flex-1 relative">
+                        <Input
+                          label="인증코드"
+                          type="text"
+                          placeholder="6자리 인증코드"
+                          containerClassName="w-full"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          maxLength={6}
+                        />
+                        {remainingSeconds > 0 && (
+                          <span className="absolute right-4 top-[42px] text-sm text-red-500 font-medium">
+                            {formatTime(remainingSeconds)}
+                          </span>
+                        )}
+                      </div>
                       <Button
                         type="button"
                         variant="secondary"
-                        size="large"
-                        onClick={() => navigate('/signup/step1')}
+                        className="h-[56px] min-w-[80px]"
+                        onClick={handleVerifyCode}
+                        disabled={verifyEmailMutation.isPending || remainingSeconds <= 0}
                       >
-                        이전
-                      </Button>
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="large"
-                        disabled={registerMutation.isPending || !emailVerified}
-                      >
-                        {registerMutation.isPending ? '가입 중...' : '회원가입'}
+                        {verifyEmailMutation.isPending ? '...' : '확인'}
                       </Button>
                     </div>
+                    {remainingSeconds <= 0 && (
+                      <p className="text-red-500 text-sm mt-1">
+                        인증코드가 만료되었습니다.
+                        <button
+                          type="button"
+                          className="ml-2 underline text-blue-600 font-medium"
+                          onClick={handleCheckAndSendVerification}
+                        >
+                          재발송
+                        </button>
+                      </p>
+                    )}
                   </div>
+                )}
+
+                {/* 비밀번호 */}
+                <div>
+                  <Input
+                    label="비밀번호"
+                    type="password"
+                    placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+                    containerClassName="w-full"
+                    {...register('password')}
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  )}
                 </div>
+
+                {/* 비밀번호 확인 */}
+                <div>
+                  <Input
+                    label="비밀번호 확인"
+                    type="password"
+                    placeholder="비밀번호를 다시 입력해주세요."
+                    containerClassName="w-full"
+                    {...register('passwordConfirm')}
+                  />
+                  {errors.passwordConfirm && (
+                    <p className="text-red-500 text-sm mt-1">{errors.passwordConfirm.message}</p>
+                  )}
+                </div>
+
               </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+            {/* [Footer] 고정 영역 (버튼) */}
+            <div className="shrink-0 p-6 md:p-8 pt-4 border-t border-gray-100 bg-white rounded-b-[24px]">
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="large"
+                  onClick={() => navigate('/signup/step1')}
+                >
+                  이전
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="large"
+                  disabled={registerMutation.isPending || !emailVerified}
+                >
+                  {registerMutation.isPending ? '가입 중...' : '회원가입'}
+                </Button>
+              </div>
+            </div>
+            
+          </form>
         </div>
       </div>
 
-      {/* Footer */}
-      <Footer />
+      {/* [4] 페이지 푸터 */}
+      <div className="shrink-0 hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }
