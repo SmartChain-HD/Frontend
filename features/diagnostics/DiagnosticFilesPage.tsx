@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useDiagnosticFiles, useParsingResult, useDeleteFile } from '../../src/hooks/useFiles';
 import { useJobPolling, useRetryJob } from '../../src/hooks/useJobs';
+import { QUERY_KEYS } from '../../src/constants/queryKeys';
 import {
   useAiPreview,
   useSubmitAiRun,
@@ -12,7 +14,6 @@ import * as filesApi from '../../src/api/files';
 import type { JobStatus } from '../../src/api/jobs';
 import type {
   SlotStatus,
-  SlotHint,
   AiAnalysisResultResponse,
   SlotResultDetail,
   ClarificationDetail,
@@ -88,6 +89,97 @@ const RISK_STYLES: Record<RiskLevel, string> = {
   HIGH: 'bg-red-50 text-red-700',
 };
 
+// extras 키-라벨 매핑
+const EXTRAS_LABELS: Record<string, string> = {
+  anomalies: '⚠️ 이상 징후',
+  missing_fields: '📝 누락된 항목',
+  missing_slots: '📝 누락된 슬롯',
+  violations: '🚫 위반 사항',
+  summary: '📄 문서 요약',
+  detected_objects: '🔍 감지된 객체',
+  person_count: '👥 감지 인원',
+  scene_description: '📸 상황 묘사',
+  detail: 'ℹ️ 상세 정보',
+};
+
+// reason 코드-한글 매핑
+const REASON_LABELS: Record<string, string> = {
+  // 공통
+  MISSING_SLOT: '필수 슬롯 누락',
+  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
+  EMPTY_TABLE: '표/데이터 행이 비어있음',
+  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
+  WRONG_YEAR: '문서 대상 연도 불일치',
+  PARSE_FAILED: '파싱 실패',
+  DATE_MISMATCH: '기간 불일치',
+  UNIT_MISSING: '단위 누락',
+  EVIDENCE_MISSING: '근거문서 누락',
+  SIGNATURE_MISSING: '확인 서명란 미기재',
+
+  // Compliance
+  KEYWORD_MISSING: '표준 계약서 필수 조항 누락',
+  LOW_EDUCATION_RATE: '교육 이수율 기준 미달',
+  DATA_NOT_FOUND: '데이터 식별 불가',
+  HIGH_RISK_DETECTED: '위험요소 발견 후 미조치',
+  MISSING_MANDATORY_TRAINING: '법정의무 교육 계획 누락',
+
+  // ESG 에너지
+  E1_NEGATIVE_OR_ZERO: '사용량이 0 또는 음수',
+  E1_DATE_PARSE_FAILED: '날짜 파싱 실패',
+  E1_DUPLICATE_DATE: '날짜 중복',
+  E1_GAP_DETECTED: '기간 연속성 결함',
+  E2_SPIKE_DETECTED: '사용량 급증/급감 이상치',
+  E3_BILL_MISMATCH: '고지서 합계와 사용량 합계 불일치',
+  E3_BILL_PERIOD_UNCERTAIN: '고지서 기간 추출 불확실',
+  E4_GHG_EVIDENCE_MISSING: '온실가스 산정 근거 문서 누락',
+
+  // ESG 유해물질
+  E5_MSDS_MISSING: '유해물질 목록 대비 MSDS 누락',
+  E6_STOCK_SPIKE: '유해물질 수량 급증',
+  E6_INSPECTION_OVERDUE: '점검일 경과',
+  E7_DISPOSAL_INCONSISTENT: '폐기/처리 정합성 불일치',
+
+  // ESG 윤리
+  E8_OLD_REVISION: '윤리강령 개정일이 오래됨',
+  E8_MISSING_SECTIONS: '윤리강령 필수 섹션 누락',
+  E8_MULTI_VERSION: '여러 버전 동시 제출',
+  E9_NO_DISTRIBUTION_LOG: '배포/수신확인 로그 누락',
+  E9_NO_PLEDGE: '서약서 누락',
+  E9_PLEDGE_BEFORE_REVISION: '서약일이 개정일보다 과거',
+  E9_DISTR_BEFORE_REVISION: '배포일이 개정일보다 과거',
+  G_OCR_UNREADABLE: '문서 판독 불가',
+
+  // Safety 교육
+  EDU_DEPT_ZERO: '특정 부서/직무 이수율 0%',
+  EDU_RATE_SPIKE: '이수율 전월 대비 30%p 이상 급변',
+  EDU_FUTURE_DATE: '교육일이 미래 날짜',
+
+  // Safety 위험성평가
+  RISK_ACTION_MISSING: '감소대책/조치 항목 누락',
+  RISK_OWNER_MISSING: '담당자 정보 누락',
+  RISK_CHECKDATE_MISSING: '점검일 누락',
+
+  // Safety 안전보건관리체계
+  MISSING_SECTION_ORG: '조직/책임/권한 섹션 없음',
+  MISSING_SECTION_RISK: '위험성평가 섹션 없음',
+  MISSING_SECTION_INCIDENT: '사고 대응 절차 섹션 없음',
+  MISSING_SECTION_TRAINING: '교육/점검 섹션 없음',
+  MISSING_SECTION_IMPROVE: '개선조치 섹션 없음',
+
+  // Safety 소방
+  FIRE_ALL_GOOD_PATTERN: '항목이 항상 양호로만 반복',
+  FIRE_COPYPASTE_PATTERN: '총평/체크패턴 반복',
+
+  // 교차 검증
+  CROSS_HEADCOUNT_MISMATCH: '출석부 인원수와 교육사진 인원수 불일치',
+  CROSS_ATTENDANCE_PARSE_FAILED: '출석부에서 인원수 추출 실패',
+  CROSS_PHOTO_COUNT_FAILED: '교육사진에서 인원수 감지 실패',
+
+  // LLM 공통
+  LLM_ANOMALY_DETECTED: 'AI가 문서 이상 징후를 감지함',
+  LLM_MISSING_FIELDS: 'AI가 누락 항목을 감지함',
+  VIOLATION_DETECTED: 'AI가 위반 사항을 감지함',
+};
 
 // 업로드 아이템 컴포넌트
 function FileUploadItem({
@@ -282,79 +374,52 @@ function SlotChecklist({
 }) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-[40px]">
-        <div className="w-[24px] h-[24px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-[20px]">
+        <div className="w-[20px] h-[20px] border-[2px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (slots.length === 0) {
     return (
-      <div className="text-center py-[40px]">
-        <p className="font-body-medium text-[var(--color-text-tertiary)]">
-          필수 첨부 자료 목록을<br />불러오는 중입니다
+      <div className="text-center py-[20px]">
+        <p className="font-body-small text-[var(--color-text-tertiary)]">
+          슬롯 목록 없음
         </p>
       </div>
     );
   }
 
-  const submittedCount = slots.filter(s => submittedSlots.has(s.slot_name)).length;
-
   return (
-    <div className="space-y-[16px]">
-      {/* 진행률 */}
-      <div>
-        <div className="flex items-center justify-between mb-[8px]">
-          <span className="font-body-medium text-[var(--color-text-secondary)]">
-            제출 완료
-          </span>
-          <span className="font-title-small text-[var(--color-text-primary)]">
-            {submittedCount} / {slots.length}
-          </span>
-        </div>
-        <div className="h-[8px] bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[var(--color-primary-main)] transition-all"
-            style={{
-              width: `${slots.length > 0 ? (submittedCount / slots.length) * 100 : 0}%`
-            }}
-          />
-        </div>
-      </div>
-
-      {/* 슬롯 목록 */}
-      <div className="space-y-[6px]">
-        {slots.map((slot, index) => (
-          <SlotCheckItem
-            key={index}
-            slotName={slot.slot_name}
-            isSubmitted={submittedSlots.has(slot.slot_name)}
-            isRequired={missingRequired.includes(slot.slot_name)}
-          />
-        ))}
-      </div>
+    <div className="space-y-[8px]">
+      {slots.map((slot, index) => (
+        <SlotCheckItem
+          key={index}
+          slotName={slot.slot_name}
+          isSubmitted={submittedSlots.has(slot.slot_name)}
+          isRequired={missingRequired.includes(slot.slot_name)}
+        />
+      ))}
     </div>
   );
 }
 
 function SlotCheckItem({ slotName, isSubmitted, isRequired }: { slotName: string; isSubmitted: boolean; isRequired: boolean }) {
   return (
-    <div className="flex items-center gap-[10px] px-[12px] py-[8px] bg-gray-50 rounded-[8px]">
+    <div className="flex items-center gap-[10px] py-[4px]">
       {isSubmitted ? (
-        <svg className="w-[18px] h-[18px] text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <svg className="w-[20px] h-[20px] text-green-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
       ) : (
-        <div className="w-[18px] h-[18px] rounded border-2 border-gray-300 flex-shrink-0" />
+        <div className="w-[20px] h-[20px] rounded-full border-2 border-gray-300 flex-shrink-0" />
       )}
-      <span className={`font-body-small flex-1 ${isSubmitted ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-tertiary)]'}`}>
+      <span className={`font-body-medium flex-1 ${isSubmitted ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-tertiary)]'}`}>
         {slotName}
+        {isRequired && !isSubmitted && (
+          <span className="text-[var(--color-text-tertiary)] ml-[4px]">(필수)</span>
+        )}
       </span>
-      {isRequired && !isSubmitted && (
-        <span className="px-[6px] py-[1px] bg-red-100 text-red-600 text-xs font-medium rounded">
-          필수
-        </span>
-      )}
     </div>
   );
 }
@@ -406,16 +471,20 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
           </div>
         )}
 
-        {/* 보완 요청 메시지 */}
-        {details?.clarifications && details.clarifications.length > 0 && (
+        {/* 참고사항 */}
+        {details?.extras && Object.keys(details.extras).length > 0 && (
           <div>
             <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[12px]">
-              보완 요청 사항
+              참고사항
             </p>
-            <div className="space-y-[12px]">
-              {details.clarifications.map((clarification, index) => (
-                <ClarificationCard key={index} clarification={clarification} />
-              ))}
+            <div className="p-[16px] bg-gray-50 rounded-[12px] space-y-[8px]">
+              {Object.entries(details.extras as Record<string, string>)
+                .filter(([, value]) => value)
+                .map(([key, value]) => (
+                  <div key={key} className="font-body-small text-[var(--color-text-secondary)]">
+                    <span className="font-medium">{EXTRAS_LABELS[key] || key}:</span> {value}
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -455,12 +524,13 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         </span>
       </div>
 
+      {/* reasons 표시 */}
       {result.reasons && result.reasons.length > 0 && (
         <ul className="space-y-[4px] mt-[8px]">
           {result.reasons.map((reason, index) => (
             <li key={index} className="flex items-start gap-[6px] font-body-small text-[var(--color-text-secondary)]">
               <span className="w-[4px] h-[4px] bg-gray-400 rounded-full mt-[6px] flex-shrink-0" />
-              {reason}
+              {REASON_LABELS[reason] || reason}
             </li>
           ))}
         </ul>
@@ -601,6 +671,7 @@ function ParsingResultView({ diagnosticId, fileId }: { diagnosticId: number; fil
 export default function DiagnosticFilesPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const diagnosticId = Number(id);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -609,29 +680,28 @@ export default function DiagnosticFilesPage() {
   const deleteMutation = useDeleteFile();
   const retryMutation = useRetryJob();
 
-  // AI 분석 관련 훅
-  const previewMutation = useAiPreview();
-  const submitMutation = useSubmitAiRun();
-  const { data: aiResult, isLoading: isResultLoading } = useAiResult(diagnosticId);
-
   const [newlyUploadedFiles, setNewlyUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // AI 분석 관련 훅
+  const previewMutation = useAiPreview();
+  const submitMutation = useSubmitAiRun();
+  // 분석 중일 때만 polling (평소에는 1회만 호출)
+  const { data: aiResult } = useAiResult(diagnosticId, isAnalyzing);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // slot_hint에 있는 file_id Set
-  const slotHintFileIds = useMemo(() => {
-    const hints = previewMutation.data?.slot_hint || [];
-    return new Set(hints.map(h => Number(h.file_id)));
-  }, [previewMutation.data?.slot_hint]);
-
-  // 기존 파일 중 slot_hint에 있는 것만 + 새로 업로드한 파일 합치기
+  // 모든 업로드된 파일 표시
+  // 새로 업로드한 파일 상태를 우선 사용 (job polling 결과 반영)
   const uploadedFiles = useMemo(() => {
-    // 기존 파일 중 slot_hint에 있는 것만 필터링
+    // 새로 업로드한 파일 ID Set (우선순위 높음)
+    const newFileIds = new Set(newlyUploadedFiles.map(f => f.id));
+
+    // 기존 파일 중 새로 업로드한 파일과 중복되지 않는 것만
     const existingUploadedFiles: UploadedFile[] = (existingFiles || [])
-      .filter(f => slotHintFileIds.has(f.fileId))
+      .filter(f => !newFileIds.has(f.fileId))
       .map(f => ({
         id: f.fileId,
         name: f.fileName,
@@ -639,15 +709,11 @@ export default function DiagnosticFilesPage() {
         uploadStatus: f.parsingStatus === 'SUCCESS' ? 'complete' : f.parsingStatus === 'FAILED' ? 'error' : 'processing',
         uploadProgress: 100,
         processingStatus: f.parsingStatus === 'SUCCESS' ? 'SUCCEEDED' : f.parsingStatus === 'FAILED' ? 'FAILED' : 'RUNNING',
-      }));
+      } as UploadedFile));
 
-    // 기존 파일 ID Set
-    const existingIds = new Set(existingUploadedFiles.map(f => f.id));
-    // 새로 업로드한 파일 중 기존에 없는 것만 추가 (업로드 중인 파일 포함)
-    const uniqueNewFiles = newlyUploadedFiles.filter(f => !existingIds.has(f.id));
-
-    return [...existingUploadedFiles, ...uniqueNewFiles];
-  }, [existingFiles, newlyUploadedFiles, slotHintFileIds]);
+    // 새로 업로드한 파일을 먼저 배치 (상태가 정확함)
+    return [...newlyUploadedFiles, ...existingUploadedFiles];
+  }, [existingFiles, newlyUploadedFiles]);
 
   useEffect(() => {
     return () => {
@@ -671,12 +737,12 @@ export default function DiagnosticFilesPage() {
     .filter(f => f.uploadStatus === 'complete')
     .map(f => f.id);
 
-  // 페이지 로드 시 + 완료 파일 변경 시 preview 호출
+  // 페이지 로드 시 초기 preview 호출 (필수 슬롯 목록용)
   useEffect(() => {
     if (diagnosticId > 0) {
-      callPreview(allCompletedFileIds);
+      callPreview([]);
     }
-  }, [diagnosticId, allCompletedFileIds.length]);
+  }, [diagnosticId]);
 
   // 분석 완료 감지
   useEffect(() => {
@@ -713,9 +779,14 @@ export default function DiagnosticFilesPage() {
             : f
           )
         );
+
+        // job 완료 시 existingFiles 쿼리 갱신
+        if (jobStatus.status === 'SUCCEEDED' || jobStatus.status === 'FAILED') {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
+        }
       }
     }
-  }, [jobStatus, processingFile]);
+  }, [jobStatus, processingFile, queryClient, diagnosticId]);
 
   // 슬롯 힌트에서 파일 ID로 슬롯명 찾기
   const getAutoTagForFile = useCallback((fileId: number): string | undefined => {
@@ -898,7 +969,6 @@ export default function DiagnosticFilesPage() {
 
   const previewData = previewMutation.data;
   const requiredSlotStatus = previewData?.required_slot_status || [];
-  const slotHints = previewData?.slot_hint || [];
   const missingRequiredSlots = previewData?.missing_required_slots || [];
   const hasMissingRequiredSlots = missingRequiredSlots.length > 0;
 
@@ -939,12 +1009,6 @@ export default function DiagnosticFilesPage() {
           </div>
           {uploadedFiles.length > 0 && (
             <div className="flex items-center gap-[16px] text-sm">
-              {completedCount > 0 && (
-                <span className="flex items-center gap-[6px] text-green-600">
-                  <span className="w-[8px] h-[8px] rounded-full bg-green-500" />
-                  완료 {completedCount}
-                </span>
-              )}
               {processingCount > 0 && (
                 <span className="flex items-center gap-[6px] text-amber-600">
                   <span className="w-[8px] h-[8px] rounded-full bg-amber-500 animate-pulse" />
@@ -1029,74 +1093,65 @@ export default function DiagnosticFilesPage() {
                     autoTag={getAutoTagForFile(file.id)}
                   />
                 ))}
+
+                {/* Add 버튼 */}
+                <button
+                  onClick={() => callPreview(allCompletedFileIds)}
+                  disabled={previewMutation.isPending || completedCount === 0}
+                  className="w-full py-[12px] rounded-[10px] border-2 border-dashed border-[var(--color-primary-light)] text-[var(--color-primary-main)] font-title-small hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+                >
+                  {previewMutation.isPending ? (
+                    <>
+                      <span className="w-[16px] h-[16px] border-[2px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+                      매칭 중...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                       Add (파일 추가 및 미리보기)
+                    </>
+                  )}
+                </button>
+
+                {/* 최종 제출 버튼 */}
+                <button
+                  onClick={() => setShowSubmitModal(true)}
+                  disabled={isAnalyzing || submitMutation.isPending || completedCount === 0}
+                  className="w-full py-[14px] rounded-[10px] bg-[var(--color-primary-main)] text-white font-title-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+                >
+                  {isAnalyzing || submitMutation.isPending ? (
+                    <>
+                      <span className="w-[18px] h-[18px] border-[2px] border-white border-t-transparent rounded-full animate-spin" />
+                      AI 분석 중...
+                    </>
+                  ) : (
+                    '최종 제출 (결과 확인)'
+                  )}
+                </button>
               </div>
             )}
           </div>
 
           {/* 우측: 필수 첨부 자료 리스트 */}
           <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] h-fit sticky top-[24px]">
-            <div className="px-[20px] py-[16px] border-b border-[var(--color-border-default)]">
-              <h3 className="font-title-medium text-[var(--color-text-primary)]">
+            <div className="px-[20px] py-[14px] border-b border-[var(--color-border-default)]">
+              <h3 className="font-title-small text-[var(--color-text-primary)]">
                 필수 첨부 자료 리스트
               </h3>
             </div>
-            <div className="p-[20px]">
+            <div className="px-[20px] py-[16px]">
               <SlotChecklist
                 slots={requiredSlotStatus}
                 submittedSlots={submittedSlots}
                 missingRequired={missingRequiredSlots}
                 isLoading={previewMutation.isPending}
               />
-
-              {/* 누락 슬롯 경고 */}
-              {hasMissingRequiredSlots && (
-                <div className="mt-[16px] p-[12px] bg-red-50 rounded-[8px] border border-red-200">
-                  <div className="flex items-start gap-[8px]">
-                    <svg className="w-[16px] h-[16px] text-red-500 flex-shrink-0 mt-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <div>
-                      <p className="font-title-xsmall text-red-700 mb-[4px]">
-                        필수 항목 누락
-                      </p>
-                      <ul className="space-y-[2px]">
-                        {missingRequiredSlots.map((slot: string, index: number) => (
-                          <li key={index} className="font-body-small text-red-600 flex items-center gap-[4px]">
-                            <span className="w-[3px] h-[3px] bg-red-500 rounded-full" />
-                            {slot}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        {/* 최종 제출 버튼 */}
-        <div className="flex justify-center pt-[16px]">
-          <button
-            onClick={() => setShowSubmitModal(true)}
-            disabled={isAnalyzing || submitMutation.isPending || completedCount === 0}
-            className="px-[32px] py-[14px] rounded-[12px] bg-[var(--color-primary-main)] text-white font-title-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-[8px]"
-          >
-            {isAnalyzing || submitMutation.isPending ? (
-              <>
-                <span className="w-[18px] h-[18px] border-[2px] border-white border-t-transparent rounded-full animate-spin" />
-                AI 분석 중...
-              </>
-            ) : (
-              <>
-                <svg className="w-[20px] h-[20px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                최종 제출 (결과 확인)
-              </>
-            )}
-          </button>
-        </div>
 
         {/* 분석 결과 섹션 */}
         {isAnalyzing && (
