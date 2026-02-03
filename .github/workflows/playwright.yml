@@ -1,0 +1,7 @@
+name: Playwright Tests
+
+# 실제 백엔드 API 연동 테스트이므로 CI에서는 비활성화
+# 로컬에서 백엔드 서버(localhost:8080)를 띄운 상태에서 실행:
+#   npx playwright test
+on:
+  workflow_dispatch:

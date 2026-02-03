@@ -1,4 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
+import { useAuthStore } from './src/store/authStore';
+import { useMe } from './src/hooks/useAuth';
+import type { DomainCode } from './src/types/api.types';
 import OnboardingPage from './features/onboarding/OnboardingPage';
 import LoginPage from './features/auth/LoginPage';
 import SignupStep1Page from './features/auth/SignupStep1Page';
@@ -12,146 +17,345 @@ import DocumentReviewPage from './features/documents/DocumentReviewPage';
 import PermissionRequestPage from './features/permission/PermissionRequestPage';
 import PermissionStatusPage from './features/permission/PermissionStatusPage';
 import PermissionManagementPage from './features/permission/PermissionManagementPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
+import ApprovalsListPage from './features/approvals/ApprovalsListPage';
+import ApprovalDetailPage from './features/approvals/ApprovalDetailPage';
+import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
+import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
+import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
+import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
+import DiagnosticAiAnalysisPage from './features/diagnostics/DiagnosticAiAnalysisPage';
+import ReviewsListPage from './features/reviews/ReviewsListPage';
+import ReviewDetailPage from './features/reviews/ReviewDetailPage';
+import UserManagementPage from './features/management/UserManagementPage';
+import CompanyManagementPage from './features/management/CompanyManagementPage';
+import ActivityLogPage from './features/management/ActivityLogPage';
 
-type UserRole = 'receiver' | 'drafter' | 'approver' | 'guest' | null;
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const userRole = localStorage.getItem('userRole');
-  
-  if (!userRole) {
+  const { isAuthenticated } = useAuthStore();
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 }
 
-export default function App() {
-  const getUserRole = () => localStorage.getItem('userRole') as UserRole;
+function MemberRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isGuest } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isGuest()) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+interface DomainProtectedRouteProps {
+  children: React.ReactNode;
+  domainCode: DomainCode;
+}
+
+function DomainProtectedRoute({ children, domainCode }: DomainProtectedRouteProps) {
+  const { isAuthenticated, isGuest, hasDomainAccess } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isGuest()) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  if (!hasDomainAccess(domainCode)) {
+    return <Navigate to="/permission/request" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  const { user } = useAuthStore();
+
+  // Fetch user info on app load if authenticated
+  useMe();
+
+  const getUserRoleForLegacy = (): 'receiver' | 'drafter' | 'approver' => {
+    if (!user?.role) return 'drafter';
+    const code = user.role.code;
+    if (code === 'REVIEWER') return 'receiver';
+    if (code === 'APPROVER') return 'approver';
+    return 'drafter';
+  };
+
+  const legacyRole = getUserRoleForLegacy();
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup/step1" element={<SignupStep1Page />} />
-        <Route path="/signup/step2" element={<SignupStep2Page />} />
-        
-        {/* Permission Routes */}
-        <Route 
-          path="/permission/request" 
-          element={
-            <ProtectedRoute>
-              <PermissionRequestPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/permission/status" 
-          element={
-            <ProtectedRoute>
-              <PermissionStatusPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/dashboard/permission" 
-          element={
-            <ProtectedRoute>
-               {/* Only receiver should access this in real app, but for now allow logged in users or add role check */}
-              <PermissionManagementPage />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <HomePage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/safety"
-          element={
-            <ProtectedRoute>
-              <SafetyPage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/compliance"
-          element={
-            <ProtectedRoute>
-              <CompliancePage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/esg"
-          element={
-            <ProtectedRoute>
-              <ESGPage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Document Routes */}
-        <Route
-          path="/dashboard/safety/upload"
-          element={
-            <ProtectedRoute>
-              <FileUploadPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/safety/review/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentReviewPage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/compliance/upload"
-          element={
-            <ProtectedRoute>
-              <FileUploadPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/compliance/review/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentReviewPage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/esg/upload"
-          element={
-            <ProtectedRoute>
-              <FileUploadPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/esg/review/:id"
-          element={
-            <ProtectedRoute>
-              <DocumentReviewPage userRole={(getUserRole() as 'receiver' | 'drafter' | 'approver' | null) || 'receiver'} />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* Default Route */}
-        <Route path="/" element={<OnboardingPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup/step1" element={<SignupStep1Page />} />
+      <Route path="/signup/step2" element={<SignupStep2Page />} />
+
+      {/* Permission Routes */}
+      <Route
+        path="/permission/request"
+        element={
+          <ProtectedRoute>
+            <PermissionRequestPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/permission/status"
+        element={
+          <ProtectedRoute>
+            <PermissionStatusPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/permission"
+        element={
+          <MemberRoute>
+            <PermissionManagementPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Management Routes */}
+      <Route
+        path="/management/users"
+        element={
+          <MemberRoute>
+            <UserManagementPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/management/companies"
+        element={
+          <MemberRoute>
+            <CompanyManagementPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/management/activity-logs"
+        element={
+          <MemberRoute>
+            <ActivityLogPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Diagnostics */}
+      <Route
+        path="/diagnostics"
+        element={
+          <MemberRoute>
+            <DiagnosticsListPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/new"
+        element={
+          <MemberRoute>
+            <DiagnosticCreatePage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id"
+        element={
+          <MemberRoute>
+            <DiagnosticDetailPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id/files"
+        element={
+          <MemberRoute>
+            <DiagnosticFilesPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/diagnostics/:id/ai-analysis"
+        element={
+          <MemberRoute>
+            <DiagnosticAiAnalysisPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Approvals */}
+      <Route
+        path="/approvals"
+        element={
+          <MemberRoute>
+            <ApprovalsListPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/approvals/:id"
+        element={
+          <MemberRoute>
+            <ApprovalDetailPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Reviews */}
+      <Route
+        path="/reviews"
+        element={
+          <MemberRoute>
+            <ReviewsListPage />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/reviews/:id"
+        element={
+          <MemberRoute>
+            <ReviewDetailPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Notifications */}
+      <Route
+        path="/notifications"
+        element={
+          <MemberRoute>
+            <NotificationsPage />
+          </MemberRoute>
+        }
+      />
+
+      {/* Dashboard Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <MemberRoute>
+            <HomePage userRole={legacyRole} />
+          </MemberRoute>
+        }
+      />
+      <Route
+        path="/dashboard/safety"
+        element={
+          <DomainProtectedRoute domainCode="SAFETY">
+            <SafetyPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/compliance"
+        element={
+          <DomainProtectedRoute domainCode="COMPLIANCE">
+            <CompliancePage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/esg"
+        element={
+          <DomainProtectedRoute domainCode="ESG">
+            <ESGPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+
+      {/* Document Routes - Safety */}
+      <Route
+        path="/dashboard/safety/upload"
+        element={
+          <DomainProtectedRoute domainCode="SAFETY">
+            <FileUploadPage />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/safety/review/:id"
+        element={
+          <DomainProtectedRoute domainCode="SAFETY">
+            <DocumentReviewPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+
+      {/* Document Routes - Compliance */}
+      <Route
+        path="/dashboard/compliance/upload"
+        element={
+          <DomainProtectedRoute domainCode="COMPLIANCE">
+            <FileUploadPage />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/compliance/review/:id"
+        element={
+          <DomainProtectedRoute domainCode="COMPLIANCE">
+            <DocumentReviewPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+
+      {/* Document Routes - ESG */}
+      <Route
+        path="/dashboard/esg/upload"
+        element={
+          <DomainProtectedRoute domainCode="ESG">
+            <FileUploadPage />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/esg/review/:id"
+        element={
+          <DomainProtectedRoute domainCode="ESG">
+            <DocumentReviewPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+
+      {/* Default Route */}
+      <Route path="/" element={<OnboardingPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+      <Toaster position="top-right" richColors />
+    </QueryClientProvider>
   );
 }

@@ -1,15 +1,21 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { LogoWithSubtitle } from '../../shared/components/Logo';
+import type { AxiosError } from 'axios';
+import { useLogin } from '../../src/hooks/useAuth';
+import { useAuthStore } from '../../src/store/authStore';
+import { loginSchema, type LoginFormData } from '../../src/validation/auth';
+import type { ErrorResponse } from '../../src/types/api.types';
+import { getLoginErrorMessage } from '../../src/utils/errorHandler';
 import svgPaths from "../../imports/svg-1z9x9otd1u";
 import { imgGroup } from "../../imports/svg-cdk78";
 
 function LoginBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Background gradient elements - keeping simplified */}
       <div className="absolute w-[200%] h-[200%] top-[-50%] left-[-50%] flex items-center justify-center pointer-events-none">
         <div className="flex-none rotate-[41.48deg] scale-y-88 skew-x-[-28.83deg] opacity-60">
              <div className="h-[2019.02px] relative w-[1419.932px]">
@@ -69,7 +75,7 @@ function LoginLeftPanel() {
   return (
     <div className="bg-[var(--color-surface-primary)] flex-1 hidden lg:flex flex-col relative overflow-hidden rounded-t-[20px] lg:rounded-l-[20px] lg:rounded-tr-none">
         <LoginBackground />
-        
+
         {/* Content */}
         <div className="relative z-10 flex-1 flex flex-col justify-center items-center p-12 text-center">
             <p className="font-body-large leading-[1.6] text-black mb-8">
@@ -85,7 +91,7 @@ function LoginLeftPanel() {
                 </div>
             </div>
         </div>
-        
+
         <div className="relative z-10">
             <HDLogo />
         </div>
@@ -95,22 +101,20 @@ function LoginLeftPanel() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { isAuthenticated } = useAuthStore();
+  const loginMutation = useLogin();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock login - redirect to dashboard
-    // In real app, call auth API here
-    localStorage.setItem('userRole', 'receiver'); // Mock role
-    localStorage.setItem('userName', email.split('@')[0] || '사용자');
-    navigate('/dashboard');
-  };
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleQuickLogin = (role: 'receiver' | 'drafter' | 'approver', name: string) => {
-    localStorage.setItem('userRole', role);
-    localStorage.setItem('userName', name);
-    navigate('/dashboard');
+  // 이미 인증된 사용자는 대시보드로 리다이렉트
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const onSubmit = (data: LoginFormData) => {
+    loginMutation.mutate(data);
   };
 
   const handleSignup = () => {
@@ -121,93 +125,69 @@ export default function LoginPage() {
     <div className="bg-[var(--color-page-bg)] min-h-screen w-full flex items-center justify-center p-4 lg:p-[72px]">
       <div className="bg-white flex flex-col lg:flex-row w-full max-w-[1776px] min-h-[80vh] lg:h-[936px] rounded-[20px] shadow-lg overflow-hidden">
         <LoginLeftPanel />
-        
+
         {/* Right Panel - Login Form */}
         <div className="flex-1 w-full p-8 lg:p-12 flex flex-col justify-center items-center h-full">
-            <form onSubmit={handleLogin} className="w-full max-w-[400px] flex flex-col gap-[24px] items-center">
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-[400px] flex flex-col gap-[24px] items-center">
                 <div className="w-full flex flex-col gap-[40px] items-start">
                     {/* Title */}
                     <div className="w-full flex justify-center lg:justify-start">
                          <LogoWithSubtitle />
                     </div>
-                    
-                    {/* Test Login Buttons */}
-                    <div className="w-full bg-[#e3f2fd] rounded-[12px] p-[20px] border-2 border-[#003087]">
-                    <p className="text-center text-[#002554] font-title-small mb-[16px]">
-                        🔧 권한별 테스트 로그인
-                    </p>
-                    <div className="flex flex-col gap-[8px]">
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('receiver', '김수신')}
-                        className="w-full rounded-[8px] bg-[#003087] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#002554]"
-                        >
-                        수신자(원청) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('drafter', '이기안')}
-                        className="w-full rounded-[8px] bg-[#00ad1d] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#008a18]"
-                        >
-                        기안자(협력사) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => handleQuickLogin('approver', '박결재')}
-                        className="w-full rounded-[8px] bg-[#e65100] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#d84315]"
-                        >
-                        결재자(협력사) 로그인
-                        </button>
-                        <button
-                        type="button"
-                        onClick={() => {
-                            localStorage.setItem('userRole', 'guest');
-                            localStorage.setItem('userName', '김방문');
-                            navigate('/permission/request');
-                        }}
-                        className="w-full rounded-[8px] bg-[#6c757d] px-[16px] py-[12px] text-white font-title-xsmall transition-colors hover:bg-[#5a6268]"
-                        >
-                        게스트(신규가입) 로그인
-                        </button>
-                    </div>
-                    </div>
-                    
+
                     {/* Form Fields */}
                     <div className="w-full flex flex-col gap-[24px]">
-                    <Input
+                    <div className="w-full">
+                      <Input
                         label="이메일"
                         type="email"
                         placeholder="이메일을 입력해주세요."
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
                         containerClassName="w-full"
-                        required
-                    />
-                    <Input
+                        {...register('email')}
+                      />
+                      {errors.email && (
+                        <p className="text-red-500 font-detail-small mt-1">{errors.email.message}</p>
+                      )}
+                    </div>
+                    <div className="w-full">
+                      <Input
                         label="비밀번호"
                         type="password"
                         placeholder="비밀번호를 입력해주세요."
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
                         containerClassName="w-full"
-                        required
-                    />
+                        {...register('password')}
+                      />
+                      {errors.password && (
+                        <p className="text-red-500 font-detail-small mt-1">{errors.password.message}</p>
+                      )}
+                    </div>
+                    {loginMutation.isError && (
+                      <p className="text-red-500 font-body-small">
+                        {getLoginErrorMessage(loginMutation.error as AxiosError<ErrorResponse>)}
+                      </p>
+                    )}
                     <p className="font-detail-medium leading-none text-[var(--color-text-tertiary)] text-right w-full cursor-pointer hover:text-[var(--color-primary-main)]">
                         아이디 찾기 / 비밀번호 초기화
                     </p>
                     </div>
-                    
+
                     {/* Buttons */}
                     <div className="w-full flex flex-col gap-[12px]">
-                    <Button type="submit" variant="primary" size="large" className="w-full font-title-small">
-                        로그인
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="large"
+                      className="w-full font-title-small"
+                      disabled={loginMutation.isPending}
+                    >
+                        {loginMutation.isPending ? '로그인 중...' : '로그인'}
                     </Button>
                     <Button type="button" variant="secondary" size="large" className="w-full font-title-small" onClick={handleSignup}>
                         회원가입
                     </Button>
                     </div>
                 </div>
-                
+
                 <p className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)] mt-auto pt-8">
                     개인정보 처리방침
                 </p>
