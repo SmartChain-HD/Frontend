@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Logo } from '../../shared/components/Logo';
 import { Checkbox, RadioButton } from '../../shared/components/FormControls';
 import { Button } from '../../shared/components/Button';
+import Footer from '../../shared/layout/Footer';
 
 export default function SignupStep1Page() {
   const navigate = useNavigate();
@@ -19,16 +20,28 @@ export default function SignupStep1Page() {
   };
 
   return (
-    <div className="bg-[var(--color-page-bg)] min-h-screen w-full flex items-center justify-center p-4 lg:p-[70px]">
-      <div className="w-full max-w-[1776px] shadow-[var(--shadow-card)]">
-        <div className="bg-white rounded-[var(--radius-card)] w-full">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6 lg:p-10 min-h-0">
+        <div className="w-full max-w-[1400px] h-full max-h-[600px] shadow-[var(--shadow-card)]">
+          <div className="bg-white rounded-[var(--radius-card)] w-full h-full overflow-y-auto">
           <div className="overflow-clip rounded-[inherit] size-full">
-            <div className="flex items-start p-[24px] relative w-full">
+            <div className="flex items-start p-3 lg:p-[24px] relative w-full">
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)]">
                 <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="flex flex-col gap-[24px] items-start p-[24px] relative w-full">
-                    {/* Logo */}
-                    <div className="flex items-center py-[24px] shrink-0 w-full">
+                  <div className="flex flex-col gap-3 lg:gap-[24px] items-start p-3 lg:p-[24px] relative w-full">
+                    {/* Back Button + Logo */}
+                    <div className="flex items-center gap-[12px] py-[24px] shrink-0 w-full">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/login')}
+                        className="flex items-center justify-center w-[40px] h-[40px] rounded-full hover:bg-[var(--color-surface-primary)] transition-colors"
+                        aria-label="뒤로가기"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
                       <Logo size="small" />
                     </div>
 
@@ -72,7 +85,7 @@ export default function SignupStep1Page() {
                       <p className="font-title-medium leading-[1.4] text-[var(--color-text-primary)] w-full">
                         [필수] 개인정보수집 및 이용
                       </p>
-                      <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[200px] overflow-y-auto">
+                      <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[120px] lg:max-h-[200px] overflow-y-auto">
                         <div className="overflow-clip rounded-[inherit] size-full">
                           <div className="flex flex-col gap-[12px] items-start p-[24px] text-[var(--color-text-primary)] w-full">
                             <p className="font-title-medium leading-[1.4]">약관동의 및 개인정보수집이용동의</p>
@@ -142,7 +155,11 @@ export default function SignupStep1Page() {
             </div>
           </div>
         </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

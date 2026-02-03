@@ -18,7 +18,7 @@ const DOMAIN_OPTIONS: { value: DomainCode; label: string }[] = [
 export default function DiagnosticCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateDiagnostic();
-  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
+  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns({ activeOnly: true });
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -31,6 +31,8 @@ export default function DiagnosticCreatePage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<DiagnosticCreateFormData>({
     resolver: zodResolver(diagnosticCreateSchema),
@@ -43,12 +45,44 @@ export default function DiagnosticCreatePage() {
     },
   });
 
+  const selectedCampaignId = watch('campaignId');
+
+  useEffect(() => {
+    if (!selectedCampaignId || campaigns.length === 0) return;
+
+    const selectedCampaign = campaigns.find(
+      (c) => c.campaignId === selectedCampaignId
+    );
+    if (!selectedCampaign) return;
+
+    // 도메인 자동 설정
+    if (selectedCampaign.domainCode) {
+      setValue('domainCode', selectedCampaign.domainCode, { shouldValidate: true, shouldDirty: true });
+    }
+
+    // 기간 자동 설정
+    if (selectedCampaign.startDate && selectedCampaign.endDate) {
+      const startDate = new Date(selectedCampaign.startDate);
+      const endDate = new Date(selectedCampaign.endDate);
+
+      const periodStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+      const periodEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
+
+      const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+      setValue('periodStartDate', formatDate(periodStart), { shouldValidate: true, shouldDirty: true });
+      setValue('periodEndDate', formatDate(periodEnd), { shouldValidate: true, shouldDirty: true });
+    }
+  }, [selectedCampaignId, campaigns, setValue]);
+
   const onSubmit = async (data: DiagnosticCreateFormData) => {
+    // 중복 호출 방지
+    if (createMutation.isPending) return;
+
     createMutation.mutate(data, {
       onSuccess: (result) => {
         if (!isMountedRef.current) return;
-        const domainPath = data.domainCode.toLowerCase();
-        navigate(`/dashboard/${domainPath}/upload?diagnosticId=${result.diagnosticId}`);
+        navigate(`/diagnostics/${result.diagnosticId}`);
       },
     });
   };
@@ -118,15 +152,16 @@ export default function DiagnosticCreatePage() {
             {/* 도메인 */}
             <div>
               <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                도메인 <span className="text-red-500">*</span>
+                도메인 <span className="text-[var(--color-text-tertiary)]">(자동선택)</span>
               </label>
               <select
                 {...register('domainCode')}
-                className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)] bg-white ${
+                disabled
+                className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] bg-gray-50 cursor-not-allowed ${
                   errors.domainCode ? 'border-red-500' : 'border-[var(--color-border-default)]'
                 }`}
               >
-                <option value="">도메인을 선택하세요</option>
+                <option value="">캠페인 선택 시 자동선택</option>
                 {DOMAIN_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
@@ -140,12 +175,14 @@ export default function DiagnosticCreatePage() {
             <div className="grid grid-cols-2 gap-[16px]">
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  기안 시작일 <span className="text-red-500">*</span>
+                  기안 시작일 <span className="text-[var(--color-text-tertiary)]">(자동선택)</span>
                 </label>
                 <input
                   type="date"
                   {...register('periodStartDate')}
-                  className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)] ${
+                  disabled
+                  placeholder="캠페인 선택 시 자동선택"
+                  className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] bg-gray-50 cursor-not-allowed ${
                     errors.periodStartDate ? 'border-red-500' : 'border-[var(--color-border-default)]'
                   }`}
                 />
@@ -156,12 +193,14 @@ export default function DiagnosticCreatePage() {
 
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  기안 종료일 <span className="text-red-500">*</span>
+                  기안 종료일 <span className="text-[var(--color-text-tertiary)]">(자동선택)</span>
                 </label>
                 <input
                   type="date"
                   {...register('periodEndDate')}
-                  className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)] ${
+                  disabled
+                  placeholder="캠페인 선택 시 자동선택"
+                  className={`w-full px-[12px] py-[10px] rounded-[8px] border font-body-medium text-[var(--color-text-primary)] bg-gray-50 cursor-not-allowed ${
                     errors.periodEndDate ? 'border-red-500' : 'border-[var(--color-border-default)]'
                   }`}
                 />

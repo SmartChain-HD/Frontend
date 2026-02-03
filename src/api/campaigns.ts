@@ -4,6 +4,7 @@ import type { BaseResponse } from '../types/api.types';
 export interface Campaign {
   campaignId: number;
   campaignCode: string;
+  domainCode?: 'ESG' | 'SAFETY' | 'COMPLIANCE' | null;
   title: string;
   description?: string;
   startDate: string;
@@ -14,6 +15,7 @@ export interface Campaign {
   targetCompanyCount?: number;
   submittedCount?: number;
   progressRate?: number;
+  isActive?: boolean;
 }
 
 interface CampaignsResponse {
@@ -21,8 +23,14 @@ interface CampaignsResponse {
   totalCount: number;
 }
 
-export const getCampaigns = async (): Promise<Campaign[]> => {
-  const response = await apiClient.get<BaseResponse<CampaignsResponse>>('/v1/campaigns');
+export interface GetCampaignsParams {
+  activeOnly?: boolean;
+}
+
+export const getCampaigns = async (params?: GetCampaignsParams): Promise<Campaign[]> => {
+  const response = await apiClient.get<BaseResponse<CampaignsResponse>>('/v1/campaigns', {
+    params: params,
+  });
   return response.data.data.campaigns;
 };
 

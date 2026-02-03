@@ -15,6 +15,9 @@ export const handleApiError = (error: AxiosError<ErrorResponse>): void => {
       toast.error(handler.customMessage || errorMessage);
       break;
     case 'redirect':
+      if (handler.customMessage) {
+        toast.error(handler.customMessage);
+      }
       window.location.href = handler.redirectTo || '/';
       break;
     case 'silent':
