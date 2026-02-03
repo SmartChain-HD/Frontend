@@ -60,7 +60,7 @@ export default function OnboardingPage() {
           backgroundSize: '400% 400%',
         }}
       >
-        <div className="container mx-auto px-6 py-20 relative z-10">
+        <div className="container mx-auto px-6 py-30 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="ob-fade-in-up mb-8">
               <div className="inline-block bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20 mb-8">
