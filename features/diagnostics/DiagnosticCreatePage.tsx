@@ -31,6 +31,8 @@ export default function DiagnosticCreatePage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<DiagnosticCreateFormData>({
     resolver: zodResolver(diagnosticCreateSchema),
@@ -42,6 +44,28 @@ export default function DiagnosticCreatePage() {
       periodEndDate: '',
     },
   });
+
+  const selectedCampaignId = watch('campaignId');
+
+  useEffect(() => {
+    if (!selectedCampaignId || campaigns.length === 0) return;
+
+    const selectedCampaign = campaigns.find(
+      (c) => c.campaignId === selectedCampaignId
+    );
+    if (!selectedCampaign?.startDate || !selectedCampaign?.endDate) return;
+
+    const startDate = new Date(selectedCampaign.startDate);
+    const endDate = new Date(selectedCampaign.endDate);
+
+    const periodStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    const periodEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
+
+    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+    setValue('periodStartDate', formatDate(periodStart));
+    setValue('periodEndDate', formatDate(periodEnd));
+  }, [selectedCampaignId, campaigns, setValue]);
 
   const onSubmit = async (data: DiagnosticCreateFormData) => {
     createMutation.mutate(data, {
