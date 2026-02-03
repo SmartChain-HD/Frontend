@@ -46,7 +46,7 @@ const DOMAIN_BADGE_STYLES: Record<string, { bg: string; text: string }> = {
 function StatusBadge({ status }: { status: RequestStatus }) {
   const style = STATUS_BADGE_STYLES[status];
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${style.bg} ${style.text} ${style.border}`}>
+    <span className={`inline-flex items-center px-[12px] py-[6px] rounded-full font-label-medium font-medium border ${style.bg} ${style.text} ${style.border}`}>
       {STATUS_LABELS[status]}
     </span>
   );
@@ -55,7 +55,7 @@ function StatusBadge({ status }: { status: RequestStatus }) {
 function RoleBadge({ roleCode }: { roleCode: string }) {
   const style = ROLE_BADGE_STYLES[roleCode] || { text: 'text-[#868e96]', border: 'border-[#dee2e6]' };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${style.text} ${style.border}`}>
+    <span className={`inline-flex items-center px-[10px] py-[4px] rounded-[8px] font-label-medium font-medium border ${style.text} ${style.border}`}>
       {ROLE_LABELS[roleCode] || roleCode}
     </span>
   );
@@ -64,7 +64,7 @@ function RoleBadge({ roleCode }: { roleCode: string }) {
 function DomainBadge({ domainCode, domainName }: { domainCode: string; domainName?: string }) {
   const style = DOMAIN_BADGE_STYLES[domainCode] || { bg: 'bg-[#f5f5f5]', text: 'text-[#616161]' };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.bg} ${style.text}`}>
+    <span className={`inline-flex items-center px-[10px] py-[4px] rounded-[8px] font-label-medium font-medium ${style.bg} ${style.text}`}>
       {domainName || domainCode}
     </span>
   );
