@@ -18,7 +18,7 @@ const DOMAIN_OPTIONS: { value: DomainCode; label: string }[] = [
 export default function DiagnosticCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateDiagnostic();
-  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
+  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns({ activeOnly: true });
   const isMountedRef = useRef(true);
 
   useEffect(() => {
