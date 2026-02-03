@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Logo } from '../../shared/components/Logo';
 import { Checkbox, RadioButton } from '../../shared/components/FormControls';
 import { Button } from '../../shared/components/Button';
+import Footer from '../../shared/layout/Footer';
 
 export default function SignupStep1Page() {
   const navigate = useNavigate();
@@ -19,9 +20,11 @@ export default function SignupStep1Page() {
   };
 
   return (
-    <div className="bg-[var(--color-page-bg)] h-screen w-full flex items-center justify-center p-4 lg:p-[70px] overflow-hidden">
-      <div className="w-full max-w-[1776px] max-h-full shadow-[var(--shadow-card)]">
-        <div className="bg-white rounded-[var(--radius-card)] w-full max-h-[calc(100vh-32px)] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6 lg:p-10 min-h-0">
+        <div className="w-full max-w-[1400px] h-full max-h-[600px] shadow-[var(--shadow-card)]">
+          <div className="bg-white rounded-[var(--radius-card)] w-full h-full overflow-y-auto">
           <div className="overflow-clip rounded-[inherit] size-full">
             <div className="flex items-start p-3 lg:p-[24px] relative w-full">
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)]">
@@ -152,7 +155,11 @@ export default function SignupStep1Page() {
             </div>
           </div>
         </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

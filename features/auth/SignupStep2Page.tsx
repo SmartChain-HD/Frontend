@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Logo } from '../../shared/components/Logo';
 import { Input } from '../../shared/components/Input';
 import { Button } from '../../shared/components/Button';
+import Footer from '../../shared/layout/Footer';
 import { useRegister, useCheckEmail, useSendVerification, useVerifyEmail } from '../../src/hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '../../src/validation/auth';
 
@@ -148,9 +149,11 @@ export default function SignupStep2Page() {
   const isVerificationLoading = checkEmailMutation.isPending || sendVerificationMutation.isPending;
 
   return (
-    <div className="bg-[var(--color-page-bg)] h-screen w-full flex items-center justify-center p-4 lg:p-[70px] overflow-hidden">
-      <div className="w-full max-w-[1776px] max-h-full shadow-[var(--shadow-card)]">
-        <div className="bg-white rounded-[var(--radius-card)] w-full max-h-[calc(100vh-32px)] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6 lg:p-10 min-h-0">
+        <div className="w-full max-w-[1400px] h-full max-h-[650px] shadow-[var(--shadow-card)]">
+          <div className="bg-white rounded-[var(--radius-card)] w-full h-full overflow-y-auto">
           <div className="flex flex-col items-end justify-end overflow-clip rounded-[inherit] size-full">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end justify-end p-3 lg:p-[24px] relative size-full">
               {/* Main Content */}
@@ -340,7 +343,11 @@ export default function SignupStep2Page() {
             </form>
           </div>
         </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
