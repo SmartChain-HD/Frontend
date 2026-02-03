@@ -593,6 +593,10 @@ function ParsingResultView({ diagnosticId, fileId }: { diagnosticId: number; fil
     );
   }
 
+  const metaInfo = parsingResult.metaInfo ? (() => {
+    try { return JSON.parse(parsingResult.metaInfo); } catch { return null; }
+  })() : null;
+
   return (
     <div className="space-y-[20px]">
       {/* 파일 정보 */}
@@ -601,47 +605,64 @@ function ParsingResultView({ diagnosticId, fileId }: { diagnosticId: number; fil
         <p className="font-body-medium text-[var(--color-text-primary)]">{parsingResult.fileName}</p>
       </div>
 
-      <div>
-        <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">파싱 완료</p>
-        <p className="font-body-medium text-[var(--color-text-primary)]">
-          {new Date(parsingResult.parsedAt).toLocaleString('ko-KR')}
-        </p>
+      <div className="flex items-center gap-[12px]">
+        <div>
+          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">상태</p>
+          <span className={`px-[8px] py-[2px] rounded text-xs font-medium ${
+            parsingResult.parsingStatus === 'SUCCESS'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
+          }`}>
+            {parsingResult.parsingStatus === 'SUCCESS' ? '성공' : parsingResult.parsingStatus}
+          </span>
+        </div>
+        <div>
+          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">파싱 완료</p>
+          <p className="font-body-medium text-[var(--color-text-primary)]">
+            {new Date(parsingResult.completedAt).toLocaleString('ko-KR')}
+          </p>
+        </div>
       </div>
 
-      {/* 슬롯 힌트 */}
-      {parsingResult.slotHints && parsingResult.slotHints.length > 0 && (
+      {/* 메타 정보 */}
+      {metaInfo && (
         <div>
-          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">감지된 항목</p>
+          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 정보</p>
           <div className="space-y-[8px]">
-            {parsingResult.slotHints.map((hint, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between px-[12px] py-[8px] bg-gray-50 rounded-[8px]"
-              >
-                <span className="font-body-small text-[var(--color-text-primary)]">
-                  {hint.slotName}
-                </span>
-                <span className={`font-title-xsmall ${
-                  hint.confidence >= 0.8 ? 'text-green-600' :
-                  hint.confidence >= 0.5 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {Math.round(hint.confidence * 100)}%
+            {metaInfo.slotHintCount != null && (
+              <div className="flex items-center justify-between px-[12px] py-[8px] bg-gray-50 rounded-[8px]">
+                <span className="font-body-small text-[var(--color-text-primary)]">감지된 슬롯</span>
+                <span className="font-title-xsmall text-[var(--color-text-primary)]">{metaInfo.slotHintCount}개</span>
+              </div>
+            )}
+            {metaInfo.missingRequiredSlots != null && (
+              <div className="flex items-center justify-between px-[12px] py-[8px] bg-gray-50 rounded-[8px]">
+                <span className="font-body-small text-[var(--color-text-primary)]">누락 필수 슬롯</span>
+                <span className={`font-title-xsmall ${metaInfo.missingRequiredSlots > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {metaInfo.missingRequiredSlots}개
                 </span>
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
 
-      {/* 추출된 텍스트 */}
-      {parsingResult.extractedText && (
+      {/* 파싱된 텍스트 */}
+      {parsingResult.parsedText && (
         <div>
-          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">추출된 내용</p>
+          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">파싱 결과</p>
           <div className="p-[12px] bg-gray-50 rounded-[8px] max-h-[200px] overflow-y-auto">
             <p className="font-body-small text-[var(--color-text-secondary)] whitespace-pre-wrap">
-              {parsingResult.extractedText}
+              {parsingResult.parsedText}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* 에러 메시지 */}
+      {parsingResult.errorMessage && (
+        <div className="p-[12px] bg-red-50 rounded-[8px]">
+          <p className="font-body-small text-red-600">{parsingResult.errorMessage}</p>
         </div>
       )}
     </div>

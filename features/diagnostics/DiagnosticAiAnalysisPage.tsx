@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { AxiosError } from 'axios';
 import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
+import { useDiagnosticFiles } from '../../src/hooks/useFiles';
 import {
   useAiPreview,
   useSubmitAiRun,
@@ -55,6 +56,7 @@ export default function DiagnosticAiAnalysisPage() {
   const diagnosticId = Number(id);
 
   const { data: diagnostic, isLoading: isDiagnosticLoading } = useDiagnosticDetail(diagnosticId);
+  const { data: files } = useDiagnosticFiles(diagnosticId);
   const previewMutation = useAiPreview();
   const submitMutation = useSubmitAiRun();
   const { data: aiResult, isLoading: isResultLoading, isError: isResultError, error: resultError, refetch: refetchResult } = useAiResult(diagnosticId);
@@ -65,12 +67,14 @@ export default function DiagnosticAiAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<AxiosError<ErrorResponse> | null>(null);
 
-  // Trigger preview on mount
+  // Trigger preview with parsed files only
+  const parsedFileIds = files?.filter(f => f.parsingStatus === 'SUCCESS').map(f => f.fileId) || [];
+
   useEffect(() => {
-    if (diagnosticId > 0) {
-      previewMutation.mutate({ diagnosticId, fileIds: [] });
+    if (diagnosticId > 0 && parsedFileIds.length > 0) {
+      previewMutation.mutate({ diagnosticId, fileIds: parsedFileIds });
     }
-  }, [diagnosticId]);
+  }, [diagnosticId, parsedFileIds.length]);
 
   // Poll for result when analyzing
   useEffect(() => {
@@ -106,6 +110,7 @@ export default function DiagnosticAiAnalysisPage() {
     : false;
 
   const previewData = previewMutation.data;
+  const requiredSlotStatus = previewData?.requiredSlotStatus || [];
   const hasMissingRequiredSlots = previewData?.missingRequiredSlots && previewData.missingRequiredSlots.length > 0;
 
   if (isDiagnosticLoading) {
@@ -217,15 +222,15 @@ export default function DiagnosticAiAnalysisPage() {
                           제출 완료
                         </span>
                         <span className="font-title-small text-[var(--color-text-primary)]">
-                          {previewData.requiredSlotStatus.filter(s => s.submitted).length} / {previewData.requiredSlotStatus.length}
+                          {requiredSlotStatus.filter(s => s.submitted).length} / {requiredSlotStatus.length}
                         </span>
                       </div>
                       <div className="h-[8px] bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-[var(--color-primary-main)] transition-all"
                           style={{
-                            width: `${previewData.requiredSlotStatus.length > 0
-                              ? (previewData.requiredSlotStatus.filter(s => s.submitted).length / previewData.requiredSlotStatus.length) * 100
+                            width: `${requiredSlotStatus.length > 0
+                              ? (requiredSlotStatus.filter(s => s.submitted).length / requiredSlotStatus.length) * 100
                               : 0}%`
                           }}
                         />
@@ -234,7 +239,7 @@ export default function DiagnosticAiAnalysisPage() {
 
                     {/* 슬롯 목록 */}
                     <div className="space-y-[8px]">
-                      {previewData.requiredSlotStatus.map((slot: SlotStatus, index: number) => (
+                      {requiredSlotStatus.map((slot: SlotStatus, index: number) => (
                         <SlotItem key={index} slot={slot} />
                       ))}
                     </div>
@@ -383,18 +388,20 @@ export default function DiagnosticAiAnalysisPage() {
                 분석에는 시간이 걸릴 수 있으며, 완료되면 결과가 표시됩니다.
               </p>
 
-              {previewData && (
+              {files && files.length > 0 && (
                 <div className="mt-[16px] p-[12px] bg-gray-50 rounded-[8px]">
                   <p className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px]">
-                    분석 대상
+                    분석 대상 ({parsedFileIds.length}개 파일)
                   </p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-body-medium text-[var(--color-text-primary)]">
-                      {DOMAIN_LABELS[domainCode]}
-                    </span>
-                    <span className="font-body-small text-[var(--color-text-tertiary)]">
-                      {previewData.requiredSlotStatus.filter(s => s.submitted).length}개 항목 준비됨
-                    </span>
+                  <div className="space-y-[6px] max-h-[200px] overflow-y-auto">
+                    {files.filter(f => f.parsingStatus === 'SUCCESS').map(f => (
+                      <div key={f.fileId} className="flex items-center gap-[8px] px-[8px] py-[6px] bg-white rounded-[6px]">
+                        <svg className="w-[16px] h-[16px] text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="font-body-small text-[var(--color-text-primary)] truncate">{f.fileName}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

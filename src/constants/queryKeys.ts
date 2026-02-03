@@ -40,6 +40,7 @@ export const QUERY_KEYS = {
     STATUS: (jobId: string) => ['jobs', 'status', jobId] as const,
   },
   FILES: {
+    LIST: (diagnosticId: number) => ['files', 'list', diagnosticId] as const,
     PARSING_RESULT: (diagnosticId: number, fileId: number) =>
       ['files', 'parsingResult', diagnosticId, fileId] as const,
   },
