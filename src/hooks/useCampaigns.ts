@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import * as campaignsApi from '../api/campaigns';
+import type { GetCampaignsParams } from '../api/campaigns';
 
-export const useCampaigns = () => {
+export const useCampaigns = (params?: GetCampaignsParams) => {
   return useQuery({
-    queryKey: ['campaigns'],
-    queryFn: campaignsApi.getCampaigns,
+    queryKey: ['campaigns', params],
+    queryFn: () => campaignsApi.getCampaigns(params),
   });
 };
 
