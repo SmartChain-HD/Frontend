@@ -20,9 +20,19 @@ export interface UploadFileResponse {
 export interface ParsingResultResponse {
   fileId: number;
   fileName: string;
-  parsedAt: string;
-  slotHints: Array<{ slotName: string; confidence: number }>;
-  extractedText?: string;
+  parsingStatus: string;
+  parsedValue: unknown | null;
+  parsedText: string | null;
+  metaInfo: string | null;
+  errorMessage: string | null;
+  completedAt: string;
+}
+
+export interface EvidenceFile {
+  fileId: number;
+  fileName: string;
+  fileSize: number;
+  parsingStatus: string;
 }
 
 export interface UploadOptions {
@@ -52,6 +62,13 @@ export const uploadFile = async (
         }
       },
     }
+  );
+  return response.data.data;
+};
+
+export const getDiagnosticFiles = async (diagnosticId: number): Promise<EvidenceFile[]> => {
+  const response = await apiClient.get<BaseResponse<EvidenceFile[]>>(
+    `/v1/diagnostics/${diagnosticId}/files`
   );
   return response.data.data;
 };

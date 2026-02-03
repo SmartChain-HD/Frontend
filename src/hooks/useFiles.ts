@@ -22,6 +22,14 @@ export const useUploadFile = () => {
   });
 };
 
+export const useDiagnosticFiles = (diagnosticId: number) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.FILES.LIST(diagnosticId),
+    queryFn: () => filesApi.getDiagnosticFiles(diagnosticId),
+    enabled: diagnosticId > 0,
+  });
+};
+
 export const useParsingResult = (diagnosticId: number, fileId: number) => {
   return useQuery({
     queryKey: QUERY_KEYS.FILES.PARSING_RESULT(diagnosticId, fileId),
