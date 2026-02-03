@@ -27,8 +27,18 @@ export default function SignupStep1Page() {
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)]">
                 <div className="overflow-clip rounded-[inherit] size-full">
                   <div className="flex flex-col gap-3 lg:gap-[24px] items-start p-3 lg:p-[24px] relative w-full">
-                    {/* Logo */}
-                    <div className="flex items-center py-[24px] shrink-0 w-full">
+                    {/* Back Button + Logo */}
+                    <div className="flex items-center gap-[12px] py-[24px] shrink-0 w-full">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/login')}
+                        className="flex items-center justify-center w-[40px] h-[40px] rounded-full hover:bg-[var(--color-surface-primary)] transition-colors"
+                        aria-label="뒤로가기"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                      </button>
                       <Logo size="small" />
                     </div>
 
