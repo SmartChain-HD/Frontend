@@ -69,7 +69,10 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         `}
       >
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            item.path === '/dashboard'
+              ? location.pathname === '/dashboard'
+              : location.pathname.startsWith(item.path);
           return (
             <div
               key={item.path}
