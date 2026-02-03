@@ -24,7 +24,6 @@ import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
 import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
-import DiagnosticAiAnalysisPage from './features/diagnostics/DiagnosticAiAnalysisPage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
 import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 import UserManagementPage from './features/management/UserManagementPage';
@@ -196,14 +195,6 @@ function AppRoutes() {
         element={
           <MemberRoute>
             <DiagnosticFilesPage />
-          </MemberRoute>
-        }
-      />
-      <Route
-        path="/diagnostics/:id/ai-analysis"
-        element={
-          <MemberRoute>
-            <DiagnosticAiAnalysisPage />
           </MemberRoute>
         }
       />

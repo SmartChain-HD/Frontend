@@ -164,15 +164,9 @@ export default function DiagnosticDetailPage() {
         <div className="flex justify-end gap-[12px]">
           <button
             onClick={() => navigate(`/diagnostics/${diagnosticId}/files`)}
-            className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
-          >
-            파일 관리
-          </button>
-          <button
-            onClick={() => navigate(`/diagnostics/${diagnosticId}/ai-analysis`)}
             className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
           >
-            AI 분석
+            파일 관리 및 AI 분석
           </button>
           {canSubmit && (
             <button
