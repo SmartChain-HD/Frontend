@@ -73,7 +73,9 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           const [itemPath, itemQuery] = item.path.split('?');
           const isActive = itemQuery
             ? location.pathname === itemPath && location.search === `?${itemQuery}`
-            : location.pathname === item.path;
+            : item.path === '/dashboard'
+              ? location.pathname === '/dashboard'
+              : location.pathname.startsWith(item.path);
           return (
             <div
               key={item.path}
