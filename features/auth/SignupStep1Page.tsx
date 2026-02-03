@@ -23,15 +23,15 @@ export default function SignupStep1Page() {
     <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-6 lg:p-10 min-h-0">
-        <div className="w-full max-w-[1400px] h-full max-h-[600px] shadow-[var(--shadow-card)]">
+        <div className="w-full max-w-[1400px] h-full max-h-[800px] shadow-[var(--shadow-card)] rounded-[var(--radius-card)]">
           <div className="bg-white rounded-[var(--radius-card)] w-full h-full overflow-y-auto">
-          <div className="overflow-clip rounded-[inherit] size-full">
-            <div className="flex items-start p-3 lg:p-[24px] relative w-full">
+          <div className="overflow-scroll rounded-[var(--radius-card)] size-full">
+            <div className="flex items-start p-3 lg:p-[8px] relative w-full ">
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)]">
                 <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="flex flex-col gap-3 lg:gap-[24px] items-start p-3 lg:p-[24px] relative w-full">
+                  <div className="flex flex-col gap-3 lg:gap-[12px] items-start p-3 lg:p-[24px] relative w-full">
                     {/* Back Button + Logo */}
-                    <div className="flex items-center gap-[12px] py-[24px] shrink-0 w-full">
+                    <div className="flex items-center gap-[12px] py-[8px] shrink-0 w-full">
                       <button
                         type="button"
                         onClick={() => navigate('/login')}
@@ -47,16 +47,16 @@ export default function SignupStep1Page() {
 
                     {/* Step Title */}
                     <div className="flex flex-col gap-[12px] items-start shrink-0 text-[var(--color-text-primary)]">
-                      <p className="font-title-xxlarge leading-[0]">
+                      <p className="font-title-large leading-[0]">
                         <span className="leading-[1.4] text-[var(--color-primary-main)]">1단계</span>
                         <span className="leading-[1.4]">/2단계</span>
                       </p>
-                      <p className="font-heading-small leading-[1.35]">개인정보 활용동의</p>
+                      <p className="font-title-medium leading-[1.35]">개인정보 활용동의</p>
                     </div>
 
                     {/* Agreement Section */}
                     <div className="flex flex-col gap-[12px] items-start shrink-0 w-full">
-                      <p className="font-title-medium leading-[1.4] text-[var(--color-text-primary)] w-full">
+                      <p className="font-title-small leading-[1.4] text-[var(--color-text-primary)] w-full">
                         약관 동의
                       </p>
                       <div className="bg-[var(--color-surface-primary)] relative rounded-[24px] shrink-0 w-full">
@@ -70,7 +70,7 @@ export default function SignupStep1Page() {
                                 setAgreeTerms(checked ? true : null);
                               }}
                             />
-                            <div className="font-body-medium leading-[1.5] text-[var(--color-state-info-text)]">
+                            <div className="font-body-small leading-[1.5] text-[var(--color-state-info-text)]">
                               <p className="mb-0">서비스 이용약관, 개인정보 수집 및 이용 항목에 모두 동의합니다.</p>
                               <p>선택 사항은 동의하지 않아도 서비스 이용이 가능합니다.</p>
                             </div>
@@ -82,14 +82,14 @@ export default function SignupStep1Page() {
 
                     {/* Terms Detail */}
                     <div className="flex flex-col gap-[12px] items-start shrink-0 w-full">
-                      <p className="font-title-medium leading-[1.4] text-[var(--color-text-primary)] w-full">
+                      <p className="font-title-small leading-[1.4] text-[var(--color-text-primary)] w-full">
                         [필수] 개인정보수집 및 이용
                       </p>
                       <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[120px] lg:max-h-[200px] overflow-y-auto">
                         <div className="overflow-clip rounded-[inherit] size-full">
                           <div className="flex flex-col gap-[12px] items-start p-[24px] text-[var(--color-text-primary)] w-full">
-                            <p className="font-title-medium leading-[1.4]">약관동의 및 개인정보수집이용동의</p>
-                            <div className="font-body-medium leading-[1.5]">
+                            <p className="font-title-small leading-[1.4]">약관동의 및 개인정보수집이용동의</p>
+                            <div className="font-body-small leading-[1.5]">
                               <ol className="list-decimal pl-[24px]">
                                 <li>수집하는 개인정보 항목: 이름, 이메일, 비밀번호</li>
                                 <li>수집 목적: 서비스 제공 및 회원 관리</li>
@@ -106,7 +106,7 @@ export default function SignupStep1Page() {
                     <div className="bg-[var(--color-surface-primary)] relative rounded-[24px] shrink-0 w-full">
                       <div className="overflow-clip rounded-[inherit] size-full">
                         <div className="flex flex-wrap gap-[10px] items-center p-[24px] relative w-full">
-                          <p className="flex-1 font-body-medium leading-[1.5] min-w-[200px] text-[var(--color-state-info-text)]">
+                          <p className="flex-1 font-body-small leading-[1.5] min-w-[200px] text-[var(--color-state-info-text)]">
                             개인정보수집 및 이용에 대한 안내 사항을 읽고 동의합니다.
                           </p>
                           <div className="flex gap-[10px] items-center shrink-0">

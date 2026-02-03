@@ -11,7 +11,7 @@ export function Checkbox({ label, checked = false, onChange, className = '' }: C
       className={`content-stretch flex gap-[10px] items-center justify-center relative shrink-0 cursor-pointer ${className}`}
       onClick={() => onChange?.(!checked)}
     >
-      <div className="relative shrink-0 size-[24px]">
+      <div className="relative shrink-0 size-[20px]">
         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
           <g>
             <mask height="24" id="mask0_checkbox" maskUnits="userSpaceOnUse" style={{ maskType: "alpha" }} width="24" x="0" y="0">
@@ -27,7 +27,7 @@ export function Checkbox({ label, checked = false, onChange, className = '' }: C
           </g>
         </svg>
       </div>
-      <p className="css-ew64yg font-body-medium leading-[1.5] not-italic relative shrink-0 text-[var(--color-state-info-text)]">
+      <p className="css-ew64yg font-body-small leading-[1.5] not-italic relative shrink-0 text-[var(--color-state-info-text)]">
         {label}
       </p>
     </div>
@@ -48,7 +48,7 @@ export function RadioButton({ label, checked = false, onChange, name, className 
       className={`content-stretch flex gap-[10px] items-center justify-center relative shrink-0 cursor-pointer ${className}`}
       onClick={onChange}
     >
-      <div className="relative shrink-0 size-[24px]">
+      <div className="relative shrink-0 size-[20px]">
         <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
           <g>
             <mask height="24" id={`mask0_radio_${name}`} maskUnits="userSpaceOnUse" style={{ maskType: "alpha" }} width="24" x="0" y="0">
@@ -64,7 +64,7 @@ export function RadioButton({ label, checked = false, onChange, name, className 
           </g>
         </svg>
       </div>
-      <p className="css-ew64yg font-body-medium leading-[1.5] not-italic relative shrink-0 text-[var(--color-state-info-text)]">
+      <p className="css-ew64yg font-body-small leading-[1.5] not-italic relative shrink-0 text-[var(--color-state-info-text)]">
         {label}
       </p>
     </div>
