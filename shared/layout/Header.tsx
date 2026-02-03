@@ -68,7 +68,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
         <span className="font-title-small text-[var(--color-text-primary)]">알림</span>
         <button
           onClick={handleViewAll}
-          className="font-detail-medium text-[var(--color-primary-main)] hover:underline"
+          className="font-title-small text-[var(--color-primary-main)] hover:underline"
         >
           전체보기
         </button>

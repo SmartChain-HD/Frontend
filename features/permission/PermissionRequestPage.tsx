@@ -243,7 +243,7 @@ export default function PermissionRequestPage() {
 
                 {/* Reason Input */}
                 <div className="flex flex-col gap-[12px]">
-                    <p className="font-title-medium text-[#212529]">요청 사유 <span className="font-body-small text-[#adb5bd]">(선택)</span></p>
+                    <p className="font-title-medium text-[#212529]">요청 사유 <span className="font-title-medium text-[#adb5bd]">(선택)</span></p>
                     <textarea
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
