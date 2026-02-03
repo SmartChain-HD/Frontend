@@ -148,16 +148,16 @@ export default function SignupStep2Page() {
   const isVerificationLoading = checkEmailMutation.isPending || sendVerificationMutation.isPending;
 
   return (
-    <div className="bg-[var(--color-page-bg)] min-h-screen w-full flex items-center justify-center p-4 lg:p-[70px]">
-      <div className="w-full max-w-[1776px] shadow-[var(--shadow-card)]">
-        <div className="bg-white rounded-[var(--radius-card)] w-full">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex items-center justify-center p-4 lg:p-[70px] overflow-hidden">
+      <div className="w-full max-w-[1776px] max-h-full shadow-[var(--shadow-card)]">
+        <div className="bg-white rounded-[var(--radius-card)] w-full max-h-[calc(100vh-32px)] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
           <div className="flex flex-col items-end justify-end overflow-clip rounded-[inherit] size-full">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end justify-end p-[24px] relative size-full">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end justify-end p-3 lg:p-[24px] relative size-full">
               {/* Main Content */}
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)] w-full">
                 <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="flex flex-col items-start p-[24px] size-full">
-                    <div className="flex flex-col gap-[24px] items-start shrink-0 w-full">
+                  <div className="flex flex-col items-start p-3 lg:p-[24px] size-full">
+                    <div className="flex flex-col gap-3 lg:gap-[24px] items-start shrink-0 w-full">
                       {/* Logo */}
                       <div className="flex items-center py-[24px] shrink-0 w-full">
                         <Logo size="small" />
@@ -174,7 +174,7 @@ export default function SignupStep2Page() {
 
                       {/* Form */}
                       <div className="flex flex-col items-center justify-center shrink-0 w-full">
-                        <div className="flex flex-col gap-[24px] items-center justify-center shrink-0 w-full max-w-[480px]">
+                        <div className="flex flex-col gap-3 lg:gap-[24px] items-center justify-center shrink-0 w-full max-w-[480px]">
                           {/* Name */}
                           <div className="w-full">
                             <Input

@@ -19,14 +19,14 @@ export default function SignupStep1Page() {
   };
 
   return (
-    <div className="bg-[var(--color-page-bg)] min-h-screen w-full flex items-center justify-center p-4 lg:p-[70px]">
-      <div className="w-full max-w-[1776px] shadow-[var(--shadow-card)]">
-        <div className="bg-white rounded-[var(--radius-card)] w-full">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex items-center justify-center p-4 lg:p-[70px] overflow-hidden">
+      <div className="w-full max-w-[1776px] max-h-full shadow-[var(--shadow-card)]">
+        <div className="bg-white rounded-[var(--radius-card)] w-full max-h-[calc(100vh-32px)] lg:max-h-[calc(100vh-140px)] overflow-y-auto">
           <div className="overflow-clip rounded-[inherit] size-full">
-            <div className="flex items-start p-[24px] relative w-full">
+            <div className="flex items-start p-3 lg:p-[24px] relative w-full">
               <div className="flex-1 min-h-px min-w-px rounded-[var(--radius-card)]">
                 <div className="overflow-clip rounded-[inherit] size-full">
-                  <div className="flex flex-col gap-[24px] items-start p-[24px] relative w-full">
+                  <div className="flex flex-col gap-3 lg:gap-[24px] items-start p-3 lg:p-[24px] relative w-full">
                     {/* Logo */}
                     <div className="flex items-center py-[24px] shrink-0 w-full">
                       <Logo size="small" />
@@ -72,7 +72,7 @@ export default function SignupStep1Page() {
                       <p className="font-title-medium leading-[1.4] text-[var(--color-text-primary)] w-full">
                         [필수] 개인정보수집 및 이용
                       </p>
-                      <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[200px] overflow-y-auto">
+                      <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[120px] lg:max-h-[200px] overflow-y-auto">
                         <div className="overflow-clip rounded-[inherit] size-full">
                           <div className="flex flex-col gap-[12px] items-start p-[24px] text-[var(--color-text-primary)] w-full">
                             <p className="font-title-medium leading-[1.4]">약관동의 및 개인정보수집이용동의</p>
