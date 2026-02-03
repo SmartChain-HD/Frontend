@@ -4,6 +4,7 @@ import type { BaseResponse } from '../types/api.types';
 export interface Campaign {
   campaignId: number;
   campaignCode: string;
+  domainCode?: 'ESG' | 'SAFETY' | 'COMPLIANCE' | null;
   title: string;
   description?: string;
   startDate: string;

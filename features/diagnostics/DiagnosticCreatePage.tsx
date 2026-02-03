@@ -53,18 +53,26 @@ export default function DiagnosticCreatePage() {
     const selectedCampaign = campaigns.find(
       (c) => c.campaignId === selectedCampaignId
     );
-    if (!selectedCampaign?.startDate || !selectedCampaign?.endDate) return;
+    if (!selectedCampaign) return;
 
-    const startDate = new Date(selectedCampaign.startDate);
-    const endDate = new Date(selectedCampaign.endDate);
+    // 도메인 자동 설정
+    if (selectedCampaign.domainCode) {
+      setValue('domainCode', selectedCampaign.domainCode);
+    }
 
-    const periodStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-    const periodEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
+    // 기간 자동 설정
+    if (selectedCampaign.startDate && selectedCampaign.endDate) {
+      const startDate = new Date(selectedCampaign.startDate);
+      const endDate = new Date(selectedCampaign.endDate);
 
-    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+      const periodStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+      const periodEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
 
-    setValue('periodStartDate', formatDate(periodStart));
-    setValue('periodEndDate', formatDate(periodEnd));
+      const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+      setValue('periodStartDate', formatDate(periodStart));
+      setValue('periodEndDate', formatDate(periodEnd));
+    }
   }, [selectedCampaignId, campaigns, setValue]);
 
   const onSubmit = async (data: DiagnosticCreateFormData) => {
