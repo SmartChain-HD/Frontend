@@ -16,7 +16,7 @@ interface MenuItem {
 const DOMAIN_MENU_ITEMS: MenuItem[] = [
   { label: '안전보건', path: '/dashboard/safety', domainCode: 'SAFETY' },
   { label: '컴플라이언스', path: '/dashboard/compliance', domainCode: 'COMPLIANCE' },
-  { label: 'ESG', path: '/diagnostics?domainCode=ESG', domainCode: 'ESG' },
+  { label: 'ESG', path: '/dashboard/esg', domainCode: 'ESG' },
 ];
 
 export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
@@ -69,11 +69,8 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         `}
       >
         {menuItems.map((item) => {
-          // 쿼리 파라미터가 있는 경로 처리 (예: /diagnostics?domainCode=ESG)
-          const [itemPath, itemQuery] = item.path.split('?');
-          const isActive = itemQuery
-            ? location.pathname === itemPath && location.search === `?${itemQuery}`
-            : item.path === '/dashboard'
+          const isActive =
+            item.path === '/dashboard'
               ? location.pathname === '/dashboard'
               : location.pathname.startsWith(item.path);
           return (
