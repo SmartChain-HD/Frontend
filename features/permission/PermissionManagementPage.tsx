@@ -132,19 +132,19 @@ export default function PermissionManagementPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-[32px] w-full bg-[#f8f9fa] min-h-full">
+      <div className="p-4 md:p-[32px] w-full bg-[#f8f9fa] min-h-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-[24px]">
           <h1 className="font-heading-medium text-[#212529]">권한 관리</h1>
           <Button variant="secondary" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <RefreshCw className="w-4 h-4" />
             새로고침
           </Button>
         </div>
 
         {/* Filters */}
         <div className="bg-white rounded-[20px] p-[24px] mb-[24px] shadow-sm">
-          <div className="flex items-end gap-[16px]">
+          <div className="flex flex-col md:flex-row items-stretch md:items-end gap-[16px]">
             {/* 검색 */}
             <div className="flex-1">
               <p className="font-title-small text-[#212529] mb-[8px]">검색</p>
@@ -161,7 +161,7 @@ export default function PermissionManagementPage() {
             </div>
 
             {/* 상태 필터 */}
-            <div className="w-[200px]">
+            <div className="w-full md:w-[200px]">
               <p className="font-title-small text-[#212529] mb-[8px]">상태</p>
               <div className="relative">
                 <button
@@ -231,7 +231,7 @@ export default function PermissionManagementPage() {
               <AlertCircle className="w-12 h-12 text-[#c62828] mb-4" />
               <p className="font-body-medium text-[#868e96] mb-4">요청 목록을 불러오는데 실패했습니다.</p>
               <Button variant="secondary" onClick={() => refetch()}>
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4" />
                 다시 시도
               </Button>
             </div>

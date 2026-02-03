@@ -235,8 +235,8 @@ export default function ESGPage({ userRole }: ESGPageProps) {
 
   return (
     <DashboardLayout>
-      <div className="p-[32px]">
-        <div className="bg-white rounded-[20px] p-[44px] min-h-[600px]">
+      <div className="p-4 md:p-[32px]">
+        <div className="bg-white rounded-[20px] p-4 md:p-[44px] min-h-[600px]">
           <div className="flex items-center justify-between mb-[32px]">
             <h1 className="font-heading-medium text-[#212529]">
               ESG
