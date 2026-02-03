@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import svgPaths from '../../imports/svg-h10djjhihc';
 import { useLogout } from '../../src/hooks/useAuth';
 import { useNotifications, useUnreadCount, useMarkAsRead } from '../../src/hooks/useNotifications';
@@ -160,11 +160,11 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
         )}
 
         {/* Logo */}
-        <div className="shrink-0">
+        <Link to="/dashboard" className="shrink-0 cursor-pointer">
           <p className="font-heading-small text-white">
             SmartChain
           </p>
-        </div>
+        </Link>
 
         {/* Divider */}
         <div className="hidden md:block h-[24px] w-px bg-white/30" />
