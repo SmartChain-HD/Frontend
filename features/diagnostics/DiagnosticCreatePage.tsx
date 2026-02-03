@@ -57,7 +57,7 @@ export default function DiagnosticCreatePage() {
 
     // 도메인 자동 설정
     if (selectedCampaign.domainCode) {
-      setValue('domainCode', selectedCampaign.domainCode);
+      setValue('domainCode', selectedCampaign.domainCode, { shouldValidate: true, shouldDirty: true });
     }
 
     // 기간 자동 설정
@@ -70,8 +70,8 @@ export default function DiagnosticCreatePage() {
 
       const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
-      setValue('periodStartDate', formatDate(periodStart));
-      setValue('periodEndDate', formatDate(periodEnd));
+      setValue('periodStartDate', formatDate(periodStart), { shouldValidate: true, shouldDirty: true });
+      setValue('periodEndDate', formatDate(periodEnd), { shouldValidate: true, shouldDirty: true });
     }
   }, [selectedCampaignId, campaigns, setValue]);
 
