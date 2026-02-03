@@ -13,8 +13,8 @@ export function Button({
   children, 
   ...props 
 }: ButtonProps) {
-  const baseStyles = "content-stretch flex gap-[4px] items-center justify-center px-[24px] relative rounded-[var(--radius-default)] transition-colors";
-  
+  const baseStyles = "flex gap-[8px] items-center justify-center px-[24px] relative rounded-[var(--radius-default)] transition-colors";
+
   const variantStyles = {
     primary: "bg-[var(--color-primary-main)] text-white hover:bg-[var(--color-primary-dark)]",
     secondary: "bg-[var(--color-primary-light)] text-[var(--color-primary-text)] border border-[var(--color-primary-border)] hover:bg-[var(--color-primary-border)]"
@@ -26,13 +26,11 @@ export function Button({
   };
 
   return (
-    <button 
+    <button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
-      <div className="css-g0mm18 flex flex-col font-body-large justify-center leading-[0] not-italic relative shrink-0">
-        <p className="css-ew64yg leading-[1.6]">{children}</p>
-      </div>
+      <span className="font-body-large leading-[1.6] flex items-center gap-[8px]">{children}</span>
     </button>
   );
 }

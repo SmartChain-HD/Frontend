@@ -91,7 +91,7 @@ export default function PermissionStatusPage() {
             <AlertCircle className="w-12 h-12 text-[#c62828]" />
             <p className="font-body-medium text-[#868e96]">요청 상태를 불러오는데 실패했습니다.</p>
             <Button variant="secondary" onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4" />
               다시 시도
             </Button>
           </div>
@@ -267,7 +267,7 @@ export default function PermissionStatusPage() {
                 className="flex-1"
                 onClick={() => navigate(-1)}
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4" />
                 뒤로가기
               </Button>
 

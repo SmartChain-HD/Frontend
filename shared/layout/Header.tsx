@@ -8,6 +8,8 @@ import { useAuthStore } from '../../src/store/authStore';
 interface HeaderProps {
   userName: string;
   userRole: 'receiver' | 'drafter' | 'approver' | 'guest';
+  onToggleSidebar?: () => void;
+  showMenuButton?: boolean;
 }
 
 const roleLabels = {
@@ -60,7 +62,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="absolute right-0 top-[calc(100%+8px)] w-[360px] bg-white rounded-[12px] shadow-lg border border-gray-200 z-[100] overflow-hidden">
+    <div className="absolute right-0 top-[calc(100%+8px)] w-[calc(100vw-32px)] md:w-[360px] max-w-[360px] bg-white rounded-[12px] shadow-lg border border-gray-200 z-[100] overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-[16px] py-[12px] border-b border-gray-100">
         <span className="font-title-small text-[var(--color-text-primary)]">알림</span>
@@ -113,7 +115,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function Header({ userName, userRole }: HeaderProps) {
+export default function Header({ userName, userRole, onToggleSidebar, showMenuButton }: HeaderProps) {
   const logoutMutation = useLogout();
   const { data: unreadCount } = useUnreadCount();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -139,34 +141,49 @@ export default function Header({ userName, userRole }: HeaderProps) {
   }, [showDropdown]);
 
   return (
-    <div className="bg-[#002554] h-[85px] w-full flex items-center justify-between px-[30px] shadow-md z-50 relative">
+    <div className="bg-[#002554] h-[60px] md:h-[85px] w-full flex items-center justify-between px-[16px] md:px-[30px] shadow-md z-50 relative">
       {/* Left Side */}
-      <div className="flex items-center gap-[24px]">
+      <div className="flex items-center gap-[12px] md:gap-[24px]">
+        {/* Hamburger Menu (mobile) */}
+        {showMenuButton && (
+          <button
+            onClick={onToggleSidebar}
+            className="md:hidden text-white p-1"
+            aria-label="메뉴"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        )}
+
         {/* Logo */}
-        <div className="w-[136px] shrink-0">
+        <div className="shrink-0">
           <p className="font-heading-small text-white">
             SmartChain
           </p>
         </div>
 
         {/* Divider */}
-        <div className="h-[24px] w-px bg-white/30" />
+        <div className="hidden md:block h-[24px] w-px bg-white/30" />
 
         {/* System Title */}
-        <p className="font-title-medium text-white whitespace-nowrap">
+        <p className="hidden md:block font-title-medium text-white whitespace-nowrap">
           현대중공업 협력사 통합관리시스템
         </p>
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-[24px]">
+      <div className="flex items-center gap-[12px] md:gap-[24px]">
         {/* User Info */}
         <div className="flex items-center gap-[8px]">
           <p className="font-body-medium text-white">
             {userName}
           </p>
           {domainRoles.length > 0 ? (
-            <div className="flex items-center gap-[4px]">
+            <div className="hidden lg:flex items-center gap-[4px]">
               {domainRoles.map((dr) => (
                 <div
                   key={dr.domainCode}
@@ -179,7 +196,7 @@ export default function Header({ userName, userRole }: HeaderProps) {
               ))}
             </div>
           ) : (
-            <div className="bg-[#f0fdf4] flex items-center justify-center px-[8px] py-[4px] rounded-[6px] border border-[#008233]">
+            <div className="hidden lg:flex bg-[#f0fdf4] items-center justify-center px-[8px] py-[4px] rounded-[6px] border border-[#008233]">
               <p className="font-title-small text-[#008233]">
                 {roleLabels[userRole]}
               </p>

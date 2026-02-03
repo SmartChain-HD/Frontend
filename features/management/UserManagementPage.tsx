@@ -321,7 +321,7 @@ export default function UserManagementPage() {
       {/* Role Change Confirmation Modal */}
       {showRoleConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-[20px] p-[32px] w-[400px] flex flex-col gap-[24px] shadow-xl">
+          <div className="bg-white rounded-[20px] p-6 md:p-[32px] w-[calc(100vw-32px)] max-w-[400px] flex flex-col gap-[24px] shadow-xl">
             <div className="flex flex-col items-center gap-4">
               <div className="w-16 h-16 bg-[#e7f1ff] rounded-full flex items-center justify-center">
                 <Users className="w-8 h-8 text-[#003087]" />
@@ -356,7 +356,7 @@ export default function UserManagementPage() {
       {/* Status Toggle Confirmation Modal */}
       {showStatusConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-[20px] p-[32px] w-[400px] flex flex-col gap-[24px] shadow-xl">
+          <div className="bg-white rounded-[20px] p-6 md:p-[32px] w-[calc(100vw-32px)] max-w-[400px] flex flex-col gap-[24px] shadow-xl">
             <div className="flex flex-col items-center gap-4">
               {showStatusConfirm.currentStatus === 'ACTIVE' ? (
                 <div className="w-16 h-16 bg-[#fff3e0] rounded-full flex items-center justify-center">
