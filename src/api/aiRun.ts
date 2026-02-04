@@ -3,12 +3,16 @@ import type { BaseResponse } from '../types/api.types';
 
 export interface SlotStatus {
   slot_name: string;
+  display_name?: string;
   status: 'SUBMITTED' | 'MISSING';
 }
 
 export interface SlotHint {
   file_id: string;
   slot_name: string;
+  display_name?: string;
+  confidence?: number;
+  match_reason?: string;
 }
 
 export interface RunPreviewResponse {
@@ -28,6 +32,7 @@ export interface SlotResult {
 // 새 API 응답 타입
 export interface SlotResultDetail {
   slot_name: string;
+  display_name?: string;
   verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
   reasons: string[];
   file_ids: string[];
@@ -75,8 +80,11 @@ export const previewAiRun = async (
   return response.data.data;
 };
 
-export const submitAiRun = async (diagnosticId: number): Promise<void> => {
-  await apiClient.post(`/v1/ai/run/diagnostics/${diagnosticId}/submit`);
+export const submitAiRun = async (
+  diagnosticId: number,
+  slotHints: SlotHint[]
+): Promise<void> => {
+  await apiClient.post(`/v1/ai/run/diagnostics/${diagnosticId}/submit`, { slotHints });
 };
 
 export const getAiResult = async (diagnosticId: number): Promise<AiAnalysisResultResponse> => {
