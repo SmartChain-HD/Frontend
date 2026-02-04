@@ -5,9 +5,52 @@ import {
   useDiagnosticHistory,
   useSubmitDiagnostic,
 } from '../../src/hooks/useDiagnostics';
-import type { DiagnosticStatus, DomainCode } from '../../src/types/api.types';
+import { useAiResult } from '../../src/hooks/useAiRun';
+import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
+import type { AiAnalysisResultResponse, SlotResultDetail } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
+
+type Verdict = 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+
+const VERDICT_LABELS: Record<Verdict, string> = {
+  PASS: '적합',
+  WARN: '경고',
+  NEED_CLARIFY: '확인 필요',
+  NEED_FIX: '수정 필요',
+};
+
+const VERDICT_STYLES: Record<Verdict, string> = {
+  PASS: 'bg-green-100 text-green-700 border-green-200',
+  WARN: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  NEED_CLARIFY: 'bg-orange-100 text-orange-700 border-orange-200',
+  NEED_FIX: 'bg-red-100 text-red-700 border-red-200',
+};
+
+const RISK_LABELS: Record<RiskLevel, string> = {
+  LOW: '낮음',
+  MEDIUM: '중간',
+  HIGH: '높음',
+};
+
+const RISK_STYLES: Record<RiskLevel, string> = {
+  LOW: 'bg-green-50 text-green-700',
+  MEDIUM: 'bg-yellow-50 text-yellow-700',
+  HIGH: 'bg-red-50 text-red-700',
+};
+
+const REASON_LABELS: Record<string, string> = {
+  MISSING_SLOT: '필수 슬롯 누락',
+  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
+  EMPTY_TABLE: '표/데이터 행이 비어있음',
+  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
+  WRONG_YEAR: '문서 대상 연도 불일치',
+  PARSE_FAILED: '파싱 실패',
+  DATE_MISMATCH: '기간 불일치',
+  UNIT_MISSING: '단위 누락',
+  EVIDENCE_MISSING: '근거문서 누락',
+  SIGNATURE_MISSING: '확인 서명란 미기재',
+};
 
 const STATUS_LABELS: Record<DiagnosticStatus, string> = {
   WRITING: '작성중',
@@ -34,6 +77,7 @@ export default function DiagnosticDetailPage() {
 
   const { data: diagnostic, isLoading, isError } = useDiagnosticDetail(diagnosticId);
   const { data: history } = useDiagnosticHistory(diagnosticId);
+  const { data: aiResult } = useAiResult(diagnosticId);
   const submitMutation = useSubmitDiagnostic();
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -106,7 +150,7 @@ export default function DiagnosticDetailPage() {
 
         {/* 제목 + 상태 */}
         <div className="flex items-start justify-between gap-[16px]">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.campaign?.title || diagnostic.diagnosticCode}</h1>
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode}</h1>
           <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[diagnostic.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
             {diagnostic.statusLabel || STATUS_LABELS[diagnostic.status] || diagnostic.status}
           </span>
@@ -116,6 +160,7 @@ export default function DiagnosticDetailPage() {
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
           <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 정보</h2>
           <div className="grid grid-cols-2 gap-[20px]">
+            <InfoRow label="기안명" value={diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode || '-'} />
             <InfoRow label="도메인" value={diagnostic.domain?.name || DOMAIN_LABELS[diagnostic.domain?.code as DomainCode] || '-'} />
             <InfoRow label="회사명" value={diagnostic.company?.companyName || '-'} />
             <InfoRow label="기안자" value={diagnostic.createdBy?.name || '-'} />
@@ -127,6 +172,11 @@ export default function DiagnosticDetailPage() {
             )}
           </div>
         </div>
+
+        {/* AI 분석 결과 */}
+        {aiResult && (
+          <AiResultSection result={aiResult} />
+        )}
 
         {/* 이력 */}
         {history && history.length > 0 && (
@@ -244,6 +294,111 @@ function InfoRow({ label, value, valueClassName }: { label: string; value: strin
     <div>
       <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">{label}</p>
       <p className={`font-body-medium ${valueClassName || 'text-[var(--color-text-primary)]'}`}>{value}</p>
+    </div>
+  );
+}
+
+function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
+  const verdict = result.verdict as Verdict;
+  const riskLevel = result.riskLevel as RiskLevel;
+  const details = result.details;
+
+  return (
+    <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] overflow-hidden">
+      <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
+        <h2 className="font-title-medium text-[var(--color-text-primary)]">
+          AI 분석 결과
+        </h2>
+      </div>
+
+      <div className="p-[24px] space-y-[24px]">
+        {/* 판정 결과 */}
+        <div className="flex items-center gap-[16px]">
+          <div className={`px-[16px] py-[10px] rounded-[8px] border ${VERDICT_STYLES[verdict]}`}>
+            <span className="font-title-medium">{VERDICT_LABELS[verdict]}</span>
+          </div>
+          <div className={`px-[12px] py-[6px] rounded-full ${RISK_STYLES[riskLevel]}`}>
+            <span className="font-title-xsmall">위험도: {RISK_LABELS[riskLevel]}</span>
+          </div>
+        </div>
+
+        {/* 요약 */}
+        <div>
+          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 요약</p>
+          <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
+            {result.whySummary}
+          </p>
+        </div>
+
+        {/* 슬롯별 결과 */}
+        {details?.slot_results && details.slot_results.length > 0 && (
+          <div>
+            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[12px]">
+              슬롯별 분석 결과
+            </p>
+            <div className="space-y-[12px]">
+              {details.slot_results.map((slotResult, index) => (
+                <SlotResultCard key={index} result={slotResult} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 분석 정보 */}
+        <div className="grid grid-cols-2 gap-[16px] pt-[16px] border-t border-[var(--color-border-default)]">
+          <div>
+            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">도메인</p>
+            <p className="font-body-medium text-[var(--color-text-primary)]">
+              {DOMAIN_LABELS[result.domainCode as DomainCode] || result.domainCode}
+            </p>
+          </div>
+          <div>
+            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">분석 일시</p>
+            <p className="font-body-medium text-[var(--color-text-primary)]">
+              {new Date(result.analyzedAt).toLocaleString('ko-KR')}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlotResultCard({ result }: { result: SlotResultDetail }) {
+  const verdict = result.verdict as Verdict;
+  const displayName = result.display_name || result.slot_name;
+
+  return (
+    <div className="p-[16px] bg-gray-50 rounded-[12px]">
+      <div className="flex items-center justify-between mb-[8px]">
+        <span className="font-title-small text-[var(--color-text-primary)]">
+          {displayName}
+        </span>
+        <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
+          {VERDICT_LABELS[verdict]}
+        </span>
+      </div>
+
+      {result.reasons && result.reasons.length > 0 && (
+        <ul className="space-y-[4px] mt-[8px]">
+          {result.reasons.map((reason, index) => (
+            <li key={index} className="flex items-start gap-[6px] font-body-small text-[var(--color-text-secondary)]">
+              <span className="w-[4px] h-[4px] bg-gray-400 rounded-full mt-[6px] flex-shrink-0" />
+              {REASON_LABELS[reason] || reason}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {result.file_names && result.file_names.length > 0 && (
+        <div className="mt-[8px] flex flex-wrap gap-[6px]">
+          {result.file_names.map((fileName, index) => (
+            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-gray-600 rounded border border-gray-200">
+              {fileName}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
