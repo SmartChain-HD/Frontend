@@ -343,7 +343,7 @@ export default function HomePage({ userRole }: HomePageProps) {
     if (isLoading) {
       return (
         <tr>
-          <td colSpan={4} className="py-8">
+          <td colSpan={userRole === 'approver' ? 4 : 5} className="py-8">
             <LoadingSkeleton />
           </td>
         </tr>
@@ -353,7 +353,7 @@ export default function HomePage({ userRole }: HomePageProps) {
     if (isError) {
       return (
         <tr>
-          <td colSpan={4}>
+          <td colSpan={userRole === 'approver' ? 4 : 5}>
             <ErrorState message="데이터를 불러오는데 실패했습니다." onRetry={() => refetch()} />
           </td>
         </tr>
@@ -366,7 +366,7 @@ export default function HomePage({ userRole }: HomePageProps) {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={4}>
+            <td colSpan={5}>
               <EmptyState message="등록된 기안이 없습니다." />
             </td>
           </tr>
@@ -379,7 +379,10 @@ export default function HomePage({ userRole }: HomePageProps) {
           onClick={() => handleDiagnosticClick(item.diagnosticId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.summary || '-'}
+            {item.title || item.summary || '-'}
+          </td>
+          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
+            {item.diagnosticCode || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.campaign?.title || '-'}
@@ -406,6 +409,7 @@ export default function HomePage({ userRole }: HomePageProps) {
           <tr>
             <td colSpan={4}>
               <EmptyState message="대기 중인 결재가 없습니다." />
+
             </td>
           </tr>
         );
@@ -442,7 +446,7 @@ export default function HomePage({ userRole }: HomePageProps) {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={4}>
+            <td colSpan={5}>
               <EmptyState message="심사 대상이 없습니다." />
             </td>
           </tr>
@@ -455,6 +459,9 @@ export default function HomePage({ userRole }: HomePageProps) {
           onClick={() => handleReviewClick(item.reviewId, item.domainCode)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
+            {item.diagnostic?.title || '-'}
+          </td>
+          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.company?.companyName || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
@@ -549,6 +556,11 @@ export default function HomePage({ userRole }: HomePageProps) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#dee2e6]">
+                    {(userRole === 'drafter' || userRole === 'receiver') && (
+                      <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
+                        제목
+                      </th>
+                    )}
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                       {userRole === 'drafter' ? '회사명' : '협력사 명'}
                     </th>

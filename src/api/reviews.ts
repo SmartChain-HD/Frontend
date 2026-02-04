@@ -15,6 +15,7 @@ export interface ReviewListItem {
   diagnostic: {
     diagnosticId: number;
     diagnosticCode: string;
+    title?: string;
   };
   company: {
     companyId: number;

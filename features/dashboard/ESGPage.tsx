@@ -100,7 +100,7 @@ export default function ESGPage({ userRole }: ESGPageProps) {
     if (isLoading) {
       return (
         <tr>
-          <td colSpan={4} className="py-[48px] text-center">
+          <td colSpan={userRole === 'approver' ? 4 : 5} className="py-[48px] text-center">
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-[32px] w-[32px] border-b-2 border-[#003087]" />
             </div>
@@ -112,7 +112,7 @@ export default function ESGPage({ userRole }: ESGPageProps) {
     if (isError) {
       return (
         <tr>
-          <td colSpan={4} className="py-[48px] text-center text-[#b91c1c] font-body-medium">
+          <td colSpan={userRole === 'approver' ? 4 : 5} className="py-[48px] text-center text-[#b91c1c] font-body-medium">
             데이터를 불러오는데 실패했습니다.
           </td>
         </tr>
@@ -124,7 +124,7 @@ export default function ESGPage({ userRole }: ESGPageProps) {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={4} className="py-[48px] text-center text-[#868e96] font-body-medium">
+            <td colSpan={5} className="py-[48px] text-center text-[#868e96] font-body-medium">
               등록된 기안이 없습니다.
             </td>
           </tr>
@@ -137,7 +137,10 @@ export default function ESGPage({ userRole }: ESGPageProps) {
           onClick={() => handleDiagnosticClick(item.diagnosticId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.summary || '-'}
+            {item.title || item.summary || '-'}
+          </td>
+          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
+            {item.diagnosticCode || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.campaign?.title || '-'}
@@ -198,7 +201,7 @@ export default function ESGPage({ userRole }: ESGPageProps) {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={4} className="py-[48px] text-center text-[#868e96] font-body-medium">
+            <td colSpan={5} className="py-[48px] text-center text-[#868e96] font-body-medium">
               심사 대상이 없습니다.
             </td>
           </tr>
@@ -211,6 +214,9 @@ export default function ESGPage({ userRole }: ESGPageProps) {
           onClick={() => handleReviewClick(item.reviewId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
+            {item.diagnostic?.title || '-'}
+          </td>
+          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.company?.companyName || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
@@ -256,6 +262,11 @@ export default function ESGPage({ userRole }: ESGPageProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#dee2e6]">
+                  {(userRole === 'drafter' || userRole === 'receiver') && (
+                    <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
+                      제목
+                    </th>
+                  )}
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                     {userRole === 'approver' ? '기안자' : '협력사 명'}
                   </th>
