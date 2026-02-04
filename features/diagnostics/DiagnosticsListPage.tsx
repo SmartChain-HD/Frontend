@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviews } from '../../src/hooks/useReviews';
 import { useAuthStore } from '../../src/store/authStore';
-import type { DiagnosticStatus, ApprovalStatus, ReviewStatus, DomainCode } from '../../src/types/api.types';
+import { useDomainGuard } from '../../src/hooks/useDomainGuard';
+import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -62,8 +63,7 @@ function formatDate(dateString?: string): string {
 
 export default function DiagnosticsListPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const domainCode = searchParams.get('domainCode') as DomainCode | null;
+  const { validatedDomainCode: domainCode } = useDomainGuard();
   const { user } = useAuthStore();
 
   // 역할 결정

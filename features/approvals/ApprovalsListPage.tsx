@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApprovals } from '../../src/hooks/useApprovals';
+import { useAccessibleDomainOptions } from '../../src/hooks/useDomainGuard';
 import type { ApprovalStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
 import type { DomainCode } from '../../src/types/api.types';
@@ -22,6 +23,7 @@ type StatusFilter = ApprovalStatus | 'ALL';
 
 export default function ApprovalsListPage() {
   const navigate = useNavigate();
+  const { domainOptions: accessibleDomainOptions } = useAccessibleDomainOptions();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [domainFilter, setDomainFilter] = useState<string>('');
   const [page, setPage] = useState(0);
@@ -44,11 +46,10 @@ export default function ApprovalsListPage() {
     { key: 'REJECTED', label: '반려' },
   ];
 
+  // 사용자가 접근 가능한 도메인만 필터 옵션으로 표시
   const domainOptions: { value: string; label: string }[] = [
     { value: '', label: '전체 도메인' },
-    { value: 'ESG', label: DOMAIN_LABELS.ESG },
-    { value: 'SAFETY', label: DOMAIN_LABELS.SAFETY },
-    { value: 'COMPLIANCE', label: DOMAIN_LABELS.COMPLIANCE },
+    ...accessibleDomainOptions,
   ];
 
   return (
