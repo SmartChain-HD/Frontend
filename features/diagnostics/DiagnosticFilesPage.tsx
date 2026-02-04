@@ -690,9 +690,9 @@ export default function DiagnosticFilesPage() {
       }
       // 파일 목록 쿼리 갱신
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
-      // 삭제된 파일을 제외한 나머지 파일로 preview 재호출
+      // 삭제된 파일을 제외한 나머지 파일로 preview 재호출 (완료 대기)
       const remainingFileIds = allCompletedFileIds.filter(id => id !== fileId);
-      callPreview(remainingFileIds);
+      await previewMutation.mutateAsync({ diagnosticId, fileIds: remainingFileIds });
     } catch {
       // Error handled by mutation
     }
