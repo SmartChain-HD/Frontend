@@ -145,7 +145,9 @@ export default function DiagnosticDetailPage() {
     );
   }
 
-  const canSubmit = diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED';
+  // ESG 도메인만 결재자 워크플로우 존재
+  const hasApprovalWorkflow = diagnostic.domain?.code === 'ESG';
+  const canSubmit = hasApprovalWorkflow && (diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED');
   const canDelete = diagnostic.status === 'WRITING';
 
   return (
