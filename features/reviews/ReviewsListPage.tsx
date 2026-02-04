@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
+import { useAccessibleDomainOptions } from '../../src/hooks/useDomainGuard';
 import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
@@ -34,6 +35,7 @@ type RiskFilter = RiskLevel | 'ALL';
 
 export default function ReviewsListPage() {
   const navigate = useNavigate();
+  const { domainOptions: accessibleDomainOptions } = useAccessibleDomainOptions();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [domainFilter, setDomainFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('ALL');
@@ -114,9 +116,9 @@ export default function ReviewsListPage() {
             className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] bg-white"
           >
             <option value="">전체 도메인</option>
-            <option value="ESG">{DOMAIN_LABELS.ESG}</option>
-            <option value="SAFETY">{DOMAIN_LABELS.SAFETY}</option>
-            <option value="COMPLIANCE">{DOMAIN_LABELS.COMPLIANCE}</option>
+            {accessibleDomainOptions.map((opt: { value: string; label: string }) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
 
           <select
