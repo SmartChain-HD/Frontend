@@ -81,7 +81,7 @@ export const createDiagnostic = async (data: DiagnosticCreateRequest): Promise<D
 };
 
 export interface DiagnosticSubmitRequest {
-  approverId: number;
+  approverId?: number;
   comment?: string;
 }
 
