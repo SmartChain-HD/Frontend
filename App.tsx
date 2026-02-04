@@ -26,7 +26,6 @@ import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
-import ReviewDetailPage from './features/reviews/ReviewDetailPage';
 import UserManagementPage from './features/management/UserManagementPage';
 import CompanyManagementPage from './features/management/CompanyManagementPage';
 import ActivityLogPage from './features/management/ActivityLogPage';
@@ -224,14 +223,6 @@ function AppRoutes() {
         element={
           <MemberRoute>
             <ReviewsListPage />
-          </MemberRoute>
-        }
-      />
-      <Route
-        path="/reviews/:id"
-        element={
-          <MemberRoute>
-            <ReviewDetailPage />
           </MemberRoute>
         }
       />

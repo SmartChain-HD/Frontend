@@ -223,17 +223,17 @@ export default function ReviewsListPage() {
                   </td>
                   <td
                     className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]"
-                    onClick={() => navigate(`/reviews/${item.reviewId}`)}
+                    onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}
                   >
                     {item.reviewIdLabel || `R-${item.reviewId}`}
                   </td>
-                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.domainName || DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
                   </td>
-                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.company?.companyName || '-'}
                   </td>
-                  <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.riskLevel ? (
                       <span className={`font-title-xsmall ${RISK_STYLES[item.riskLevel]}`}>
                         {RISK_LABELS[item.riskLevel]}
@@ -242,13 +242,13 @@ export default function ReviewsListPage() {
                       <span className="font-body-medium text-[var(--color-text-tertiary)]">-</span>
                     )}
                   </td>
-                  <td className="px-[16px] py-[14px] text-center font-body-medium text-[var(--color-text-primary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] text-center font-body-medium text-[var(--color-text-primary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.score != null ? item.score : '-'}
                   </td>
-                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {new Date(item.submittedAt).toLocaleDateString('ko-KR')}
                   </td>
-                  <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/reviews/${item.reviewId}`)}>
+                  <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
                       {STATUS_LABELS[item.status]}
                     </span>
