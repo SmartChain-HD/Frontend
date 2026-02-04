@@ -188,7 +188,7 @@ export default function FileUploadPage() {
                     파일명 가이드:
                   </p>
                   <p className="font-body-small text-[#495057]">
-                    협력사명_기간_자료명 (예: ABC건설_202601_TBM일지.pdf)
+                    날짜_협력사명_자료명 (예: 20260109_ABC건설_TBM일지.pdf)
                   </p>
                 </div>
               </div>
