@@ -4,6 +4,7 @@ import type { BaseResponse, PagedData, DiagnosticStatus } from '../types/api.typ
 export interface DiagnosticListItem {
   diagnosticId: number;
   diagnosticCode: string;
+  title?: string;
   domain: { domainId: number; code: string; name: string };
   campaign: { campaignId: number; campaignCode: string; title: string };
   summary: string;

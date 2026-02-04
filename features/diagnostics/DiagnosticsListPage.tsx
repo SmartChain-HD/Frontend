@@ -179,6 +179,7 @@ export default function DiagnosticsListPage() {
     if (userRole === 'reviewer') {
       return (
         <tr className="border-b border-[var(--color-border-default)] bg-gray-50">
+          <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제목</th>
           <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">회사명</th>
           <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">도메인</th>
           <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제출일</th>
@@ -202,7 +203,7 @@ export default function DiagnosticsListPage() {
     if (isLoading) {
       return (
         <tr>
-          <td colSpan={4} className="text-center py-[60px]">
+          <td colSpan={userRole === 'approver' ? 4 : 5} className="text-center py-[60px]">
             <div className="inline-block w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
           </td>
         </tr>
@@ -212,7 +213,7 @@ export default function DiagnosticsListPage() {
     if (isError) {
       return (
         <tr>
-          <td colSpan={4} className="text-center py-[60px]">
+          <td colSpan={userRole === 'approver' ? 4 : 5} className="text-center py-[60px]">
             <p className="font-body-medium text-[var(--color-state-error-text)]">
               데이터를 불러오는 데 실패했습니다.
             </p>
@@ -263,7 +264,7 @@ export default function DiagnosticsListPage() {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={4} className="text-center py-[60px]">
+            <td colSpan={5} className="text-center py-[60px]">
               <p className="font-body-medium text-[var(--color-text-tertiary)]">
                 심사 대상이 없습니다.
               </p>
@@ -278,6 +279,9 @@ export default function DiagnosticsListPage() {
           className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
         >
           <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">
+            {item.diagnostic?.title || '-'}
+          </td>
+          <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
             {item.company?.companyName || '-'}
           </td>
           <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
@@ -315,7 +319,7 @@ export default function DiagnosticsListPage() {
         className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
       >
         <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">
-          {item.summary || item.campaign?.title || '-'}
+          {item.title || item.summary || '-'}
         </td>
         <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
           {item.campaign?.title || '-'}
