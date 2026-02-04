@@ -357,7 +357,7 @@ export default function App() {
       <BrowserRouter>
         <AppRoutes />
       </BrowserRouter>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors offset={72} duration={3000} />
     </QueryClientProvider>
   );
 }
