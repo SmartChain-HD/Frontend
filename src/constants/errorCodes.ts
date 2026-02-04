@@ -12,6 +12,8 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   A002: { action: 'silent' },
   A003: { action: 'toast', customMessage: '이메일 또는 비밀번호를 확인해주세요' },
   A004: { action: 'toast' },
+  A005: { action: 'toast', customMessage: '계정이 영구 잠금되었습니다. 관리자에게 문의해주세요.' },
+  A006: { action: 'silent' }, // LoginPage에서 직접 처리
 
   // Permission
   PERM_001: { action: 'redirect', redirectTo: '/dashboard', customMessage: '해당 리소스에 대한 접근 권한이 없습니다' },
@@ -154,6 +156,11 @@ export const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   // 토큰 관련
   A001: '인증 정보가 유효하지 않습니다. 다시 로그인해주세요.',
   A002: '로그인 세션이 만료되었습니다. 다시 로그인해주세요.',
+
+  // 계정 잠금
+  A005: '계정이 영구 잠금되었습니다. 관리자에게 문의해주세요.',
+  A006: '계정이 일시 잠금되었습니다.',
+  ACCOUNT_LOCKED: '계정이 잠금되었습니다.',
 
   // 서버 오류 (500)
   S001: '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',

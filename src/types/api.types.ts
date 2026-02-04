@@ -25,6 +25,14 @@ export interface ErrorResponse {
   status: number;
   code: string;
   message: string;
+  data?: AccountLockData;
+}
+
+/** 계정 잠금 데이터 */
+export interface AccountLockData {
+  lockedUntil?: string;
+  remainingMinutes?: number;
+  remainingAttempts?: number;
 }
 
 /** 페이지 정보 */
@@ -148,6 +156,8 @@ export interface LoginResponse {
   tokenType: string;
   expiresIn: number;
   user: UserInfoDto;
+  remainingAttempts?: number;
+  warningMessage?: string;
 }
 
 export interface UserInfoDto {
@@ -371,6 +381,8 @@ export const ERROR_CODES = {
 
   // 403 Forbidden
   ACCESS_DENIED: 'A004',
+  ACCOUNT_LOCKED_PERMANENT: 'A005',
+  ACCOUNT_LOCKED_TEMPORARY: 'A006',
   PERMISSION_DENIED_RESOURCE: 'PERM_001',
   PERMISSION_DENIED_ACTION: 'PERM_002',
 
