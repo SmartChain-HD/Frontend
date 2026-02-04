@@ -84,23 +84,19 @@ export default function DiagnosticDetailPage() {
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [approverId, setApproverId] = useState<number | ''>('');
   const [comment, setComment] = useState('');
 
   const handleSubmit = () => {
-    if (!approverId) return;
     submitMutation.mutate(
       {
         id: diagnosticId,
         data: {
-          approverId: Number(approverId),
           comment: comment || undefined,
         },
       },
       {
         onSuccess: () => {
           setShowSubmitModal(false);
-          setApproverId('');
           setComment('');
         },
       }
@@ -264,18 +260,9 @@ export default function DiagnosticDetailPage() {
             </div>
 
             <div className="px-[24px] py-[20px] flex flex-col gap-[16px]">
-              <div>
-                <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  결재자 ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={approverId}
-                  onChange={(e) => setApproverId(e.target.value ? Number(e.target.value) : '')}
-                  placeholder="결재자 ID를 입력하세요"
-                  className="w-full px-[12px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-main)]"
-                />
-              </div>
+              <p className="font-body-medium text-[var(--color-text-secondary)]">
+                기안을 결재자에게 제출하시겠습니까?
+              </p>
 
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
@@ -293,14 +280,14 @@ export default function DiagnosticDetailPage() {
 
             <div className="px-[24px] py-[16px] border-t border-[var(--color-border-default)] flex justify-end gap-[12px]">
               <button
-                onClick={() => { setShowSubmitModal(false); setApproverId(''); setComment(''); }}
+                onClick={() => { setShowSubmitModal(false); setComment(''); }}
                 className="px-[20px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={!approverId || submitMutation.isPending}
+                disabled={submitMutation.isPending}
                 className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] font-title-small text-white hover:opacity-90 transition-colors disabled:opacity-50"
               >
                 {submitMutation.isPending ? '제출 중...' : '제출'}
