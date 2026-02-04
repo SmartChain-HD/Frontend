@@ -145,7 +145,7 @@ export default function ApprovalDetailPage() {
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[900px] mx-auto w-full">
         {/* 뒤로가기 */}
         <button
-          onClick={() => navigate('/approvals')}
+          onClick={() => navigate(approval.domainCode ? `/approvals?domainCode=${approval.domainCode}` : '/approvals')}
           className="flex items-center gap-[4px] font-body-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] w-fit"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
