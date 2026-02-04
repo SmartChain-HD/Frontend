@@ -55,7 +55,13 @@ function formatPeriod(dateStr: string): string {
   return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월`;
 }
 
-function getListPath(domainCode?: string): string {
+function getListPath(userRole: string, domainCode?: string): string {
+  if (userRole === 'receiver') {
+    return '/reviews';
+  }
+  if (userRole === 'approver') {
+    return '/approvals';
+  }
   const domain = domainCode?.toUpperCase() || 'ESG';
   return `/diagnostics?domainCode=${domain}`;
 }
@@ -73,7 +79,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
-  const listPath = getListPath(review?.domainCode);
+  const listPath = getListPath(userRole, review?.domainCode);
 
   const handleBackToList = () => {
     navigate(listPath);
