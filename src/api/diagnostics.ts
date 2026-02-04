@@ -98,3 +98,7 @@ export const getDiagnosticHistory = async (id: number): Promise<DiagnosticHistor
   );
   return response.data.data;
 };
+
+export const deleteDiagnostic = async (id: number): Promise<void> => {
+  await apiClient.delete(`/v1/diagnostics/${id}`);
+};

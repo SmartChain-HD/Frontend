@@ -4,6 +4,7 @@ import {
   useDiagnosticDetail,
   useDiagnosticHistory,
   useSubmitDiagnostic,
+  useDeleteDiagnostic,
 } from '../../src/hooks/useDiagnostics';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
@@ -79,8 +80,10 @@ export default function DiagnosticDetailPage() {
   const { data: history } = useDiagnosticHistory(diagnosticId);
   const { data: aiResult } = useAiResult(diagnosticId);
   const submitMutation = useSubmitDiagnostic();
+  const deleteMutation = useDeleteDiagnostic();
 
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [approverId, setApproverId] = useState<number | ''>('');
   const [comment, setComment] = useState('');
 
@@ -102,6 +105,15 @@ export default function DiagnosticDetailPage() {
         },
       }
     );
+  };
+
+  const handleDelete = () => {
+    deleteMutation.mutate(diagnosticId, {
+      onSuccess: () => {
+        setShowDeleteModal(false);
+        navigate('/diagnostics');
+      },
+    });
   };
 
   if (isLoading) {
@@ -133,6 +145,7 @@ export default function DiagnosticDetailPage() {
   }
 
   const canSubmit = diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED';
+  const canDelete = diagnostic.status === 'WRITING';
 
   return (
     <DashboardLayout>
@@ -212,6 +225,14 @@ export default function DiagnosticDetailPage() {
 
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-[12px]">
+          {canDelete && (
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-[24px] py-[12px] rounded-[8px] border border-red-500 font-title-small text-red-500 hover:bg-red-50 transition-colors"
+            >
+              삭제
+            </button>
+          )}
           <button
             onClick={() => navigate(`/diagnostics/${diagnosticId}/files`)}
             className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
@@ -280,6 +301,41 @@ export default function DiagnosticDetailPage() {
                 className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] font-title-small text-white hover:opacity-90 transition-colors disabled:opacity-50"
               >
                 {submitMutation.isPending ? '제출 중...' : '제출'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-[16px] w-full max-w-[400px] mx-[16px] shadow-xl">
+            <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
+              <h2 className="font-title-medium text-[var(--color-text-primary)]">
+                기안 삭제
+              </h2>
+            </div>
+
+            <div className="px-[24px] py-[20px]">
+              <p className="font-body-medium text-[var(--color-text-secondary)]">
+                이 기안을 삭제하시겠습니까? 삭제된 기안은 복구할 수 없습니다.
+              </p>
+            </div>
+
+            <div className="px-[24px] py-[16px] border-t border-[var(--color-border-default)] flex justify-end gap-[12px]">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-[20px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="px-[20px] py-[10px] rounded-[8px] bg-red-500 font-title-small text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? '삭제 중...' : '삭제'}
               </button>
             </div>
           </div>
