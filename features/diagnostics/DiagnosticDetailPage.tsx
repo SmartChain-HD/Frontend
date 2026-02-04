@@ -108,10 +108,11 @@ export default function DiagnosticDetailPage() {
   };
 
   const handleDelete = () => {
+    const domainCode = diagnostic?.domain?.code;
     deleteMutation.mutate(diagnosticId, {
       onSuccess: () => {
         setShowDeleteModal(false);
-        navigate('/diagnostics');
+        navigate(domainCode ? `/diagnostics?domainCode=${domainCode}` : '/diagnostics');
       },
     });
   };
@@ -152,7 +153,7 @@ export default function DiagnosticDetailPage() {
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[900px] mx-auto w-full">
         {/* 뒤로가기 */}
         <button
-          onClick={() => navigate('/diagnostics')}
+          onClick={() => navigate(diagnostic.domain?.code ? `/diagnostics?domainCode=${diagnostic.domain.code}` : '/diagnostics')}
           className="flex items-center gap-[4px] font-body-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] w-fit"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

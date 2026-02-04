@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateDiagnostic } from '../../src/hooks/useDiagnostics';
@@ -17,6 +17,8 @@ const DOMAIN_OPTIONS: { value: DomainCode; label: string }[] = [
 
 export default function DiagnosticCreatePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const domainCode = searchParams.get('domainCode');
   const createMutation = useCreateDiagnostic();
   const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns({ activeOnly: true });
   const isMountedRef = useRef(true);
@@ -92,7 +94,7 @@ export default function DiagnosticCreatePage() {
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[700px] mx-auto w-full">
         {/* 뒤로가기 */}
         <button
-          onClick={() => navigate('/diagnostics')}
+          onClick={() => navigate(domainCode ? `/diagnostics?domainCode=${domainCode}` : '/diagnostics')}
           className="flex items-center gap-[4px] font-body-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] w-fit"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
