@@ -19,6 +19,8 @@ export interface DiagnosticListItem {
 export interface DiagnosticDetail {
   diagnosticId: number;
   diagnosticCode: string;
+  title?: string;
+  summary?: string;
   domain: { domainId: number; code: string; name: string };
   campaign: { campaignId: number; campaignCode: string; title: string; disclosureStandards?: string[] };
   company: { companyId: number; companyName: string; industryCode?: string | null };

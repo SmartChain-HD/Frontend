@@ -12,21 +12,11 @@ import {
 } from '../../src/hooks/useAiRun';
 import * as filesApi from '../../src/api/files';
 import type { JobStatus } from '../../src/api/jobs';
-import type {
-  SlotStatus,
-  SlotHint,
-  AiAnalysisResultResponse,
-  SlotResultDetail,
-  ClarificationDetail,
-} from '../../src/api/aiRun';
-import type { RiskLevel, DomainCode } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import type { SlotStatus, SlotHint } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 // 파일 업로드 상태 타입
 type FileUploadStatus = 'idle' | 'uploading' | 'processing' | 'complete' | 'error';
-
-type Verdict = 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
 
 interface UploadedFile {
   id: number;
@@ -64,123 +54,6 @@ const STATUS_STYLES: Record<FileUploadStatus, { bg: string; text: string; border
   error: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
 };
 
-const VERDICT_LABELS: Record<Verdict, string> = {
-  PASS: '적합',
-  WARN: '경고',
-  NEED_CLARIFY: '확인 필요',
-  NEED_FIX: '수정 필요',
-};
-
-const VERDICT_STYLES: Record<Verdict, string> = {
-  PASS: 'bg-green-100 text-green-700 border-green-200',
-  WARN: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  NEED_CLARIFY: 'bg-orange-100 text-orange-700 border-orange-200',
-  NEED_FIX: 'bg-red-100 text-red-700 border-red-200',
-};
-
-const RISK_LABELS: Record<RiskLevel, string> = {
-  LOW: '낮음',
-  MEDIUM: '중간',
-  HIGH: '높음',
-};
-
-const RISK_STYLES: Record<RiskLevel, string> = {
-  LOW: 'bg-green-50 text-green-700',
-  MEDIUM: 'bg-yellow-50 text-yellow-700',
-  HIGH: 'bg-red-50 text-red-700',
-};
-
-// extras 키-라벨 매핑
-const EXTRAS_LABELS: Record<string, string> = {
-  anomalies: '⚠️ 이상 징후',
-  missing_fields: '📝 누락된 항목',
-  missing_slots: '📝 누락된 슬롯',
-  violations: '🚫 위반 사항',
-  summary: '📄 문서 요약',
-  detected_objects: '🔍 감지된 객체',
-  person_count: '👥 감지 인원',
-  scene_description: '📸 상황 묘사',
-  detail: 'ℹ️ 상세 정보',
-};
-
-// reason 코드-한글 매핑
-const REASON_LABELS: Record<string, string> = {
-  // 공통
-  MISSING_SLOT: '필수 슬롯 누락',
-  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
-  EMPTY_TABLE: '표/데이터 행이 비어있음',
-  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
-  WRONG_YEAR: '문서 대상 연도 불일치',
-  PARSE_FAILED: '파싱 실패',
-  DATE_MISMATCH: '기간 불일치',
-  UNIT_MISSING: '단위 누락',
-  EVIDENCE_MISSING: '근거문서 누락',
-  SIGNATURE_MISSING: '확인 서명란 미기재',
-
-  // Compliance
-  KEYWORD_MISSING: '표준 계약서 필수 조항 누락',
-  LOW_EDUCATION_RATE: '교육 이수율 기준 미달',
-  DATA_NOT_FOUND: '데이터 식별 불가',
-  HIGH_RISK_DETECTED: '위험요소 발견 후 미조치',
-  MISSING_MANDATORY_TRAINING: '법정의무 교육 계획 누락',
-
-  // ESG 에너지
-  E1_NEGATIVE_OR_ZERO: '사용량이 0 또는 음수',
-  E1_DATE_PARSE_FAILED: '날짜 파싱 실패',
-  E1_DUPLICATE_DATE: '날짜 중복',
-  E1_GAP_DETECTED: '기간 연속성 결함',
-  E2_SPIKE_DETECTED: '사용량 급증/급감 이상치',
-  E3_BILL_MISMATCH: '고지서 합계와 사용량 합계 불일치',
-  E3_BILL_PERIOD_UNCERTAIN: '고지서 기간 추출 불확실',
-  E4_GHG_EVIDENCE_MISSING: '온실가스 산정 근거 문서 누락',
-
-  // ESG 유해물질
-  E5_MSDS_MISSING: '유해물질 목록 대비 MSDS 누락',
-  E6_STOCK_SPIKE: '유해물질 수량 급증',
-  E6_INSPECTION_OVERDUE: '점검일 경과',
-  E7_DISPOSAL_INCONSISTENT: '폐기/처리 정합성 불일치',
-
-  // ESG 윤리
-  E8_OLD_REVISION: '윤리강령 개정일이 오래됨',
-  E8_MISSING_SECTIONS: '윤리강령 필수 섹션 누락',
-  E8_MULTI_VERSION: '여러 버전 동시 제출',
-  E9_NO_DISTRIBUTION_LOG: '배포/수신확인 로그 누락',
-  E9_NO_PLEDGE: '서약서 누락',
-  E9_PLEDGE_BEFORE_REVISION: '서약일이 개정일보다 과거',
-  E9_DISTR_BEFORE_REVISION: '배포일이 개정일보다 과거',
-  G_OCR_UNREADABLE: '문서 판독 불가',
-
-  // Safety 교육
-  EDU_DEPT_ZERO: '특정 부서/직무 이수율 0%',
-  EDU_RATE_SPIKE: '이수율 전월 대비 30%p 이상 급변',
-  EDU_FUTURE_DATE: '교육일이 미래 날짜',
-
-  // Safety 위험성평가
-  RISK_ACTION_MISSING: '감소대책/조치 항목 누락',
-  RISK_OWNER_MISSING: '담당자 정보 누락',
-  RISK_CHECKDATE_MISSING: '점검일 누락',
-
-  // Safety 안전보건관리체계
-  MISSING_SECTION_ORG: '조직/책임/권한 섹션 없음',
-  MISSING_SECTION_RISK: '위험성평가 섹션 없음',
-  MISSING_SECTION_INCIDENT: '사고 대응 절차 섹션 없음',
-  MISSING_SECTION_TRAINING: '교육/점검 섹션 없음',
-  MISSING_SECTION_IMPROVE: '개선조치 섹션 없음',
-
-  // Safety 소방
-  FIRE_ALL_GOOD_PATTERN: '항목이 항상 양호로만 반복',
-  FIRE_COPYPASTE_PATTERN: '총평/체크패턴 반복',
-
-  // 교차 검증
-  CROSS_HEADCOUNT_MISMATCH: '출석부 인원수와 교육사진 인원수 불일치',
-  CROSS_ATTENDANCE_PARSE_FAILED: '출석부에서 인원수 추출 실패',
-  CROSS_PHOTO_COUNT_FAILED: '교육사진에서 인원수 감지 실패',
-
-  // LLM 공통
-  LLM_ANOMALY_DETECTED: 'AI가 문서 이상 징후를 감지함',
-  LLM_MISSING_FIELDS: 'AI가 누락 항목을 감지함',
-  VIOLATION_DETECTED: 'AI가 위반 사항을 감지함',
-};
 
 // 업로드 아이템 컴포넌트
 function FileUploadItem({
@@ -449,153 +322,6 @@ function SlotCheckItem({ slotName, isSubmitted, isRequired, matchedFileName }: {
   );
 }
 
-// 분석 결과 섹션 컴포넌트
-function AiResultSection({ result, slotDisplayNames }: { result: AiAnalysisResultResponse; slotDisplayNames?: Map<string, string> }) {
-  const verdict = result.verdict as Verdict;
-  const riskLevel = result.riskLevel as RiskLevel;
-  const details = result.details;
-
-  return (
-    <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] overflow-hidden">
-      <div className="px-[20px] py-[16px] border-b border-[var(--color-border-default)]">
-        <h2 className="font-title-medium text-[var(--color-text-primary)]">
-          분석 결과
-        </h2>
-      </div>
-
-      <div className="p-[20px] space-y-[24px]">
-        {/* 판정 결과 */}
-        <div className="flex items-center gap-[16px]">
-          <div className={`px-[16px] py-[10px] rounded-[8px] border ${VERDICT_STYLES[verdict]}`}>
-            <span className="font-title-medium">{VERDICT_LABELS[verdict]}</span>
-          </div>
-          <div className={`px-[12px] py-[6px] rounded-full ${RISK_STYLES[riskLevel]}`}>
-            <span className="font-title-xsmall">위험도: {RISK_LABELS[riskLevel]}</span>
-          </div>
-        </div>
-
-        {/* 요약 */}
-        <div>
-          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 요약</p>
-          <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
-            {result.whySummary}
-          </p>
-        </div>
-
-        {/* 슬롯별 결과 */}
-        {details?.slot_results && details.slot_results.length > 0 && (
-          <div>
-            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[12px]">
-              슬롯별 분석 결과
-            </p>
-            <div className="space-y-[12px]">
-              {details.slot_results.map((slotResult, index) => (
-                <SlotResultCard key={index} result={slotResult} slotDisplayNames={slotDisplayNames} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 참고사항 */}
-        {details?.extras && Object.keys(details.extras).length > 0 && (
-          <div>
-            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[12px]">
-              참고사항
-            </p>
-            <div className="p-[16px] bg-gray-50 rounded-[12px] space-y-[8px]">
-              {Object.entries(details.extras as Record<string, string>)
-                .filter(([, value]) => value)
-                .map(([key, value]) => (
-                  <div key={key} className="font-body-small text-[var(--color-text-secondary)]">
-                    <span className="font-medium">{EXTRAS_LABELS[key] || key}:</span> {value}
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* 분석 정보 */}
-        <div className="grid grid-cols-2 gap-[16px] pt-[16px] border-t border-[var(--color-border-default)]">
-          <div>
-            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">도메인</p>
-            <p className="font-body-medium text-[var(--color-text-primary)]">
-              {DOMAIN_LABELS[result.domainCode as DomainCode] || result.domainCode}
-            </p>
-          </div>
-          <div>
-            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">분석 일시</p>
-            <p className="font-body-medium text-[var(--color-text-primary)]">
-              {new Date(result.analyzedAt).toLocaleString('ko-KR')}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 슬롯별 결과 카드
-function SlotResultCard({ result, slotDisplayNames }: { result: SlotResultDetail; slotDisplayNames?: Map<string, string> }) {
-  const verdict = result.verdict as Verdict;
-  const displayName = result.display_name || slotDisplayNames?.get(result.slot_name) || result.slot_name;
-
-  return (
-    <div className="p-[16px] bg-gray-50 rounded-[12px]">
-      <div className="flex items-center justify-between mb-[8px]">
-        <span className="font-title-small text-[var(--color-text-primary)]">
-          {displayName}
-        </span>
-        <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
-          {VERDICT_LABELS[verdict]}
-        </span>
-      </div>
-
-      {/* reasons 표시 */}
-      {result.reasons && result.reasons.length > 0 && (
-        <ul className="space-y-[4px] mt-[8px]">
-          {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[6px] font-body-small text-[var(--color-text-secondary)]">
-              <span className="w-[4px] h-[4px] bg-gray-400 rounded-full mt-[6px] flex-shrink-0" />
-              {REASON_LABELS[reason] || reason}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {result.file_names && result.file_names.length > 0 && (
-        <div className="mt-[8px] flex flex-wrap gap-[6px]">
-          {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-gray-600 rounded border border-gray-200">
-              {fileName}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// 보완 요청 카드
-function ClarificationCard({ clarification }: { clarification: ClarificationDetail }) {
-  return (
-    <div className="p-[16px] bg-orange-50 rounded-[12px] border border-orange-200">
-      <div className="flex items-start gap-[12px]">
-        <svg className="w-[20px] h-[20px] text-orange-500 flex-shrink-0 mt-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-        <div className="flex-1">
-          <p className="font-title-small text-orange-700 mb-[4px]">
-            {clarification.slot_name}
-          </p>
-          <p className="font-body-small text-orange-600">
-            {clarification.message}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // 파싱 결과 컴포넌트
 function ParsingResultView({ diagnosticId, fileId }: { diagnosticId: number; fileId: number }) {
   const { data: parsingResult, isLoading, isError } = useParsingResult(diagnosticId, fileId);
@@ -710,6 +436,7 @@ export default function DiagnosticFilesPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isFileListCollapsed, setIsFileListCollapsed] = useState(false);
 
   // AI 분석 관련 훅
   const previewMutation = useAiPreview();
@@ -770,12 +497,13 @@ export default function DiagnosticFilesPage() {
     }
   }, [diagnosticId]);
 
-  // 분석 완료 감지
+  // 분석 완료 감지 → 기안 상세 페이지로 리다이렉트
   useEffect(() => {
     if (isAnalyzing && aiResult) {
       setIsAnalyzing(false);
+      navigate(`/diagnostics/${diagnosticId}`);
     }
-  }, [aiResult, isAnalyzing]);
+  }, [aiResult, isAnalyzing, navigate, diagnosticId]);
 
   // Job polling for files in processing state
   const processingFile = newlyUploadedFiles.find(f => f.uploadStatus === 'processing');
@@ -830,17 +558,6 @@ export default function DiagnosticFilesPage() {
     return map;
   }, [uploadedFiles]);
 
-  // slot_name → display_name 매핑 (분석 결과용)
-  const slotDisplayNames = useMemo(() => {
-    const map = new Map<string, string>();
-    const slots = previewMutation.data?.required_slot_status || [];
-    slots.forEach(slot => {
-      if (slot.display_name) {
-        map.set(slot.slot_name, slot.display_name);
-      }
-    });
-    return map;
-  }, [previewMutation.data?.required_slot_status]);
 
   // preview 호출 함수
   const callPreview = useCallback((fileIds: number[]) => {
@@ -1061,7 +778,7 @@ export default function DiagnosticFilesPage() {
           <div>
             <h1 className="font-heading-small text-[var(--color-text-primary)]">파일 업로드 및 관리</h1>
             <p className="font-body-medium text-[var(--color-text-tertiary)] mt-[8px]">
-              {diagnostic.campaign?.title || diagnostic.diagnosticCode}
+              {diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode}
             </p>
           </div>
           {uploadedFiles.length > 0 && (
@@ -1134,26 +851,47 @@ export default function DiagnosticFilesPage() {
             {/* 업로드된 파일 목록 */}
             {uploadedFiles.length > 0 && (
               <div className="space-y-[12px]">
-                <h3 className="font-title-small text-[var(--color-text-primary)]">
-                  업로드된 파일 ({uploadedFiles.length})
-                </h3>
-                {uploadedFiles.map((file) => (
-                  <FileUploadItem
-                    key={file.id}
-                    file={file}
-                    onRetry={() => handleRetry(file)}
-                    onDelete={() => handleDeleteFile(file.id)}
-                    onSelect={() => setSelectedFileId(file.id)}
-                    isSelected={selectedFileId === file.id}
-                    isRetrying={retryMutation.isPending}
-                    isDeleting={deleteMutation.isPending}
-                    autoTag={getAutoTagForFile(file.id)}
-                  />
-                ))}
+                <button
+                  onClick={() => setIsFileListCollapsed(!isFileListCollapsed)}
+                  className="w-full flex items-center justify-between py-[8px] hover:bg-gray-50 rounded-[8px] px-[4px] transition-colors"
+                >
+                  <h3 className="font-title-small text-[var(--color-text-primary)]">
+                    업로드된 파일 ({uploadedFiles.length})
+                  </h3>
+                  <svg
+                    className={`w-[20px] h-[20px] text-gray-500 transition-transform ${isFileListCollapsed ? '' : 'rotate-180'}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {!isFileListCollapsed && (
+                  <div className="space-y-[12px]">
+                    {uploadedFiles.map((file) => (
+                      <FileUploadItem
+                        key={file.id}
+                        file={file}
+                        onRetry={() => handleRetry(file)}
+                        onDelete={() => handleDeleteFile(file.id)}
+                        onSelect={() => setSelectedFileId(file.id)}
+                        isSelected={selectedFileId === file.id}
+                        isRetrying={retryMutation.isPending}
+                        isDeleting={deleteMutation.isPending}
+                        autoTag={getAutoTagForFile(file.id)}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 {/* Add 버튼 */}
                 <button
-                  onClick={() => callPreview(allCompletedFileIds)}
+                  onClick={() => {
+                    callPreview(allCompletedFileIds);
+                    setIsFileListCollapsed(true);
+                  }}
                   disabled={previewMutation.isPending || completedCount === 0}
                   className="w-full py-[12px] rounded-[10px] border-2 border-dashed border-[var(--color-primary-light)] text-[var(--color-primary-main)] font-title-small hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
                 >
@@ -1169,22 +907,6 @@ export default function DiagnosticFilesPage() {
                       </svg>
                        Add (파일 추가 및 미리보기)
                     </>
-                  )}
-                </button>
-
-                {/* 최종 제출 버튼 */}
-                <button
-                  onClick={() => setShowSubmitModal(true)}
-                  disabled={isAnalyzing || submitMutation.isPending || completedCount === 0}
-                  className="w-full py-[14px] rounded-[10px] bg-[var(--color-primary-main)] text-white font-title-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
-                >
-                  {isAnalyzing || submitMutation.isPending ? (
-                    <>
-                      <span className="w-[18px] h-[18px] border-[2px] border-white border-t-transparent rounded-full animate-spin" />
-                      AI 분석 중...
-                    </>
-                  ) : (
-                    '최종 제출 (결과 확인)'
                   )}
                 </button>
               </div>
@@ -1208,28 +930,25 @@ export default function DiagnosticFilesPage() {
                 isLoading={previewMutation.isPending}
               />
             </div>
-          </div>
-        </div>
-
-
-        {/* 분석 결과 섹션 */}
-        {isAnalyzing && (
-          <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[40px]">
-            <div className="flex flex-col items-center justify-center gap-[16px]">
-              <div className="w-[48px] h-[48px] border-[4px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
-              <p className="font-body-medium text-[var(--color-text-secondary)]">
-                AI가 문서를 분석 중입니다...
-              </p>
-              <p className="font-body-small text-[var(--color-text-tertiary)]">
-                분석에 시간이 걸릴 수 있습니다
-              </p>
+            {/* 최종 제출 버튼 */}
+            <div className="px-[20px] pb-[20px]">
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                disabled={isAnalyzing || submitMutation.isPending || completedCount === 0}
+                className="w-full py-[14px] rounded-[10px] bg-[var(--color-primary-main)] text-white font-title-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+              >
+                {isAnalyzing || submitMutation.isPending ? (
+                  <>
+                    <span className="w-[18px] h-[18px] border-[2px] border-white border-t-transparent rounded-full animate-spin" />
+                    AI 분석 중...
+                  </>
+                ) : (
+                  '최종 제출 (결과 확인)'
+                )}
+              </button>
             </div>
           </div>
-        )}
-
-        {!isAnalyzing && aiResult && (
-          <AiResultSection result={aiResult} slotDisplayNames={slotDisplayNames} />
-        )}
+        </div>
 
         {/* 파싱 결과 미리보기 (선택된 파일이 있을 때) */}
         {selectedFileId && (

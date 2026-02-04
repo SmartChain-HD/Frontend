@@ -95,16 +95,15 @@ export default function ApprovalsListPage() {
               <tr className="border-b border-[var(--color-border-default)] bg-gray-50">
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제목</th>
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">도메인</th>
-                <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">회사명</th>
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">기안자</th>
-                <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제출일</th>
+                <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">요청일</th>
                 <th className="px-[16px] py-[12px] text-center font-title-xsmall text-[var(--color-text-secondary)]">상태</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={6} className="text-center py-[60px]">
+                  <td colSpan={5} className="text-center py-[60px]">
                     <div className="inline-block w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
                   </td>
                 </tr>
@@ -112,7 +111,7 @@ export default function ApprovalsListPage() {
 
               {isError && (
                 <tr>
-                  <td colSpan={6} className="text-center py-[60px]">
+                  <td colSpan={5} className="text-center py-[60px]">
                     <p className="font-body-medium text-[var(--color-state-error-text)]">
                       결재 목록을 불러오는 데 실패했습니다.
                     </p>
@@ -122,7 +121,7 @@ export default function ApprovalsListPage() {
 
               {!isLoading && !isError && approvals.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-[60px]">
+                  <td colSpan={5} className="text-center py-[60px]">
                     <p className="font-body-medium text-[var(--color-text-tertiary)]">
                       결재 내역이 없습니다.
                     </p>
@@ -137,19 +136,16 @@ export default function ApprovalsListPage() {
                   className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">
-                    {item.title}
+                    {item.diagnostic?.title}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
                     {DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
-                    {item.companyName}
-                  </td>
-                  <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
-                    {item.drafterName}
+                    {item.requester?.name}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]">
-                    {new Date(item.submittedAt).toLocaleDateString('ko-KR')}
+                    {new Date(item.requestedAt).toLocaleDateString('ko-KR')}
                   </td>
                   <td className="px-[16px] py-[14px] text-center">
                     <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
