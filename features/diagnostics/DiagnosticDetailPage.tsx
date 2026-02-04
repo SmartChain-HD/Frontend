@@ -318,7 +318,7 @@ export default function DiagnosticDetailPage() {
             </div>
 
             <div className="px-[24px] py-[20px]">
-              <p className="font-body-medium text-[var(--color-text-secondary)]">
+              <p className="font-body-medium text-[var(--color-text-primary)]">
                 이 기안을 삭제하시겠습니까? 삭제된 기안은 복구할 수 없습니다.
               </p>
             </div>
