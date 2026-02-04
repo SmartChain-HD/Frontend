@@ -419,6 +419,21 @@ export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
   REJECTED: '승인 반려',
 };
 
+export const DIAGNOSTIC_STATUS_LABELS: Record<DiagnosticStatus, string> = {
+  WRITING: '작성중',
+  SUBMITTED: '제출됨',
+  RETURNED: '반려됨',
+  APPROVED: '승인됨',
+  REVIEWING: '심사중',
+  COMPLETED: '완료',
+};
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  REVIEWING: '심사중',
+  APPROVED: '승인',
+  REVISION_REQUIRED: '보완요청',
+};
+
 export const ROLE_LABELS: Record<RoleCode, string> = {
   GUEST: '게스트',
   DRAFTER: '기안자',

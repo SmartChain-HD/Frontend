@@ -6,17 +6,8 @@ import { useReviews } from '../../src/hooks/useReviews';
 import { useAuthStore } from '../../src/store/authStore';
 import { useDomainGuard } from '../../src/hooks/useDomainGuard';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS, REVIEW_STATUS_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-
-const STATUS_LABELS: Record<DiagnosticStatus, string> = {
-  WRITING: '작성중',
-  SUBMITTED: '제출됨',
-  RETURNED: '반려됨',
-  APPROVED: '승인됨',
-  REVIEWING: '심사중',
-  COMPLETED: '완료',
-};
 
 const STATUS_STYLES: Record<DiagnosticStatus, string> = {
   WRITING: 'bg-gray-50 text-gray-700 border-gray-200',
@@ -37,12 +28,6 @@ const APPROVAL_STATUS_STYLES: Record<ApprovalStatus, string> = {
   WAITING: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   APPROVED: 'bg-green-50 text-green-700 border-green-200',
   REJECTED: 'bg-red-50 text-red-700 border-red-200',
-};
-
-const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
-  REVIEWING: '검토중',
-  APPROVED: '적합',
-  REVISION_REQUIRED: '보완필요',
 };
 
 const REVIEW_STATUS_STYLES: Record<ReviewStatus, string> = {
@@ -331,7 +316,7 @@ export default function DiagnosticsListPage() {
         </td>
         <td className="px-[16px] py-[14px] text-center">
           <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-            {item.statusLabel || STATUS_LABELS[item.status] || item.status}
+            {item.statusLabel || DIAGNOSTIC_STATUS_LABELS[item.status] || item.status}
           </span>
         </td>
       </tr>

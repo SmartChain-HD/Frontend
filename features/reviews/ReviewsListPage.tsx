@@ -3,14 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
 import { useAccessibleDomainOptions } from '../../src/hooks/useDomainGuard';
 import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { DOMAIN_LABELS, REVIEW_STATUS_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-
-const STATUS_LABELS: Record<ReviewStatus, string> = {
-  REVIEWING: '심사중',
-  APPROVED: '승인',
-  REVISION_REQUIRED: '보완요청',
-};
 
 const STATUS_STYLES: Record<ReviewStatus, string> = {
   REVIEWING: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -252,7 +246,7 @@ export default function ReviewsListPage() {
                   </td>
                   <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
-                      {STATUS_LABELS[item.status]}
+                      {REVIEW_STATUS_LABELS[item.status]}
                     </span>
                   </td>
                 </tr>
