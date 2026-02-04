@@ -490,6 +490,21 @@ export default function DiagnosticFilesPage() {
     .filter(f => f.uploadStatus === 'complete')
     .map(f => f.id);
 
+  // preview 데이터 (조건부 return 이전에 정의해야 hooks 순서 유지)
+  const previewData = previewMutation.data;
+  const requiredSlotStatus = previewData?.required_slot_status || [];
+  const missingRequiredSlots = previewData?.missing_required_slots || [];
+  const hasMissingRequiredSlots = missingRequiredSlots.length > 0;
+
+  // required_slot_status에서 SUBMITTED 상태인 슬롯 Set 생성
+  const submittedSlots = useMemo(() => {
+    return new Set(
+      requiredSlotStatus
+        .filter(slot => slot.status === 'SUBMITTED')
+        .map(slot => slot.slot_name)
+    );
+  }, [requiredSlotStatus]);
+
   // 페이지 로드 시 초기 preview 호출 (필수 슬롯 목록용)
   useEffect(() => {
     if (diagnosticId > 0) {
@@ -740,20 +755,6 @@ export default function DiagnosticFilesPage() {
       </DashboardLayout>
     );
   }
-
-  const previewData = previewMutation.data;
-  const requiredSlotStatus = previewData?.required_slot_status || [];
-  const missingRequiredSlots = previewData?.missing_required_slots || [];
-  const hasMissingRequiredSlots = missingRequiredSlots.length > 0;
-
-  // required_slot_status에서 SUBMITTED 상태인 슬롯 Set 생성
-  const submittedSlots = useMemo(() => {
-    return new Set(
-      requiredSlotStatus
-        .filter(slot => slot.status === 'SUBMITTED')
-        .map(slot => slot.slot_name)
-    );
-  }, [requiredSlotStatus]);
 
   const completedCount = completedFileIds.length;
   const processingCount = uploadedFiles.filter(f => f.uploadStatus === 'uploading' || f.uploadStatus === 'processing').length;
