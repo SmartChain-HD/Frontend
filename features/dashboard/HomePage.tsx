@@ -561,11 +561,16 @@ export default function HomePage({ userRole }: HomePageProps) {
                       </th>
                     )}
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                      {userRole === 'drafter' ? '캠페인' : '협력사 명'}
+                      {userRole === 'approver' ? '기안자' : userRole === 'drafter' ? '캠페인' : '협력사 명'}
                     </th>
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                      기간
+                      {userRole === 'approver' ? '기안명' : '기간'}
                     </th>
+                    {userRole === 'approver' && (
+                      <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
+                        요청일
+                      </th>
+                    )}
                     <th className="text-center py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                       상태
                     </th>
