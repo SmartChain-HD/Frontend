@@ -72,3 +72,18 @@ export const useDiagnosticHistory = (id: number) => {
     enabled: id > 0,
   });
 };
+
+export const useDeleteDiagnostic = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: diagnosticsApi.deleteDiagnostic,
+    onSuccess: () => {
+      toast.success('기안이 삭제되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['diagnostics'] });
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      handleApiError(error);
+    },
+  });
+};
