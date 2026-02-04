@@ -1,17 +1,6 @@
 node_modules
 dist
 .git
-.gitignore
-.vscode
-.idea
 .env
-.env.*
-*.md
-docker-compose*
 Dockerfile
 .dockerignore
-tests
-playwright-report
-test-results
-nul
-src/nul
