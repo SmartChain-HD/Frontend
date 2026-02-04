@@ -77,7 +77,13 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const submitReview = useSubmitReview();
 
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [categoryCommentE, setCategoryCommentE] = useState('');
+  const [categoryCommentS, setCategoryCommentS] = useState('');
+  const [categoryCommentG, setCategoryCommentG] = useState('');
+
+  const isESGDomain = review?.domainCode === 'ESG';
 
   const listPath = getListPath(userRole, review?.domainCode);
 
@@ -98,9 +104,33 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   };
 
   const handleApprove = () => {
+    if (isESGDomain) {
+      setShowApproveModal(true);
+    } else {
+      submitReview.mutate(
+        { id: reviewId, data: { decision: 'APPROVED' } },
+        { onSuccess: () => navigate(listPath) }
+      );
+    }
+  };
+
+  const handleApproveWithComments = () => {
     submitReview.mutate(
-      { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate(listPath) }
+      {
+        id: reviewId,
+        data: {
+          decision: 'APPROVED',
+          categoryCommentE: categoryCommentE || undefined,
+          categoryCommentS: categoryCommentS || undefined,
+          categoryCommentG: categoryCommentG || undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          setShowApproveModal(false);
+          navigate(listPath);
+        },
+      }
     );
   };
 
@@ -398,6 +428,79 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
           </div>
         </div>
       </div>
+
+      {/* ESG Approve Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-[20px] p-[32px] w-[700px] max-w-[90%]">
+            <div className="flex items-center justify-between mb-[24px]">
+              <h3 className="font-heading-small text-[#212529]">
+                ESG 심사 승인
+              </h3>
+              <button
+                onClick={() => setShowApproveModal(false)}
+                className="p-[8px] hover:bg-[#f1f3f5] rounded-[8px] transition-colors"
+              >
+                <X className="w-[24px] h-[24px] text-[#868e96]" />
+              </button>
+            </div>
+
+            <div className="space-y-[16px] mb-[24px]">
+              <div>
+                <label className="block font-title-small text-[#212529] mb-[8px]">
+                  환경(E) 관련 의견 <span className="text-[#868e96] font-body-small">(선택)</span>
+                </label>
+                <textarea
+                  value={categoryCommentE}
+                  onChange={(e) => setCategoryCommentE(e.target.value)}
+                  placeholder="환경 관련 의견을 입력해주세요..."
+                  className="w-full h-[80px] border border-[#dee2e6] rounded-[12px] p-[12px] font-body-medium resize-none focus:outline-none focus:border-[#003087]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-title-small text-[#212529] mb-[8px]">
+                  사회(S) 관련 의견 <span className="text-[#868e96] font-body-small">(선택)</span>
+                </label>
+                <textarea
+                  value={categoryCommentS}
+                  onChange={(e) => setCategoryCommentS(e.target.value)}
+                  placeholder="사회 관련 의견을 입력해주세요..."
+                  className="w-full h-[80px] border border-[#dee2e6] rounded-[12px] p-[12px] font-body-medium resize-none focus:outline-none focus:border-[#003087]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-title-small text-[#212529] mb-[8px]">
+                  지배구조(G) 관련 의견 <span className="text-[#868e96] font-body-small">(선택)</span>
+                </label>
+                <textarea
+                  value={categoryCommentG}
+                  onChange={(e) => setCategoryCommentG(e.target.value)}
+                  placeholder="지배구조 관련 의견을 입력해주세요..."
+                  className="w-full h-[80px] border border-[#dee2e6] rounded-[12px] p-[12px] font-body-medium resize-none focus:outline-none focus:border-[#003087]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-[12px] justify-end">
+              <button
+                onClick={() => setShowApproveModal(false)}
+                className="px-[24px] py-[12px] bg-[#e9ecef] text-[#495057] rounded-[8px] font-title-small hover:bg-[#dee2e6] transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleApproveWithComments}
+                disabled={isMutating}
+                className="px-[24px] py-[12px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
+              >
+                승인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {showRejectModal && (
