@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
@@ -13,7 +13,7 @@ import { useLogin } from '../../src/hooks/useAuth';
 import { useAuthStore } from '../../src/store/authStore';
 import { loginSchema, type LoginFormData } from '../../src/validation/auth';
 import type { ErrorResponse } from '../../src/types/api.types';
-import { getLoginErrorMessage } from '../../src/utils/errorHandler';
+import { getLoginErrorMessage, getAccountLockState, formatLockTime, type AccountLockState } from '../../src/utils/errorHandler';
 import svgPaths from "../../imports/svg-1z9x9otd1u";
 import { imgGroup } from "../../imports/svg-cdk78";
 
@@ -108,16 +108,52 @@ export default function LoginPage() {
   const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [lockState, setLockState] = useState<AccountLockState | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
+  // 잠금 상태 확인
+  useEffect(() => {
+    if (loginMutation.isError) {
+      const error = loginMutation.error as AxiosError<ErrorResponse>;
+      const accountLock = getAccountLockState(error);
+      setLockState(accountLock);
+
+      if (accountLock && !accountLock.isPermanent && accountLock.remainingMinutes) {
+        setRemainingSeconds(accountLock.remainingMinutes * 60);
+      }
+    } else {
+      setLockState(null);
+    }
+  }, [loginMutation.isError, loginMutation.error]);
+
+  // 잠금 시간 카운트다운
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          setLockState(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingSeconds]);
+
   // 이미 인증된 사용자는 대시보드로 리다이렉트
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const isAccountLocked = lockState?.isLocked && !lockState.isPermanent && remainingSeconds > 0;
 
   const onSubmit = useCallback(async (data: LoginFormData) => {
     if (!executeRecaptcha) {
@@ -175,7 +211,29 @@ export default function LoginPage() {
                           <p className="text-red-500 font-detail-small mt-1">{errors.password.message}</p>
                         )}
                       </div>
-                      {loginMutation.isError && (
+                      {/* 계정 잠금 알림 */}
+                      {lockState?.isLocked && (
+                        <div className={`p-4 rounded-lg ${lockState.isPermanent ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+                          <p className={`font-title-small ${lockState.isPermanent ? 'text-red-700' : 'text-amber-700'}`}>
+                            {lockState.isPermanent ? '계정 영구 잠금' : '계정 일시 잠금'}
+                          </p>
+                          <p className={`font-body-small mt-1 ${lockState.isPermanent ? 'text-red-600' : 'text-amber-600'}`}>
+                            {lockState.message}
+                          </p>
+                          {!lockState.isPermanent && remainingSeconds > 0 && (
+                            <p className="font-body-small text-amber-600 mt-2">
+                              남은 시간: {formatLockTime(Math.ceil(remainingSeconds / 60))}
+                            </p>
+                          )}
+                          {lockState.isPermanent && (
+                            <p className="font-body-small text-red-600 mt-2">
+                              고객센터: support@smartchain.com
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {/* 일반 로그인 에러 */}
+                      {loginMutation.isError && !lockState?.isLocked && (
                         <p className="text-red-500 font-body-small">
                           {getLoginErrorMessage(loginMutation.error as AxiosError<ErrorResponse>)}
                         </p>
@@ -189,9 +247,9 @@ export default function LoginPage() {
                         variant="primary"
                         size="large"
                         className="w-full font-title-small"
-                        disabled={loginMutation.isPending}
+                        disabled={loginMutation.isPending || isAccountLocked || lockState?.isPermanent}
                       >
-                          {loginMutation.isPending ? '로그인 중...' : '로그인'}
+                          {loginMutation.isPending ? '로그인 중...' : isAccountLocked ? `잠금 해제 대기 중 (${formatLockTime(Math.ceil(remainingSeconds / 60))})` : '로그인'}
                       </Button>
                       <Button type="button" variant="secondary" size="large" className="w-full font-title-small" onClick={handleSignup}>
                           회원가입
