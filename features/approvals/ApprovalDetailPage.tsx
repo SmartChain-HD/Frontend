@@ -221,10 +221,10 @@ export default function ApprovalDetailPage() {
           <div className="flex justify-end">
             <button
               onClick={handleSubmitToReviewer}
-              disabled={submitToReviewerMutation.isPending}
+              disabled={submitToReviewerMutation.isPending || submitToReviewerMutation.isSuccess}
               className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors disabled:opacity-50"
             >
-              {submitToReviewerMutation.isPending ? '제출 중...' : '원청에 제출'}
+              {submitToReviewerMutation.isPending ? '제출 중...' : submitToReviewerMutation.isSuccess ? '제출 완료' : '원청에 제출'}
             </button>
           </div>
         )}
