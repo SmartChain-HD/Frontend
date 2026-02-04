@@ -14,6 +14,7 @@ import * as filesApi from '../../src/api/files';
 import type { JobStatus } from '../../src/api/jobs';
 import type {
   SlotStatus,
+  SlotHint,
   AiAnalysisResultResponse,
   SlotResultDetail,
   ClarificationDetail,
@@ -365,13 +366,29 @@ function SlotChecklist({
   slots,
   submittedSlots,
   missingRequired,
+  slotHints,
+  fileIdToName,
   isLoading,
 }: {
   slots: SlotStatus[];
   submittedSlots: Set<string>;
   missingRequired: string[];
+  slotHints: SlotHint[];
+  fileIdToName: Map<string, string>;
   isLoading: boolean;
 }) {
+  // slot_name → 매칭된 파일명 매핑
+  const slotToFileName = useMemo(() => {
+    const map = new Map<string, string>();
+    slotHints.forEach(hint => {
+      const fileName = fileIdToName.get(hint.file_id);
+      if (fileName) {
+        map.set(hint.slot_name, fileName);
+      }
+    });
+    return map;
+  }, [slotHints, fileIdToName]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-[20px]">
@@ -395,37 +412,45 @@ function SlotChecklist({
       {slots.map((slot, index) => (
         <SlotCheckItem
           key={index}
-          slotName={slot.slot_name}
+          slotName={slot.display_name || slot.slot_name}
           isSubmitted={submittedSlots.has(slot.slot_name)}
           isRequired={missingRequired.includes(slot.slot_name)}
+          matchedFileName={slotToFileName.get(slot.slot_name)}
         />
       ))}
     </div>
   );
 }
 
-function SlotCheckItem({ slotName, isSubmitted, isRequired }: { slotName: string; isSubmitted: boolean; isRequired: boolean }) {
+function SlotCheckItem({ slotName, isSubmitted, isRequired, matchedFileName }: { slotName: string; isSubmitted: boolean; isRequired: boolean; matchedFileName?: string }) {
   return (
-    <div className="flex items-center gap-[10px] py-[4px]">
+    <div className="flex items-start gap-[10px] py-[6px]">
       {isSubmitted ? (
-        <svg className="w-[20px] h-[20px] text-green-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="w-[20px] h-[20px] text-green-500 flex-shrink-0 mt-[2px]" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
       ) : (
-        <div className="w-[20px] h-[20px] rounded-full border-2 border-gray-300 flex-shrink-0" />
+        <div className="w-[20px] h-[20px] rounded-full border-2 border-gray-300 flex-shrink-0 mt-[2px]" />
       )}
-      <span className={`font-body-medium flex-1 ${isSubmitted ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-tertiary)]'}`}>
-        {slotName}
-        {isRequired && !isSubmitted && (
-          <span className="text-[var(--color-text-tertiary)] ml-[4px]">(필수)</span>
+      <div className="flex-1 min-w-0">
+        <span className={`font-body-medium ${isSubmitted ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-tertiary)]'}`}>
+          {slotName}
+          {isRequired && !isSubmitted && (
+            <span className="text-[var(--color-text-tertiary)] ml-[4px]">(필수)</span>
+          )}
+        </span>
+        {matchedFileName && (
+          <p className="font-body-small text-[var(--color-text-tertiary)] truncate mt-[2px]" title={matchedFileName}>
+            ↳ {matchedFileName}
+          </p>
         )}
-      </span>
+      </div>
     </div>
   );
 }
 
 // 분석 결과 섹션 컴포넌트
-function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
+function AiResultSection({ result, slotDisplayNames }: { result: AiAnalysisResultResponse; slotDisplayNames?: Map<string, string> }) {
   const verdict = result.verdict as Verdict;
   const riskLevel = result.riskLevel as RiskLevel;
   const details = result.details;
@@ -465,7 +490,7 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
             </p>
             <div className="space-y-[12px]">
               {details.slot_results.map((slotResult, index) => (
-                <SlotResultCard key={index} result={slotResult} />
+                <SlotResultCard key={index} result={slotResult} slotDisplayNames={slotDisplayNames} />
               ))}
             </div>
           </div>
@@ -510,14 +535,15 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
 }
 
 // 슬롯별 결과 카드
-function SlotResultCard({ result }: { result: SlotResultDetail }) {
+function SlotResultCard({ result, slotDisplayNames }: { result: SlotResultDetail; slotDisplayNames?: Map<string, string> }) {
   const verdict = result.verdict as Verdict;
+  const displayName = result.display_name || slotDisplayNames?.get(result.slot_name) || result.slot_name;
 
   return (
     <div className="p-[16px] bg-gray-50 rounded-[12px]">
       <div className="flex items-center justify-between mb-[8px]">
         <span className="font-title-small text-[var(--color-text-primary)]">
-          {result.slot_name}
+          {displayName}
         </span>
         <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
@@ -792,8 +818,29 @@ export default function DiagnosticFilesPage() {
   const getAutoTagForFile = useCallback((fileId: number): string | undefined => {
     const slotHints = previewMutation.data?.slot_hint || [];
     const hint = slotHints.find(h => h.file_id === String(fileId));
-    return hint?.slot_name;
+    return hint ? (hint.display_name || hint.slot_name) : undefined;
   }, [previewMutation.data?.slot_hint]);
+
+  // file_id → file_name 매핑 (슬롯 체크리스트용)
+  const fileIdToName = useMemo(() => {
+    const map = new Map<string, string>();
+    uploadedFiles.forEach(f => {
+      map.set(String(f.id), f.name);
+    });
+    return map;
+  }, [uploadedFiles]);
+
+  // slot_name → display_name 매핑 (분석 결과용)
+  const slotDisplayNames = useMemo(() => {
+    const map = new Map<string, string>();
+    const slots = previewMutation.data?.required_slot_status || [];
+    slots.forEach(slot => {
+      if (slot.display_name) {
+        map.set(slot.slot_name, slot.display_name);
+      }
+    });
+    return map;
+  }, [previewMutation.data?.required_slot_status]);
 
   // preview 호출 함수
   const callPreview = useCallback((fileIds: number[]) => {
@@ -924,6 +971,11 @@ export default function DiagnosticFilesPage() {
       if (selectedFileId === fileId) {
         setSelectedFileId(null);
       }
+      // 파일 목록 쿼리 갱신
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
+      // 삭제된 파일을 제외한 나머지 파일로 preview 재호출
+      const remainingFileIds = allCompletedFileIds.filter(id => id !== fileId);
+      callPreview(remainingFileIds);
     } catch {
       // Error handled by mutation
     }
@@ -932,7 +984,12 @@ export default function DiagnosticFilesPage() {
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
     setIsAnalyzing(true);
-    submitMutation.mutate(diagnosticId, {
+    const slotHints = (previewMutation.data?.slot_hint || []).map(h => ({
+      file_id: h.file_id,
+      slot_name: h.slot_name,
+      display_name: h.display_name,
+    }));
+    submitMutation.mutate({ diagnosticId, slotHints }, {
       onError: () => {
         setIsAnalyzing(false);
       },
@@ -1146,6 +1203,8 @@ export default function DiagnosticFilesPage() {
                 slots={requiredSlotStatus}
                 submittedSlots={submittedSlots}
                 missingRequired={missingRequiredSlots}
+                slotHints={previewMutation.data?.slot_hint || []}
+                fileIdToName={fileIdToName}
                 isLoading={previewMutation.isPending}
               />
             </div>
@@ -1169,7 +1228,7 @@ export default function DiagnosticFilesPage() {
         )}
 
         {!isAnalyzing && aiResult && (
-          <AiResultSection result={aiResult} />
+          <AiResultSection result={aiResult} slotDisplayNames={slotDisplayNames} />
         )}
 
         {/* 파싱 결과 미리보기 (선택된 파일이 있을 때) */}

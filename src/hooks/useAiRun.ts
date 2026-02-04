@@ -19,8 +19,9 @@ export const useSubmitAiRun = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (diagnosticId: number) => aiRunApi.submitAiRun(diagnosticId),
-    onSuccess: (_, diagnosticId) => {
+    mutationFn: ({ diagnosticId, slotHints }: { diagnosticId: number; slotHints: aiRunApi.SlotHint[] }) =>
+      aiRunApi.submitAiRun(diagnosticId, slotHints),
+    onSuccess: (_, { diagnosticId }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId) });
     },
     onError: (error: AxiosError<ErrorResponse>) => {
@@ -29,17 +30,13 @@ export const useSubmitAiRun = () => {
   });
 };
 
-export const useAiResult = (diagnosticId: number, enabled = true) => {
+export const useAiResult = (diagnosticId: number, polling = false) => {
   return useQuery({
     queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId),
     queryFn: () => aiRunApi.getAiResult(diagnosticId),
-    enabled,
-    refetchInterval: (query) => {
-      if (query?.state?.error || !query?.state?.data) {
-        return 5000;
-      }
-      return false;
-    },
+    enabled: diagnosticId > 0,
+    // polling 파라미터가 true일 때만 5초마다 재시도
+    refetchInterval: polling ? 5000 : false,
     retry: false,
   });
 };
