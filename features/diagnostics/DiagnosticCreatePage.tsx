@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,14 +21,6 @@ export default function DiagnosticCreatePage() {
   const domainCode = searchParams.get('domainCode');
   const createMutation = useCreateDiagnostic();
   const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns({ activeOnly: true });
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      createMutation.reset();
-    };
-  }, []);
 
   const {
     register,
@@ -81,17 +73,17 @@ export default function DiagnosticCreatePage() {
     // 중복 호출 방지
     if (createMutation.isPending) return;
 
-    createMutation.mutate(data, {
-      onSuccess: (result) => {
-        if (!isMountedRef.current) return;
-        // 상세 페이지로 이동, diagnosticId가 없으면 목록 페이지로 fallback
-        if (result?.diagnosticId) {
-          navigate(`/diagnostics/${result.diagnosticId}`);
-        } else {
-          navigate(domainCode ? `/diagnostics?domainCode=${domainCode}` : '/diagnostics');
-        }
-      },
-    });
+    try {
+      const result = await createMutation.mutateAsync(data);
+      // 상세 페이지로 이동, diagnosticId가 없으면 목록 페이지로 fallback
+      if (result?.diagnosticId) {
+        navigate(`/diagnostics/${result.diagnosticId}`);
+      } else {
+        navigate(domainCode ? `/diagnostics?domainCode=${domainCode}` : '/diagnostics');
+      }
+    } catch {
+      // 에러는 useCreateDiagnostic 훅에서 처리됨
+    }
   };
 
   return (
