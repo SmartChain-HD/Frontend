@@ -228,7 +228,7 @@ export default function DiagnosticDetailPage() {
           {canDelete && (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="px-[24px] py-[12px] rounded-[8px] border border-red-500 font-title-small text-red-500 hover:bg-red-50 transition-colors"
+              className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-state-error-icon)] font-title-small text-[var(--color-state-error-icon)] hover:bg-[var(--color-state-error-bg)] transition-colors"
             >
               삭제
             </button>
@@ -333,7 +333,7 @@ export default function DiagnosticDetailPage() {
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="px-[20px] py-[10px] rounded-[8px] bg-red-500 font-title-small text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-state-error-icon)] font-title-small text-white hover:opacity-90 transition-colors disabled:opacity-50"
               >
                 {deleteMutation.isPending ? '삭제 중...' : '삭제'}
               </button>
