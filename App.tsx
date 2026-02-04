@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { Toaster } from 'sonner';
 import { useAuthStore } from './src/store/authStore';
 import { useMe } from './src/hooks/useAuth';
@@ -334,16 +333,11 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <GoogleReCaptchaProvider
-      reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-      language="ko"
-    >
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-        <Toaster position="top-right" richColors />
-      </QueryClientProvider>
-    </GoogleReCaptchaProvider>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+      <Toaster position="top-right" richColors />
+    </QueryClientProvider>
   );
 }

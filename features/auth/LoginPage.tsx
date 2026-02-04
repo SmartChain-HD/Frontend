@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
@@ -103,7 +103,7 @@ function LoginLeftPanel() {
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
@@ -115,6 +115,13 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // 이미 인증된 사용자는 대시보드로 리다이렉트
+  useEffect(() => {
+    if (isAuthenticated && !loginMutation.isPending) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, loginMutation.isPending, navigate]);
 
   // 잠금 상태 확인
   useEffect(() => {
@@ -148,6 +155,8 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, [remainingSeconds]);
 
+  const isAccountLocked = lockState?.isLocked && !lockState.isPermanent && remainingSeconds > 0;
+
   const onSubmit = useCallback(async (data: LoginFormData) => {
     if (!executeRecaptcha) {
       console.error('reCAPTCHA not loaded');
@@ -161,13 +170,6 @@ export default function LoginPage() {
   const handleSignup = useCallback(() => {
     navigate('/signup/step1');
   }, [navigate]);
-
-  // 이미 인증된 사용자는 대시보드로 리다이렉트
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const isAccountLocked = lockState?.isLocked && !lockState.isPermanent && remainingSeconds > 0;
 
   return (
     <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
@@ -273,5 +275,16 @@ export default function LoginPage() {
       {/* Footer */}
       <Footer />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+      language="ko"
+    >
+      <LoginForm />
+    </GoogleReCaptchaProvider>
   );
 }
