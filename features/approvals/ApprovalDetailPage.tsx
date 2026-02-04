@@ -106,7 +106,11 @@ export default function ApprovalDetailPage() {
   };
 
   const handleSubmitToReviewer = () => {
-    submitToReviewerMutation.mutate(approvalId);
+    submitToReviewerMutation.mutate(approvalId, {
+      onSuccess: () => {
+        navigate(approval?.domainCode ? `/approvals?domainCode=${approval.domainCode}` : '/approvals');
+      },
+    });
   };
 
   if (isLoading) {
