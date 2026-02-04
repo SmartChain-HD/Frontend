@@ -401,7 +401,7 @@ GET /api/v1/diagnostics
 - `WRITING` - 작성중
 - `SUBMITTED` - 제출됨
 - `RETURNED` - 반려됨
-- `APPROVED` - 내부승인
+- `APPROVED` - 승인됨
 - `REVIEWING` - 심사중
 - `COMPLETED` - 완료
 
