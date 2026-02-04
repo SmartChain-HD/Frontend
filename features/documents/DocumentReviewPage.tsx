@@ -51,6 +51,11 @@ function formatPeriod(dateStr: string): string {
   return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월`;
 }
 
+function getDomainPath(domainCode?: string): string {
+  const domain = domainCode?.toLowerCase() || 'safety';
+  return `/dashboard/${domain}`;
+}
+
 export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps) {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -62,8 +67,10 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
+  const domainPath = getDomainPath(review?.domainCode);
+
   const handleBackToList = () => {
-    navigate('/dashboard/safety');
+    navigate(domainPath);
   };
 
   const handleReject = () => {
@@ -73,7 +80,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const handleApprove = () => {
     submitReview.mutate(
       { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate('/dashboard/safety') }
+      { onSuccess: () => navigate(domainPath) }
     );
   };
 
@@ -84,7 +91,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
       {
         onSuccess: () => {
           setShowRejectModal(false);
-          navigate('/dashboard/safety');
+          navigate(domainPath);
         },
       }
     );
@@ -93,7 +100,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const handleSubmitToApprover = () => {
     submitReview.mutate(
       { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate('/dashboard/safety') }
+      { onSuccess: () => navigate(domainPath) }
     );
   };
 
