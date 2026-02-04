@@ -148,13 +148,6 @@ export default function LoginPage() {
     return () => clearInterval(timer);
   }, [remainingSeconds]);
 
-  // 이미 인증된 사용자는 대시보드로 리다이렉트
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const isAccountLocked = lockState?.isLocked && !lockState.isPermanent && remainingSeconds > 0;
-
   const onSubmit = useCallback(async (data: LoginFormData) => {
     if (!executeRecaptcha) {
       console.error('reCAPTCHA not loaded');
@@ -165,9 +158,16 @@ export default function LoginPage() {
     loginMutation.mutate({ ...data, recaptchaToken });
   }, [executeRecaptcha, loginMutation]);
 
-  const handleSignup = () => {
+  const handleSignup = useCallback(() => {
     navigate('/signup/step1');
-  };
+  }, [navigate]);
+
+  // 이미 인증된 사용자는 대시보드로 리다이렉트
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const isAccountLocked = lockState?.isLocked && !lockState.isPermanent && remainingSeconds > 0;
 
   return (
     <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
