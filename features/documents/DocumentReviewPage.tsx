@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-import { AlertCircle, ArrowLeft, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, X, FileText, Download } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
+import { useAiResult } from '../../src/hooks/useAiRun';
+import type { DomainCode } from '../../src/types/api.types';
+import { DOMAIN_LABELS } from '../../src/types/api.types';
+import type { SlotResultDetail } from '../../src/api/aiRun';
 
 interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
@@ -62,6 +66,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const reviewId = Number(id) || 0;
 
   const { data: review, isLoading, isError } = useReviewDetail(reviewId);
+  const diagnosticId = review?.diagnostic?.diagnosticId ?? 0;
+  const { data: aiResult } = useAiResult(diagnosticId);
   const submitReview = useSubmitReview();
 
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -195,6 +201,123 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
             </div>
           </div>
 
+          {/* 기안 정보 */}
+          <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
+            <h2 className="font-title-medium text-[#212529] mb-[16px]">기안 정보</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">기안명</p>
+                <p className="font-title-small text-[#212529]">{review.diagnostic?.title || '-'}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">기안코드</p>
+                <p className="font-title-small text-[#212529]">{review.diagnostic?.diagnosticCode || '-'}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">도메인</p>
+                <p className="font-title-small text-[#212529]">{review.domainName || DOMAIN_LABELS[review.domainCode as DomainCode] || review.domainCode}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">점수</p>
+                <p className="font-title-small text-[#212529]">{review.score !== null ? `${review.score}점` : '-'}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">상태</p>
+                <p className="font-title-small text-[#212529]">{review.statusLabel || review.status}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">담당자</p>
+                <p className="font-title-small text-[#212529]">{review.assignedTo?.name || '-'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* AI 분석 결과 상세 */}
+          {aiResult && (
+            <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
+              <h2 className="font-title-medium text-[#212529] mb-[16px]">AI 분석 결과 상세</h2>
+
+              <div className="mb-[16px]">
+                <p className="font-body-small text-[#868e96] mb-[8px]">분석 요약</p>
+                <p className="font-body-medium text-[#212529] leading-[1.6]">{aiResult.whySummary}</p>
+              </div>
+
+              {aiResult.details?.slot_results && aiResult.details.slot_results.length > 0 && (
+                <div>
+                  <p className="font-body-small text-[#868e96] mb-[12px]">슬롯별 분석 결과</p>
+                  <div className="space-y-[12px]">
+                    {aiResult.details.slot_results.map((slotResult: SlotResultDetail, index: number) => (
+                      <SlotResultCard key={index} result={slotResult} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-[16px] pt-[16px] border-t border-[#dee2e6]">
+                <p className="font-body-small text-[#868e96]">
+                  분석 일시: {new Date(aiResult.analyzedAt).toLocaleString('ko-KR')}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 파일 다운로드 */}
+          {(review.files.hasDiagnosticPdf || review.files.hasDataPackage || review.files.hasModificationLog || review.files.hasAiReport) && (
+            <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
+              <h2 className="font-title-medium text-[#212529] mb-[16px]">관련 파일</h2>
+              <div className="flex flex-wrap gap-[12px]">
+                {review.files.hasDiagnosticPdf && review.files.diagnosticPdfUrl && (
+                  <a
+                    href={review.files.diagnosticPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-[8px] px-[16px] py-[10px] bg-[#f8f9fa] rounded-[8px] font-body-medium text-[#212529] hover:bg-[#e9ecef] transition-colors"
+                  >
+                    <FileText className="w-[18px] h-[18px] text-[#868e96]" />
+                    진단 PDF
+                    <Download className="w-[16px] h-[16px] text-[#868e96]" />
+                  </a>
+                )}
+                {review.files.hasDataPackage && review.files.dataPackageUrl && (
+                  <a
+                    href={review.files.dataPackageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-[8px] px-[16px] py-[10px] bg-[#f8f9fa] rounded-[8px] font-body-medium text-[#212529] hover:bg-[#e9ecef] transition-colors"
+                  >
+                    <FileText className="w-[18px] h-[18px] text-[#868e96]" />
+                    데이터 패키지
+                    <Download className="w-[16px] h-[16px] text-[#868e96]" />
+                  </a>
+                )}
+                {review.files.hasModificationLog && review.files.modificationLogUrl && (
+                  <a
+                    href={review.files.modificationLogUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-[8px] px-[16px] py-[10px] bg-[#f8f9fa] rounded-[8px] font-body-medium text-[#212529] hover:bg-[#e9ecef] transition-colors"
+                  >
+                    <FileText className="w-[18px] h-[18px] text-[#868e96]" />
+                    수정 이력
+                    <Download className="w-[16px] h-[16px] text-[#868e96]" />
+                  </a>
+                )}
+                {review.files.hasAiReport && review.files.aiReportUrl && (
+                  <a
+                    href={review.files.aiReportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-[8px] px-[16px] py-[10px] bg-[#f8f9fa] rounded-[8px] font-body-medium text-[#212529] hover:bg-[#e9ecef] transition-colors"
+                  >
+                    <FileText className="w-[18px] h-[18px] text-[#868e96]" />
+                    AI 분석 리포트
+                    <Download className="w-[16px] h-[16px] text-[#868e96]" />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-[12px] justify-end">
             {userRole === 'drafter' && (
@@ -302,5 +425,71 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+type Verdict = 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+
+const VERDICT_LABELS: Record<Verdict, string> = {
+  PASS: '적합',
+  WARN: '경고',
+  NEED_CLARIFY: '확인 필요',
+  NEED_FIX: '수정 필요',
+};
+
+const VERDICT_STYLES: Record<Verdict, string> = {
+  PASS: 'bg-green-100 text-green-700 border-green-200',
+  WARN: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  NEED_CLARIFY: 'bg-orange-100 text-orange-700 border-orange-200',
+  NEED_FIX: 'bg-red-100 text-red-700 border-red-200',
+};
+
+const REASON_LABELS: Record<string, string> = {
+  MISSING_SLOT: '필수 슬롯 누락',
+  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
+  EMPTY_TABLE: '표/데이터 행이 비어있음',
+  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
+  WRONG_YEAR: '문서 대상 연도 불일치',
+  PARSE_FAILED: '파싱 실패',
+  DATE_MISMATCH: '기간 불일치',
+  UNIT_MISSING: '단위 누락',
+  EVIDENCE_MISSING: '근거문서 누락',
+  SIGNATURE_MISSING: '확인 서명란 미기재',
+};
+
+function SlotResultCard({ result }: { result: SlotResultDetail }) {
+  const verdict = result.verdict as Verdict;
+  const displayName = result.display_name || result.slot_name;
+
+  return (
+    <div className="p-[16px] bg-[#f8f9fa] rounded-[12px]">
+      <div className="flex items-center justify-between mb-[8px]">
+        <span className="font-title-small text-[#212529]">{displayName}</span>
+        <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
+          {VERDICT_LABELS[verdict]}
+        </span>
+      </div>
+
+      {result.reasons && result.reasons.length > 0 && (
+        <ul className="space-y-[4px] mt-[8px]">
+          {result.reasons.map((reason, index) => (
+            <li key={index} className="flex items-start gap-[6px] font-body-small text-[#868e96]">
+              <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[6px] flex-shrink-0" />
+              {REASON_LABELS[reason] || reason}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {result.file_names && result.file_names.length > 0 && (
+        <div className="mt-[8px] flex flex-wrap gap-[6px]">
+          {result.file_names.map((fileName, index) => (
+            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-[#495057] rounded border border-[#dee2e6]">
+              {fileName}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
