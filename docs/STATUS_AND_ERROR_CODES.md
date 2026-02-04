@@ -53,7 +53,7 @@ WRITING → SUBMITTED → RETURNED (반려 시)
 | `WRITING` | 작성중 | 기안자가 진단 작성 중 | SUBMITTED |
 | `SUBMITTED` | 제출됨 | 결재자에게 제출됨 | RETURNED, APPROVED |
 | `RETURNED` | 반려됨 | 결재자가 반려함 | WRITING |
-| `APPROVED` | 내부승인 | 결재자가 승인함 | REVIEWING |
+| `APPROVED` | 승인됨 | 결재자가 승인함 | REVIEWING |
 | `REVIEWING` | 심사중 | 원청에서 심사 중 | COMPLETED |
 | `COMPLETED` | 완료 | 심사 완료 | (최종 상태) |
 
