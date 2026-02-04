@@ -8,7 +8,7 @@ import {
 } from '../../src/hooks/useDiagnostics';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { AiAnalysisResultResponse, SlotResultDetail } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -51,15 +51,6 @@ const REASON_LABELS: Record<string, string> = {
   UNIT_MISSING: '단위 누락',
   EVIDENCE_MISSING: '근거문서 누락',
   SIGNATURE_MISSING: '확인 서명란 미기재',
-};
-
-const STATUS_LABELS: Record<DiagnosticStatus, string> = {
-  WRITING: '작성중',
-  SUBMITTED: '제출됨',
-  RETURNED: '반려됨',
-  APPROVED: '승인됨',
-  REVIEWING: '심사중',
-  COMPLETED: '완료',
 };
 
 const STATUS_STYLES: Record<DiagnosticStatus, string> = {
@@ -164,7 +155,7 @@ export default function DiagnosticDetailPage() {
         <div className="flex items-start justify-between gap-[16px]">
           <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode}</h1>
           <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[diagnostic.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-            {diagnostic.statusLabel || STATUS_LABELS[diagnostic.status] || diagnostic.status}
+            {diagnostic.statusLabel || DIAGNOSTIC_STATUS_LABELS[diagnostic.status] || diagnostic.status}
           </span>
         </div>
 
@@ -201,7 +192,7 @@ export default function DiagnosticDetailPage() {
                   className="flex items-start gap-[12px] pb-[16px] border-b border-[var(--color-border-default)] last:border-b-0 last:pb-0"
                 >
                   <span className={`shrink-0 inline-block px-[8px] py-[2px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
-                    {STATUS_LABELS[item.status]}
+                    {DIAGNOSTIC_STATUS_LABELS[item.status]}
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-body-medium text-[var(--color-text-primary)]">
