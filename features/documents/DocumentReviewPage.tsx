@@ -51,7 +51,15 @@ function formatPeriod(dateStr: string): string {
   return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월`;
 }
 
-function getDomainPath(domainCode?: string): string {
+function getListPath(userRole: string, domainCode?: string): string {
+  // 역할에 따라 목록 페이지 경로 반환
+  if (userRole === 'receiver') {
+    return '/reviews';
+  }
+  if (userRole === 'approver') {
+    return '/approvals';
+  }
+  // 기안자(drafter)는 도메인별 대시보드로 이동
   const domain = domainCode?.toLowerCase() || 'safety';
   return `/dashboard/${domain}`;
 }
@@ -67,10 +75,10 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
-  const domainPath = getDomainPath(review?.domainCode);
+  const listPath = getListPath(userRole, review?.domainCode);
 
   const handleBackToList = () => {
-    navigate(domainPath);
+    navigate(listPath);
   };
 
   const handleReject = () => {
@@ -80,7 +88,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const handleApprove = () => {
     submitReview.mutate(
       { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate(domainPath) }
+      { onSuccess: () => navigate(listPath) }
     );
   };
 
@@ -91,7 +99,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
       {
         onSuccess: () => {
           setShowRejectModal(false);
-          navigate(domainPath);
+          navigate(listPath);
         },
       }
     );
@@ -100,7 +108,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const handleSubmitToApprover = () => {
     submitReview.mutate(
       { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate(domainPath) }
+      { onSuccess: () => navigate(listPath) }
     );
   };
 
