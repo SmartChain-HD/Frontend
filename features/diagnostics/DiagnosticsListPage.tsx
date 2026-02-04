@@ -274,7 +274,7 @@ export default function DiagnosticsListPage() {
       return items.map((item) => (
         <tr
           key={item.reviewId}
-          onClick={() => navigate(`/reviews/${item.reviewId}`)}
+          onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}
           className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
         >
           <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">

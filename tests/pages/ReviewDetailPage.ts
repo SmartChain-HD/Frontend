@@ -41,8 +41,8 @@ export class ReviewDetailPage {
     this.modalConfirmRevisionButton = page.locator('.fixed').getByRole('button', { name: '보완요청' });
   }
 
-  async goto(id: number) {
-    await this.page.goto(`/reviews/${id}`);
+  async goto(id: number, domain: 'safety' | 'compliance' | 'esg' = 'safety') {
+    await this.page.goto(`/dashboard/${domain}/review/${id}`);
     await this.waitForLoaded();
   }
 
