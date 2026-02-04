@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApprovalDetail, useProcessApproval, useSubmitToReviewer } from '../../src/hooks/useApprovals';
+import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { ApprovalStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
@@ -70,6 +71,7 @@ export default function ApprovalDetailPage() {
 
   const { data: approval, isLoading, isError, error } = useApprovalDetail(approvalId);
   const diagnosticId = approval?.diagnostic?.diagnosticId ?? 0;
+  const { data: diagnostic } = useDiagnosticDetail(diagnosticId);
   const { data: aiResult } = useAiResult(diagnosticId);
   const processApprovalMutation = useProcessApproval();
   const submitToReviewerMutation = useSubmitToReviewer();
@@ -143,6 +145,7 @@ export default function ApprovalDetailPage() {
 
   const isWaiting = approval.status === 'WAITING';
   const isApproved = approval.status === 'APPROVED';
+  const canSubmitToReviewer = isApproved && diagnostic?.status === 'APPROVED';
 
   return (
     <DashboardLayout>
@@ -217,7 +220,7 @@ export default function ApprovalDetailPage() {
           </div>
         )}
 
-        {isApproved && (
+        {canSubmitToReviewer && (
           <div className="flex justify-end">
             <button
               onClick={handleSubmitToReviewer}
