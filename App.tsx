@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -91,9 +92,28 @@ function DomainProtectedRoute({ children, domainCode }: DomainProtectedRouteProp
 
 function AppRoutes() {
   const { user } = useAuthStore();
+  const [isHydrated, setIsHydrated] = useState(useAuthStore.persist.hasHydrated());
+
+  // Wait for persist hydration to complete
+  useEffect(() => {
+    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+      setIsHydrated(true);
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Fetch user info on app load if authenticated
   useMe();
+
+  // Show loading until hydration is complete
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
+        <div className="w-[32px] h-[32px] border-[3px] border-[#2563eb] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const getUserRoleForLegacy = (): 'receiver' | 'drafter' | 'approver' => {
     if (!user?.role) return 'drafter';
