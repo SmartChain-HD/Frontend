@@ -366,7 +366,7 @@ export default function HomePage({ userRole }: HomePageProps) {
       if (items.length === 0) {
         return (
           <tr>
-            <td colSpan={5}>
+            <td colSpan={4}>
               <EmptyState message="등록된 기안이 없습니다." />
             </td>
           </tr>
@@ -382,13 +382,12 @@ export default function HomePage({ userRole }: HomePageProps) {
             {item.title || item.summary || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {item.diagnosticCode || '-'}
-          </td>
-          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.campaign?.title || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {formatDate(item.createdAt)}
+            {item.period?.startDate && item.period?.endDate
+              ? `${item.period.startDate} ~ ${item.period.endDate}`
+              : '-'}
           </td>
           <td className="py-[16px] px-[16px] text-center">
             <span
@@ -562,13 +561,10 @@ export default function HomePage({ userRole }: HomePageProps) {
                       </th>
                     )}
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                      {userRole === 'drafter' ? '회사명' : '협력사 명'}
+                      {userRole === 'drafter' ? '캠페인' : '협력사 명'}
                     </th>
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                      {userRole === 'drafter' ? '기안명' : '기간'}
-                    </th>
-                    <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                      제출일
+                      기간
                     </th>
                     <th className="text-center py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                       상태

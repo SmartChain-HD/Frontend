@@ -140,13 +140,12 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
             {item.title || item.summary || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {item.diagnosticCode || '-'}
-          </td>
-          <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.campaign?.title || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
-            {formatDate(item.createdAt)}
+            {item.period?.startDate && item.period?.endDate
+              ? `${item.period.startDate} ~ ${item.period.endDate}`
+              : '-'}
           </td>
           <td className="py-[16px] px-[16px] text-center">
             <span
@@ -268,13 +267,10 @@ export default function SafetyPage({ userRole }: SafetyPageProps) {
                     </th>
                   )}
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    {userRole === 'approver' ? '기안자' : '협력사 명'}
+                    {userRole === 'approver' ? '기안자' : userRole === 'drafter' ? '캠페인' : '협력사 명'}
                   </th>
                   <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    {userRole === 'approver' ? '기안명' : userRole === 'drafter' ? '캠페인' : '기간'}
-                  </th>
-                  <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                    {userRole === 'approver' ? '요청일' : '제출일'}
+                    {userRole === 'approver' ? '기안명' : '기간'}
                   </th>
                   <th className="text-center py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
                     상태
