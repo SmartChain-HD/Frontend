@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
@@ -107,6 +108,7 @@ export default function LoginPage() {
   const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -117,9 +119,15 @@ export default function LoginPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(data);
-  };
+  const onSubmit = useCallback(async (data: LoginFormData) => {
+    if (!executeRecaptcha) {
+      console.error('reCAPTCHA not loaded');
+      return;
+    }
+
+    const recaptchaToken = await executeRecaptcha('login');
+    loginMutation.mutate({ ...data, recaptchaToken });
+  }, [executeRecaptcha, loginMutation]);
 
   const handleSignup = () => {
     navigate('/signup/step1');
