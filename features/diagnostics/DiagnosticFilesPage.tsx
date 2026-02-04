@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useDiagnosticFiles, useParsingResult, useDeleteFile } from '../../src/hooks/useFiles';
 import { useJobPolling, useRetryJob } from '../../src/hooks/useJobs';
@@ -607,6 +608,16 @@ export default function DiagnosticFilesPage() {
 
   const handleFilesUpload = async (files: File[]) => {
     for (const file of files) {
+      // 중복 파일 체크: 기존 파일 및 업로드 중인 파일과 이름 비교
+      const existingFileNames = (existingFiles || []).map(f => f.fileName);
+      const uploadingFileNames = newlyUploadedFiles.map(f => f.name);
+      const allFileNames = [...existingFileNames, ...uploadingFileNames];
+
+      if (allFileNames.includes(file.name)) {
+        toast.error(`"${file.name}" 파일이 이미 존재합니다.`);
+        continue;
+      }
+
       const tempId = Date.now();
 
       // Add file with uploading status
