@@ -83,7 +83,7 @@ function DomainProtectedRoute({ children, domainCode }: DomainProtectedRouteProp
   }
 
   if (!hasDomainAccess(domainCode)) {
-    return <Navigate to="/permission/request" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
