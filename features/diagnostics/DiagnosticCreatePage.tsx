@@ -84,7 +84,12 @@ export default function DiagnosticCreatePage() {
     createMutation.mutate(data, {
       onSuccess: (result) => {
         if (!isMountedRef.current) return;
-        navigate(`/diagnostics/${result.diagnosticId}`);
+        // 상세 페이지로 이동, diagnosticId가 없으면 목록 페이지로 fallback
+        if (result?.diagnosticId) {
+          navigate(`/diagnostics/${result.diagnosticId}`);
+        } else {
+          navigate(domainCode ? `/diagnostics?domainCode=${domainCode}` : '/diagnostics');
+        }
       },
     });
   };
