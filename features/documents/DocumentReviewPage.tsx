@@ -86,6 +86,14 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   };
 
   const handleReject = () => {
+    // AI 분석 결과의 clarifications를 초안으로 사용
+    const clarifications = aiResult?.details?.clarifications;
+    if (clarifications && clarifications.length > 0) {
+      const draft = clarifications
+        .map((c) => c.message)
+        .join('\n\n---\n\n');
+      setRejectReason(draft);
+    }
     setShowRejectModal(true);
   };
 
