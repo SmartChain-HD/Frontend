@@ -10,12 +10,12 @@ import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS, REVIEW_STATUS_LABELS } from '.
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_STYLES: Record<DiagnosticStatus, string> = {
-  WRITING: 'bg-gray-50 text-gray-700 border-gray-200',
-  SUBMITTED: 'bg-blue-50 text-blue-700 border-blue-200',
-  RETURNED: 'bg-red-50 text-red-700 border-red-200',
-  APPROVED: 'bg-green-50 text-green-700 border-green-200',
-  REVIEWING: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  WRITING: 'bg-[#f1f3f5] text-[#495057] border-[#dee2e6]',
+  SUBMITTED: 'bg-[#e3f2fd] text-[#002554] border-[#90caf9]',
+  RETURNED: 'bg-[#fef2f2] text-[#b91c1c] border-[#fecaca]',
+  APPROVED: 'bg-[#f0fdf4] text-[#008233] border-[#bbf7d0]',
+  REVIEWING: 'bg-[#fff3e0] text-[#e65100] border-[#ffcc80]',
+  COMPLETED: 'bg-[#f0fdf4] text-[#008233] border-[#bbf7d0]',
 };
 
 const APPROVAL_STATUS_LABELS: Record<ApprovalStatus, string> = {
@@ -25,15 +25,15 @@ const APPROVAL_STATUS_LABELS: Record<ApprovalStatus, string> = {
 };
 
 const APPROVAL_STATUS_STYLES: Record<ApprovalStatus, string> = {
-  WAITING: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  APPROVED: 'bg-green-50 text-green-700 border-green-200',
-  REJECTED: 'bg-red-50 text-red-700 border-red-200',
+  WAITING: 'bg-[#fff3e0] text-[#e65100] border-[#ffcc80]',
+  APPROVED: 'bg-[#f0fdf4] text-[#008233] border-[#bbf7d0]',
+  REJECTED: 'bg-[#fef2f2] text-[#b91c1c] border-[#fecaca]',
 };
 
 const REVIEW_STATUS_STYLES: Record<ReviewStatus, string> = {
-  REVIEWING: 'bg-blue-50 text-blue-700 border-blue-200',
-  APPROVED: 'bg-green-50 text-green-700 border-green-200',
-  REVISION_REQUIRED: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  REVIEWING: 'bg-[#e3f2fd] text-[#002554] border-[#90caf9]',
+  APPROVED: 'bg-[#f0fdf4] text-[#008233] border-[#bbf7d0]',
+  REVISION_REQUIRED: 'bg-[#fff3e0] text-[#e65100] border-[#ffcc80]',
 };
 
 type StatusFilter = DiagnosticStatus | 'ALL';
