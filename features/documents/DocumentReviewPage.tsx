@@ -438,7 +438,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
 
       {/* ESG Approve Modal */}
       {showApproveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-[20px] p-[32px] w-[700px] max-w-[90%]">
             <div className="flex items-center justify-between mb-[24px]">
               <h3 className="font-heading-small text-[#212529]">
@@ -511,7 +511,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-[20px] p-[32px] w-[600px] max-w-[90%]">
             <div className="flex items-center justify-between mb-[24px]">
               <h3 className="font-heading-small text-[#212529]">
