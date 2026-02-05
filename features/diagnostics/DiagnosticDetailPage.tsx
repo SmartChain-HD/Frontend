@@ -411,7 +411,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         <span className="font-title-small text-[var(--color-text-primary)]">
           {displayName}
         </span>
-        <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
+        <span className={`px-[10px] py-[4px] rounded text-sm font-medium border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>

@@ -589,7 +589,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
     <div className="p-[16px] bg-[#f8f9fa] rounded-[12px]">
       <div className="flex items-center justify-between mb-[8px]">
         <span className="font-title-small text-[#212529]">{displayName}</span>
-        <span className={`px-[8px] py-[2px] rounded text-xs font-medium border ${VERDICT_STYLES[verdict]}`}>
+        <span className={`px-[10px] py-[4px] rounded text-sm font-medium border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>
