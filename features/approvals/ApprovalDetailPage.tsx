@@ -64,6 +64,12 @@ const REASON_LABELS: Record<string, string> = {
   SIGNATURE_MISSING: '확인 서명란 미기재',
 };
 
+const DOMAIN_TO_DASHBOARD: Record<string, string> = {
+  SAFETY: '/dashboard/safety',
+  ESG: '/dashboard/esg',
+  COMPLIANCE: '/dashboard/compliance',
+};
+
 export default function ApprovalDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -110,7 +116,7 @@ export default function ApprovalDetailPage() {
   const handleSubmitToReviewer = () => {
     submitToReviewerMutation.mutate(approvalId, {
       onSuccess: () => {
-        navigate(approval?.domainCode ? `/approvals?domainCode=${approval.domainCode}` : '/approvals');
+        navigate(approval?.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard');
       },
     });
   };
@@ -133,10 +139,10 @@ export default function ApprovalDetailPage() {
             결재 정보를 불러오는 데 실패했습니다.
           </p>
           <button
-            onClick={() => navigate('/approvals')}
+            onClick={() => navigate('/dashboard')}
             className="font-title-xsmall text-[var(--color-primary-main)] hover:underline"
           >
-            목록으로 돌아가기
+            대시보드로 돌아가기
           </button>
         </div>
       </DashboardLayout>
@@ -150,9 +156,9 @@ export default function ApprovalDetailPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[900px] mx-auto w-full">
-        {/* 뒤로가기 */}
+        {/* 뒤로가기 - 도메인별 대시보드로 이동 */}
         <button
-          onClick={() => navigate(approval.domainCode ? `/approvals?domainCode=${approval.domainCode}` : '/approvals')}
+          onClick={() => navigate(approval.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard')}
           className="flex items-center gap-[4px] font-body-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] w-fit"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
