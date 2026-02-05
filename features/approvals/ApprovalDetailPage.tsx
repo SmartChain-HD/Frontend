@@ -46,9 +46,9 @@ const RISK_LABELS: Record<RiskLevel, string> = {
 };
 
 const RISK_STYLES: Record<RiskLevel, string> = {
-  LOW: 'bg-green-50 text-green-700',
-  MEDIUM: 'bg-yellow-50 text-yellow-700',
-  HIGH: 'bg-red-50 text-red-700',
+  LOW: 'bg-[#dcfce7] text-[#15803d]',
+  MEDIUM: 'bg-[#fef9c3] text-[#a16207]',
+  HIGH: 'bg-[#fee2e2] text-[#dc2626]',
 };
 
 const REASON_LABELS: Record<string, string> = {
@@ -333,8 +333,8 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
           <div className={`px-[16px] py-[10px] rounded-[8px] border ${VERDICT_STYLES[verdict]}`}>
             <span className="font-title-medium">{VERDICT_LABELS[verdict]}</span>
           </div>
-          <div className={`px-[12px] py-[6px] rounded-full ${RISK_STYLES[riskLevel]}`}>
-            <span className="font-title-xsmall">위험도: {RISK_LABELS[riskLevel]}</span>
+          <div className={`px-[14px] py-[8px] rounded-full ${RISK_STYLES[riskLevel]}`}>
+            <span className="font-title-small font-semibold">위험도: {RISK_LABELS[riskLevel]}</span>
           </div>
         </div>
 
@@ -385,21 +385,21 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
   const displayName = result.display_name || result.slot_name;
 
   return (
-    <div className="p-[16px] bg-gray-50 rounded-[12px]">
-      <div className="flex items-center justify-between mb-[8px]">
-        <span className="font-title-small text-[var(--color-text-primary)]">
+    <div className="p-[20px] bg-gray-50 rounded-[12px]">
+      <div className="flex items-center justify-between mb-[12px]">
+        <span className="font-title-medium text-[var(--color-text-primary)]">
           {displayName}
         </span>
-        <span className={`px-[10px] py-[4px] rounded text-sm font-medium border ${VERDICT_STYLES[verdict]}`}>
+        <span className={`px-[12px] py-[6px] rounded-[6px] text-base font-semibold border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>
 
       {result.reasons && result.reasons.length > 0 && (
-        <ul className="space-y-[4px] mt-[8px]">
+        <ul className="space-y-[8px] mt-[12px]">
           {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[6px] font-body-small text-[var(--color-text-secondary)]">
-              <span className="w-[4px] h-[4px] bg-gray-400 rounded-full mt-[6px] flex-shrink-0" />
+            <li key={index} className="flex items-start gap-[8px] text-[17px] text-[var(--color-text-secondary)]">
+              <span className="w-[5px] h-[5px] bg-gray-400 rounded-full mt-[10px] flex-shrink-0" />
               {REASON_LABELS[reason] || reason}
             </li>
           ))}
@@ -407,9 +407,9 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       )}
 
       {result.file_names && result.file_names.length > 0 && (
-        <div className="mt-[8px] flex flex-wrap gap-[6px]">
+        <div className="mt-[12px] flex flex-wrap gap-[8px]">
           {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-gray-600 rounded border border-gray-200">
+            <span key={index} className="px-[12px] py-[6px] bg-white text-base text-gray-700 rounded-[6px] border border-gray-200">
               {fileName}
             </span>
           ))}

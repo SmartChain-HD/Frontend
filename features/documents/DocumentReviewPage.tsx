@@ -586,19 +586,19 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
   const displayName = result.display_name || result.slot_name;
 
   return (
-    <div className="p-[16px] bg-[#f8f9fa] rounded-[12px]">
-      <div className="flex items-center justify-between mb-[8px]">
-        <span className="font-title-small text-[#212529]">{displayName}</span>
-        <span className={`px-[10px] py-[4px] rounded text-sm font-medium border ${VERDICT_STYLES[verdict]}`}>
+    <div className="p-[20px] bg-[#f8f9fa] rounded-[12px]">
+      <div className="flex items-center justify-between mb-[12px]">
+        <span className="font-title-medium text-[#212529]">{displayName}</span>
+        <span className={`px-[12px] py-[6px] rounded-[6px] text-base font-semibold border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>
 
       {result.reasons && result.reasons.length > 0 && (
-        <ul className="space-y-[4px] mt-[8px]">
+        <ul className="space-y-[8px] mt-[12px]">
           {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[6px] font-body-small text-[#868e96]">
-              <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[6px] flex-shrink-0" />
+            <li key={index} className="flex items-start gap-[8px] text-[17px] text-[#868e96]">
+              <span className="w-[5px] h-[5px] bg-[#adb5bd] rounded-full mt-[10px] flex-shrink-0" />
               {REASON_LABELS[reason] || reason}
             </li>
           ))}
@@ -606,9 +606,9 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       )}
 
       {result.file_names && result.file_names.length > 0 && (
-        <div className="mt-[8px] flex flex-wrap gap-[6px]">
+        <div className="mt-[12px] flex flex-wrap gap-[8px]">
           {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-[#495057] rounded border border-[#dee2e6]">
+            <span key={index} className="px-[12px] py-[6px] bg-white text-base text-[#495057] rounded-[6px] border border-[#dee2e6]">
               {fileName}
             </span>
           ))}
