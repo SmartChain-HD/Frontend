@@ -7,6 +7,7 @@ import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
 import { LogoWithSubtitle } from '../../shared/components/Logo';
 import PrivacyPolicyModal from '../../shared/components/PrivacyPolicyModal';
+import TermsOfServiceModal from '../../shared/components/TermsOfServiceModal';
 import Footer from '../../shared/layout/Footer';
 import type { AxiosError } from 'axios';
 import { useLogin } from '../../src/hooks/useAuth';
@@ -108,6 +109,7 @@ function LoginForm() {
   const { isAuthenticated } = useAuthStore();
   const loginMutation = useLogin();
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [lockState, setLockState] = useState<AccountLockState | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -259,14 +261,25 @@ function LoginForm() {
                       </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowPrivacy(true)}
-                    className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)] pt-4"
-                  >
-                      개인정보 처리방침
-                  </button>
+                  <div className="flex gap-2 items-center pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowPrivacy(true)}
+                      className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)]"
+                    >
+                        개인정보 처리방침
+                    </button>
+                    <span className="text-[var(--color-text-tertiary)] font-body-small">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowTerms(true)}
+                      className="font-body-small leading-none text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-primary-main)]"
+                    >
+                        사이트 이용약관
+                    </button>
+                  </div>
                   <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
+                  <TermsOfServiceModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
               </form>
           </div>
         </div>
