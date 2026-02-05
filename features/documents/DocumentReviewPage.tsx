@@ -597,8 +597,8 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.reasons && result.reasons.length > 0 && (
         <ul className="space-y-[4px] mt-[8px]">
           {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[6px] font-body-small text-[#868e96]">
-              <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[6px] flex-shrink-0" />
+            <li key={index} className="flex items-start gap-[6px] font-body-medium text-[#868e96]">
+              <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[8px] flex-shrink-0" />
               {REASON_LABELS[reason] || reason}
             </li>
           ))}
@@ -608,7 +608,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.file_names && result.file_names.length > 0 && (
         <div className="mt-[8px] flex flex-wrap gap-[6px]">
           {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[8px] py-[2px] bg-white text-xs text-[#495057] rounded border border-[#dee2e6]">
+            <span key={index} className="px-[10px] py-[4px] bg-white text-sm text-[#495057] rounded border border-[#dee2e6]">
               {fileName}
             </span>
           ))}
