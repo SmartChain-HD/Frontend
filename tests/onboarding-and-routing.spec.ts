@@ -24,11 +24,7 @@ test.describe('이슈 #68 - 온보딩 페이지 및 미인증 라우팅 테스�
     await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
   });
 
-  test('미인증 상태에서 /approvals 접근 시 /login으로 리다이렉트', async ({ page }) => {
-    await page.goto('/approvals');
-
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
-  });
+  // /approvals 목록 페이지는 제거됨 (#276) - 결재 상세 페이지(/approvals/:id)는 유지
 
   test('미인증 상태에서 /reviews 접근 시 /login으로 리다이렉트', async ({ page }) => {
     await page.goto('/reviews');

@@ -55,12 +55,19 @@ function formatPeriod(dateStr: string): string {
   return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월`;
 }
 
+const DOMAIN_TO_DASHBOARD: Record<string, string> = {
+  SAFETY: '/dashboard/safety',
+  ESG: '/dashboard/esg',
+  COMPLIANCE: '/dashboard/compliance',
+};
+
 function getListPath(userRole: string, domainCode?: string): string {
   if (userRole === 'receiver') {
     return '/reviews';
   }
   if (userRole === 'approver') {
-    return '/approvals';
+    // 전체 결재 목록 페이지가 제거되어 도메인별 대시보드로 이동 (#276)
+    return domainCode ? DOMAIN_TO_DASHBOARD[domainCode] || '/dashboard' : '/dashboard';
   }
   const domain = domainCode?.toUpperCase() || 'ESG';
   return `/diagnostics?domainCode=${domain}`;

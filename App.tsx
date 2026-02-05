@@ -19,7 +19,6 @@ import PermissionRequestPage from './features/permission/PermissionRequestPage';
 import PermissionStatusPage from './features/permission/PermissionStatusPage';
 import PermissionManagementPage from './features/permission/PermissionManagementPage';
 import NotificationsPage from './features/notifications/NotificationsPage';
-import ApprovalsListPage from './features/approvals/ApprovalsListPage';
 import ApprovalDetailPage from './features/approvals/ApprovalDetailPage';
 import DiagnosticsListPage from './features/diagnostics/DiagnosticsListPage';
 import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
@@ -218,15 +217,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Approvals */}
-      <Route
-        path="/approvals"
-        element={
-          <MemberRoute>
-            <ApprovalsListPage />
-          </MemberRoute>
-        }
-      />
+      {/* Approvals - 결재 상세 페이지만 유지 (전체 결재 목록 페이지는 제거됨, #276) */}
       <Route
         path="/approvals/:id"
         element={
