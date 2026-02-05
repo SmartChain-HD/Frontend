@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
+import TermsOfServiceModal from '../components/TermsOfServiceModal';
 
 export default function Footer() {
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   return (
     <>
@@ -35,7 +37,13 @@ export default function Footer() {
             >
               개인정보 처리방침
             </button>
-            {' | 사이트 이용 약관'}
+            {' | '}
+            <button
+              onClick={() => setShowTerms(true)}
+              className="hover:text-[#495057] hover:underline transition-colors cursor-pointer"
+            >
+              사이트 이용 약관
+            </button>
           </p>
           <p className="font-label-medium">
             Copyright © 2026 HD Corp.All rights reserved
@@ -44,6 +52,7 @@ export default function Footer() {
       </div>
 
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
+      <TermsOfServiceModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
     </>
   );
 }
