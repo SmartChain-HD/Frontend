@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApprovalDetail, useProcessApproval, useSubmitToReviewer } from '../../src/hooks/useApprovals';
-import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { ApprovalStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
 import { DOMAIN_LABELS } from '../../src/types/api.types';
@@ -77,7 +76,6 @@ export default function ApprovalDetailPage() {
 
   const { data: approval, isLoading, isError, error } = useApprovalDetail(approvalId);
   const diagnosticId = approval?.diagnostic?.diagnosticId ?? 0;
-  const { data: diagnostic } = useDiagnosticDetail(diagnosticId);
   const { data: aiResult } = useAiResult(diagnosticId);
   const processApprovalMutation = useProcessApproval();
   const submitToReviewerMutation = useSubmitToReviewer();
@@ -108,18 +106,20 @@ export default function ApprovalDetailPage() {
           setShowModal(null);
           setComment('');
           setRejectReason('');
+
+          // 승인인 경우 자동으로 원청에 제출
+          if (showModal === 'APPROVED') {
+            submitToReviewerMutation.mutate(approvalId, {
+              onSuccess: () => {
+                navigate(approval?.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard');
+              },
+            });
+          }
         },
       }
     );
   };
 
-  const handleSubmitToReviewer = () => {
-    submitToReviewerMutation.mutate(approvalId, {
-      onSuccess: () => {
-        navigate(approval?.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard');
-      },
-    });
-  };
 
   if (isLoading) {
     return (
@@ -150,8 +150,6 @@ export default function ApprovalDetailPage() {
   }
 
   const isWaiting = approval.status === 'WAITING';
-  const isApproved = approval.status === 'APPROVED';
-  const canSubmitToReviewer = isApproved && diagnostic?.status === 'APPROVED';
 
   return (
     <DashboardLayout>
@@ -221,19 +219,7 @@ export default function ApprovalDetailPage() {
               onClick={() => setShowModal('APPROVED')}
               className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
             >
-              승인
-            </button>
-          </div>
-        )}
-
-        {canSubmitToReviewer && (
-          <div className="flex justify-end">
-            <button
-              onClick={handleSubmitToReviewer}
-              disabled={submitToReviewerMutation.isPending || submitToReviewerMutation.isSuccess}
-              className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors disabled:opacity-50"
-            >
-              {submitToReviewerMutation.isPending ? '제출 중...' : submitToReviewerMutation.isSuccess ? '제출 완료' : '원청에 제출'}
+              원청에 제출
             </button>
           </div>
         )}
@@ -245,8 +231,13 @@ export default function ApprovalDetailPage() {
           <div className="bg-white rounded-[16px] w-full max-w-[480px] mx-[16px] shadow-xl">
             <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
               <h2 className="font-title-medium text-[var(--color-text-primary)]">
-                {showModal === 'APPROVED' ? '결재 승인' : '결재 반려'}
+                {showModal === 'APPROVED' ? '원청에 제출' : '결재 반려'}
               </h2>
+              {showModal === 'APPROVED' && (
+                <p className="font-body-small text-[var(--color-text-tertiary)] mt-[4px]">
+                  승인 후 자동으로 원청에 제출됩니다.
+                </p>
+              )}
             </div>
 
             <div className="px-[24px] py-[20px] flex flex-col gap-[16px]">
@@ -288,14 +279,16 @@ export default function ApprovalDetailPage() {
               </button>
               <button
                 onClick={handleProcess}
-                disabled={processApprovalMutation.isPending}
+                disabled={processApprovalMutation.isPending || submitToReviewerMutation.isPending}
                 className={`px-[20px] py-[10px] rounded-[8px] font-title-small text-white transition-colors disabled:opacity-50 ${
                   showModal === 'APPROVED'
                     ? 'bg-[var(--color-primary-main)] hover:opacity-90'
                     : 'bg-red-500 hover:bg-red-600'
                 }`}
               >
-                {processApprovalMutation.isPending ? '처리 중...' : showModal === 'APPROVED' ? '승인' : '반려'}
+                {processApprovalMutation.isPending || submitToReviewerMutation.isPending
+                  ? '처리 중...'
+                  : showModal === 'APPROVED' ? '원청에 제출' : '반려'}
               </button>
             </div>
           </div>
