@@ -268,10 +268,12 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
 
     const basePath = `/diagnostics?domainCode=${activeTab}`;
     return [
-      { label: '미제출', value: String(statusCounts['WRITING'] || 0), color: 'text-[#b91c1c]', path: basePath },
-      { label: '검토중', value: String((statusCounts['SUBMITTED'] || 0) + (statusCounts['REVIEWING'] || 0)), color: 'text-[#002554]', path: basePath },
-      { label: '보완요청', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#e65100]', path: basePath },
-      { label: '완료', value: String((statusCounts['APPROVED'] || 0) + (statusCounts['COMPLETED'] || 0)), color: 'text-[#008233]', path: basePath },
+      { label: '작성중', value: String(statusCounts['WRITING'] || 0), color: 'text-[#495057]', path: basePath },
+      { label: '제출됨', value: String(statusCounts['SUBMITTED'] || 0), color: 'text-[#002554]', path: basePath },
+      { label: '반려됨', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#b91c1c]', path: basePath },
+      { label: '승인됨', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: basePath },
+      { label: '심사중', value: String(statusCounts['REVIEWING'] || 0), color: 'text-[#e65100]', path: basePath },
+      { label: '완료', value: String(statusCounts['COMPLETED'] || 0), color: 'text-[#008233]', path: basePath },
     ];
   }, [diagnosticsQuery.data, activeTab]);
 
@@ -576,7 +578,7 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
                   <tr className="border-b border-[#dee2e6]">
                     {(userRole === 'drafter' || userRole === 'receiver') && (
                       <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">
-                        제목
+                        {userRole === 'drafter' ? '기안명' : '제목'}
                       </th>
                     )}
                     <th className="text-left py-[12px] px-[16px] font-title-xsmall text-[#868e96]">

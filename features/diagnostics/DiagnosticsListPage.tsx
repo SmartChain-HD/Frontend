@@ -184,7 +184,7 @@ export default function DiagnosticsListPage() {
     // 기안자
     return (
       <tr className="border-b border-[var(--color-border-default)] bg-gray-50">
-        <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제목</th>
+        <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">기안명</th>
         <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">캠페인</th>
         <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">기간</th>
         <th className="px-[16px] py-[12px] text-center font-title-xsmall text-[var(--color-text-secondary)]">상태</th>
