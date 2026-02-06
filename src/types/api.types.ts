@@ -405,10 +405,18 @@ export const ERROR_CODES = {
   // 429 Too Many Requests
   VERIFICATION_RATE_LIMIT: 'U010',
 
+  // 404 Not Found - Risk
+  RISK_COMPANY_NOT_FOUND: 'RISK001',
+  RISK_RESULT_NOT_FOUND: 'RISK003',
+
+  // 403 Forbidden - Risk
+  RISK_PERMISSION_DENIED: 'RISK004',
+
   // 500 Internal Server Error
   INTERNAL_ERROR: 'S001',
   FILE_UPLOAD_ERROR: 'S002',
   AI_SERVICE_ERROR: 'S003',
+  RISK_API_FAILURE: 'RISK002',
 } as const;
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];

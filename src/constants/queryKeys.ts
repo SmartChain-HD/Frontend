@@ -39,6 +39,11 @@ export const QUERY_KEYS = {
   JOBS: {
     STATUS: (jobId: string) => ['jobs', 'status', jobId] as const,
   },
+  EXTERNAL_RISK: {
+    LIST: (params?: object) => ['externalRisk', 'list', params] as const,
+    LATEST: (companyId: number) => ['externalRisk', 'latest', companyId] as const,
+    COMPANIES: () => ['externalRisk', 'companies'] as const,
+  },
   FILES: {
     LIST: (diagnosticId: number) => ['files', 'list', diagnosticId] as const,
     PARSING_RESULT: (diagnosticId: number, fileId: number) =>
