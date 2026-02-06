@@ -272,7 +272,7 @@ export default function HomePage({ userRole }: HomePageProps) {
       return acc;
     }, {} as Record<string, number>);
 
-    const basePath = `/approvals?domainCode=${activeTab}`;
+    const basePath = `/diagnostics?domainCode=${activeTab}`;
     return [
       { label: '대기중', value: String(statusCounts['WAITING'] || 0), color: 'text-[#e65100]', path: basePath },
       { label: '승인', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: basePath },
