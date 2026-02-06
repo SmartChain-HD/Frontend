@@ -6,9 +6,10 @@ import { useAuthStore } from '../../src/store/authStore';
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  hideSidebar?: boolean;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, hideSidebar }: DashboardLayoutProps) {
   const { user, isGuest } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -32,7 +33,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
       />
       <div className="flex flex-1 relative">
-        {!isUserGuest && (
+        {!isUserGuest && !hideSidebar && (
           <Sidebar
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}

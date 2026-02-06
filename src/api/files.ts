@@ -83,9 +83,30 @@ export const getParsingResult = async (
   return response.data.data;
 };
 
-export const getDownloadUrl = async (fileId: number): Promise<string> => {
-  const response = await apiClient.get<BaseResponse<{ url: string }>>(`/v1/files/${fileId}/download-url`);
-  return response.data.data.url;
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+  fileName: string;
+  fileSize: number;
+  expiresAt: string;
+}
+
+export const getDownloadUrl = async (fileId: number): Promise<DownloadUrlResponse> => {
+  const response = await apiClient.get<BaseResponse<DownloadUrlResponse>>(
+    `/v1/files/${fileId}/download-url`,
+  );
+  const data = response.data.data;
+
+  // downloadUrl이 상대경로이면 origin을 붙여 절대 URL로 변환
+  if (data.downloadUrl && !data.downloadUrl.startsWith('http')) {
+    data.downloadUrl = `${window.location.origin}${data.downloadUrl}`;
+  }
+
+  return data;
+};
+
+export const fetchFileBlob = async (url: string): Promise<string> => {
+  const response = await apiClient.get(url, { responseType: 'blob' });
+  return URL.createObjectURL(response.data);
 };
 
 export const deleteFile = async (fileId: number): Promise<void> => {
