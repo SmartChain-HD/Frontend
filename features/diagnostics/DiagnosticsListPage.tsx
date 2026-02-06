@@ -78,7 +78,7 @@ export default function DiagnosticsListPage() {
   // 결재자용 상태
   const [approvalStatusFilter, setApprovalStatusFilter] = useState<ApprovalStatusFilter>('ALL');
 
-  // 심사자용 상태
+  // 수신자용 상태
   const [reviewStatusFilter, setReviewStatusFilter] = useState<ReviewStatusFilter>('ALL');
 
   // 데이터 조회

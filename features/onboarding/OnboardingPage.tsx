@@ -299,7 +299,7 @@ export default function OnboardingPage() {
                 {
                   num: '4',
                   title: '수신자',
-                  sub: '원청 심사자',
+                  sub: '원청 수신자',
                   badgeGradient: 'linear-gradient(135deg, #00AD1D, #059669)',
                   titleColor: '#059669',
                   borderColor: '#A7F3D0',
