@@ -12,34 +12,49 @@ interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
 }
 
-const riskLevelLabels: Record<string, string> = {
-  HIGH: '고위험 (HIGH)',
-  MEDIUM: '중위험 (MEDIUM)',
-  LOW: '저위험 (LOW)',
+const riskLevelConfig: Record<string, { label: string; cardBg: string; iconBg: string; textColor: string }> = {
+  HIGH: {
+    label: '고위험',
+    cardBg: '#fef2f2',
+    iconBg: '#dc2626',
+    textColor: '#b91c1c',
+  },
+  MEDIUM: {
+    label: '중위험',
+    cardBg: '#fffbeb',
+    iconBg: '#f59e0b',
+    textColor: '#b45309',
+  },
+  LOW: {
+    label: '저위험',
+    cardBg: '#ecfdf5',
+    iconBg: '#10b981',
+    textColor: '#047857',
+  },
 };
 
-const riskLevelColors: Record<string, string> = {
-  HIGH: 'bg-[#dc2626]',
-  MEDIUM: 'bg-[#e65100]',
-  LOW: 'bg-[#008233]',
-};
-
-const aiVerdictLabels: Record<string, string> = {
-  PASS: '적합 (PASS)',
-  NEED_FIX: '보완 필요 (NEED FIX)',
-  FAIL: '부적합 (FAIL)',
-};
-
-const aiVerdictBadgeColors: Record<string, string> = {
-  PASS: 'bg-[#f0fdf4] text-[#008233]',
-  NEED_FIX: 'bg-[#fff3e0] text-[#e65100]',
-  FAIL: 'bg-[#fef2f2] text-[#b91c1c]',
-};
-
-const aiVerdictEmoji: Record<string, string> = {
-  PASS: '🟢',
-  NEED_FIX: '⚠️',
-  FAIL: '🔴',
+const aiVerdictConfig: Record<string, { label: string; cardBg: string; iconBg: string; textColor: string; icon: string }> = {
+  PASS: {
+    label: '적합',
+    cardBg: '#ecfdf5',
+    iconBg: '#10b981',
+    textColor: '#047857',
+    icon: '✓',
+  },
+  NEED_FIX: {
+    label: '보완 필요',
+    cardBg: '#fffbeb',
+    iconBg: '#f59e0b',
+    textColor: '#b45309',
+    icon: '!',
+  },
+  FAIL: {
+    label: '부적합',
+    cardBg: '#fef2f2',
+    iconBg: '#dc2626',
+    textColor: '#b91c1c',
+    icon: '✕',
+  },
 };
 
 function formatDate(dateStr: string): string {
@@ -178,13 +193,11 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
     );
   }
 
-  const riskLevel = review.riskLevel ?? 'MEDIUM';
-  const riskLabel = riskLevelLabels[riskLevel] ?? riskLevel;
-  const riskColor = riskLevelColors[riskLevel] ?? 'bg-[#e65100]';
-  const aiVerdict = review.aiVerdict ?? 'NEED_FIX';
-  const aiLabel = aiVerdictLabels[aiVerdict] ?? aiVerdict;
-  const aiBadgeColor = aiVerdictBadgeColors[aiVerdict] ?? 'bg-[#fff3e0] text-[#e65100]';
-  const aiEmoji = aiVerdictEmoji[aiVerdict] ?? '⚠️';
+  // AI 분석 결과에서 riskLevel과 verdict 가져오기 (aiResult 우선, 없으면 review에서)
+  const riskLevel = aiResult?.riskLevel ?? review.riskLevel ?? 'MEDIUM';
+  const riskConfig = riskLevelConfig[riskLevel] ?? riskLevelConfig.MEDIUM;
+  const aiVerdict = aiResult?.verdict ?? review.aiVerdict ?? 'NEED_FIX';
+  const verdictConfig = aiVerdictConfig[aiVerdict] ?? aiVerdictConfig.NEED_FIX;
   const isMutating = submitReview.isPending;
 
   return (
@@ -220,24 +233,41 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
             </div>
           </div>
 
-          {/* Risk Alert Box */}
-          <div className={`${riskColor} rounded-[16px] p-[32px] mb-[32px]`}>
-            <div className="flex items-start gap-[16px]">
-              <AlertCircle className="w-[32px] h-[32px] text-white flex-shrink-0 mt-[4px]" />
-              <div className="flex-1">
-                <div className="flex items-center gap-[12px] mb-[12px]">
-                  <h2 className="font-heading-small text-white">
-                    🔴 {riskLabel}
-                  </h2>
-                  <span className={`inline-block px-[12px] py-[6px] rounded-[8px] font-title-small ${aiBadgeColor}`}>
-                    {aiEmoji} {aiLabel}
-                  </span>
+          {/* AI 분석 결과 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mb-[24px]">
+            {/* 위험등급 카드 */}
+            <div
+              className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
+              style={{ backgroundColor: riskConfig.cardBg }}
+            >
+              <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+              <div className="relative">
+                <div
+                  className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
+                  style={{ backgroundColor: riskConfig.iconBg, boxShadow: `0 8px 16px ${riskConfig.iconBg}40` }}
+                >
+                  <AlertCircle className="w-[24px] h-[24px] text-white" />
                 </div>
-                {review.whySummary && (
-                  <p className="font-body-medium text-white">
-                    Key 이슈: {review.whySummary}
-                  </p>
-                )}
+                <p className="text-[13px] font-medium text-[#6b7280] mb-[4px]">위험등급</p>
+                <p className="text-[28px] font-bold" style={{ color: riskConfig.textColor }}>{riskConfig.label}</p>
+              </div>
+            </div>
+
+            {/* AI 판정 카드 */}
+            <div
+              className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
+              style={{ backgroundColor: verdictConfig.cardBg }}
+            >
+              <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+              <div className="relative">
+                <div
+                  className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
+                  style={{ backgroundColor: verdictConfig.iconBg, boxShadow: `0 8px 16px ${verdictConfig.iconBg}40` }}
+                >
+                  <span className="text-[20px] font-bold text-white">{verdictConfig.icon}</span>
+                </div>
+                <p className="text-[13px] font-medium text-[#6b7280] mb-[4px]">AI 판정</p>
+                <p className="text-[28px] font-bold" style={{ color: verdictConfig.textColor }}>{verdictConfig.label}</p>
               </div>
             </div>
           </div>
@@ -265,10 +295,6 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
               <div>
                 <p className="font-body-small text-[#868e96] mb-[4px]">상태</p>
                 <p className="font-title-small text-[#212529]">{review.statusLabel || review.status}</p>
-              </div>
-              <div>
-                <p className="font-body-small text-[#868e96] mb-[4px]">담당자</p>
-                <p className="font-title-small text-[#212529]">{review.assignedTo?.name || '-'}</p>
               </div>
             </div>
           </div>
