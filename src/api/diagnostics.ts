@@ -47,10 +47,22 @@ export interface DiagnosticCreateRequest {
 }
 
 export interface DiagnosticHistoryItem {
-  status: DiagnosticStatus;
-  changedAt: string;
-  changedBy: string;
-  comment?: string;
+  historyId: number;
+  action: string;
+  previousStatus: DiagnosticStatus | null;
+  newStatus: DiagnosticStatus;
+  performedBy: {
+    userId: number;
+    name: string;
+    role: string;
+  };
+  comment: string | null;
+  timestamp: string;
+}
+
+export interface DiagnosticHistoryResponse {
+  diagnosticId: number;
+  history: DiagnosticHistoryItem[];
 }
 
 export interface DiagnosticListParams {
@@ -82,7 +94,7 @@ export const createDiagnostic = async (data: DiagnosticCreateRequest): Promise<D
 
 export interface DiagnosticSubmitRequest {
   approverId?: number;
-  comment?: string;
+  submitComment?: string;
 }
 
 export const submitDiagnostic = async (
@@ -93,10 +105,10 @@ export const submitDiagnostic = async (
 };
 
 export const getDiagnosticHistory = async (id: number): Promise<DiagnosticHistoryItem[]> => {
-  const response = await apiClient.get<BaseResponse<DiagnosticHistoryItem[]>>(
+  const response = await apiClient.get<BaseResponse<DiagnosticHistoryResponse>>(
     `/v1/diagnostics/${id}/history`
   );
-  return response.data.data;
+  return response.data.data.history;
 };
 
 export const deleteDiagnostic = async (id: number): Promise<void> => {

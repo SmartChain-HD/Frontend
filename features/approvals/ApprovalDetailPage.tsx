@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApprovalDetail, useProcessApproval, useSubmitToReviewer } from '../../src/hooks/useApprovals';
 import { useAiResult } from '../../src/hooks/useAiRun';
-import type { ApprovalStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { useDiagnosticHistory } from '../../src/hooks/useDiagnostics';
+import type { ApprovalStatus, DomainCode, RiskLevel, DiagnosticStatus } from '../../src/types/api.types';
+import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import { handleApiError } from '../../src/utils/errorHandler';
 import type { AxiosError } from 'axios';
 import type { ErrorResponse } from '../../src/types/api.types';
@@ -69,6 +70,35 @@ const DOMAIN_TO_LIST: Record<string, string> = {
   COMPLIANCE: '/diagnostics?domainCode=COMPLIANCE',
 };
 
+const TIMELINE_STATUS_CONFIG: Record<DiagnosticStatus, { iconBg: string; textColor: string; bgColor: string; borderColor: string }> = {
+  WRITING: { iconBg: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6', borderColor: '#e5e7eb' },
+  SUBMITTED: { iconBg: '#2563eb', textColor: '#1d4ed8', bgColor: '#dbeafe', borderColor: '#bfdbfe' },
+  RETURNED: { iconBg: '#dc2626', textColor: '#b91c1c', bgColor: '#fee2e2', borderColor: '#fecaca' },
+  APPROVED: { iconBg: '#16a34a', textColor: '#15803d', bgColor: '#dcfce7', borderColor: '#bbf7d0' },
+  REVIEWING: { iconBg: '#ca8a04', textColor: '#a16207', bgColor: '#fef9c3', borderColor: '#fef08a' },
+  COMPLETED: { iconBg: '#059669', textColor: '#047857', bgColor: '#d1fae5', borderColor: '#a7f3d0' },
+};
+
+function TimelineIcon({ status }: { status: DiagnosticStatus }) {
+  const iconClass = "w-[14px] h-[14px] text-white";
+  switch (status) {
+    case 'WRITING':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>;
+    case 'SUBMITTED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>;
+    case 'RETURNED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>;
+    case 'APPROVED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>;
+    case 'REVIEWING':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+    case 'COMPLETED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+    default:
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+  }
+}
+
 export default function ApprovalDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -77,6 +107,7 @@ export default function ApprovalDetailPage() {
   const { data: approval, isLoading, isError, error } = useApprovalDetail(approvalId);
   const diagnosticId = approval?.diagnostic?.diagnosticId ?? 0;
   const { data: aiResult } = useAiResult(diagnosticId);
+  const { data: history } = useDiagnosticHistory(diagnosticId);
   const processApprovalMutation = useProcessApproval();
   const submitToReviewerMutation = useSubmitToReviewer();
 
@@ -88,24 +119,24 @@ export default function ApprovalDetailPage() {
 
   const [showModal, setShowModal] = useState<'APPROVED' | 'REJECTED' | null>(null);
   const [comment, setComment] = useState('');
-  const [rejectReason, setRejectReason] = useState('');
 
   const handleProcess = () => {
     if (!showModal) return;
+    // 반려 시 코멘트 필수
+    if (showModal === 'REJECTED' && !comment.trim()) return;
+
     processApprovalMutation.mutate(
       {
         id: approvalId,
         data: {
           decision: showModal,
           comment: comment || undefined,
-          rejectReason: showModal === 'REJECTED' ? rejectReason || undefined : undefined,
         },
       },
       {
         onSuccess: () => {
           setShowModal(null);
           setComment('');
-          setRejectReason('');
 
           // 승인인 경우 자동으로 원청에 제출
           if (showModal === 'APPROVED') {
@@ -206,6 +237,45 @@ export default function ApprovalDetailPage() {
           <AiResultSection result={aiResult} />
         )}
 
+        {/* 기안 이력 타임라인 */}
+        {history && history.length > 0 && (
+          <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
+            <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 이력</h2>
+            <div className="max-h-[400px] overflow-y-auto pl-[18px] pr-[8px]">
+            <ol className="relative border-l-[2px] border-[#e5e7eb]">
+              {history.map((item, index) => {
+                const isLatest = index === 0;
+                const statusConfig = TIMELINE_STATUS_CONFIG[item.newStatus] || TIMELINE_STATUS_CONFIG.WRITING;
+                return (
+                  <li key={item.historyId} className={`ml-[20px] ${index !== history.length - 1 ? 'pb-[24px]' : ''}`}>
+                    <span
+                      className="absolute flex items-center justify-center w-[28px] h-[28px] rounded-full -left-[15px]"
+                      style={{ backgroundColor: statusConfig.iconBg, boxShadow: `0 0 0 3px white, 0 0 0 4px ${statusConfig.borderColor}` }}
+                    >
+                      <TimelineIcon status={item.newStatus} />
+                    </span>
+                    <time className="inline-flex items-center px-[8px] py-[3px] mb-[6px] text-[11px] font-medium rounded-full"
+                      style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
+                      {new Date(item.timestamp).toLocaleString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </time>
+                    <h3 className="flex items-center gap-[6px] mt-[6px] mb-[2px]">
+                      <span className="font-title-small text-[var(--color-text-primary)]">{DIAGNOSTIC_STATUS_LABELS[item.newStatus]}</span>
+                      {isLatest && <span className="px-[6px] py-[1px] text-[10px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
+                    </h3>
+                    <p className="font-body-small text-[var(--color-text-secondary)]">{item.performedBy.name}</p>
+                    {item.comment && (
+                      <div className="p-[12px] mt-[8px] rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb]">
+                        <p className="font-body-small text-[var(--color-text-primary)] whitespace-pre-wrap">{item.comment}</p>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+            </div>
+          </div>
+        )}
+
         {/* 액션 버튼 */}
         {isWaiting && (
           <div className="flex gap-[12px] justify-end">
@@ -243,43 +313,32 @@ export default function ApprovalDetailPage() {
             <div className="px-[24px] py-[20px] flex flex-col gap-[16px]">
               <div>
                 <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                  코멘트 (선택)
+                  {showModal === 'REJECTED' ? (
+                    <>반려 사유 <span className="text-[#dc2626]">*</span></>
+                  ) : (
+                    '코멘트 (선택)'
+                  )}
                 </label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="코멘트를 입력하세요"
-                  rows={3}
+                  placeholder={showModal === 'REJECTED' ? '반려 사유를 입력하세요' : '코멘트를 입력하세요'}
+                  rows={4}
                   className="w-full px-[12px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] resize-none focus:outline-none focus:border-[var(--color-primary-main)]"
                 />
               </div>
-
-              {showModal === 'REJECTED' && (
-                <div>
-                  <label className="font-title-xsmall text-[var(--color-text-secondary)] mb-[8px] block">
-                    반려 사유
-                  </label>
-                  <textarea
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder="반려 사유를 입력하세요"
-                    rows={3}
-                    className="w-full px-[12px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] resize-none focus:outline-none focus:border-[var(--color-primary-main)]"
-                  />
-                </div>
-              )}
             </div>
 
             <div className="px-[24px] py-[16px] border-t border-[var(--color-border-default)] flex justify-end gap-[12px]">
               <button
-                onClick={() => { setShowModal(null); setComment(''); setRejectReason(''); }}
+                onClick={() => { setShowModal(null); setComment(''); }}
                 className="px-[20px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
               >
                 취소
               </button>
               <button
                 onClick={handleProcess}
-                disabled={processApprovalMutation.isPending || submitToReviewerMutation.isPending}
+                disabled={processApprovalMutation.isPending || submitToReviewerMutation.isPending || (showModal === 'REJECTED' && !comment.trim())}
                 className={`px-[20px] py-[10px] rounded-[8px] font-title-small text-white transition-colors disabled:opacity-50 ${
                   showModal === 'APPROVED'
                     ? 'bg-[var(--color-primary-main)] hover:opacity-90'

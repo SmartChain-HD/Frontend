@@ -171,7 +171,7 @@ export default function DiagnosticDetailPage() {
       {
         id: diagnosticId,
         data: {
-          comment: comment || undefined,
+          submitComment: comment || undefined,
         },
       },
       {
@@ -274,25 +274,26 @@ export default function DiagnosticDetailPage() {
         {history && history.length > 0 && (
           <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
             <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[24px]">기안 이력</h2>
-            <ol className="relative border-l-[2px] border-[#e5e7eb] ml-[12px]">
+            <div className="max-h-[400px] overflow-y-auto pl-[20px] pr-[8px]">
+            <ol className="relative border-l-[2px] border-[#e5e7eb]">
               {history.map((item, index) => {
                 const isLatest = index === 0;
-                const statusConfig = TIMELINE_STATUS_CONFIG[item.status] || TIMELINE_STATUS_CONFIG.WRITING;
+                const statusConfig = TIMELINE_STATUS_CONFIG[item.newStatus] || TIMELINE_STATUS_CONFIG.WRITING;
 
                 return (
-                  <li key={index} className={`ml-[24px] ${index !== history.length - 1 ? 'pb-[32px]' : ''}`}>
+                  <li key={item.historyId} className={`ml-[24px] ${index !== history.length - 1 ? 'pb-[32px]' : ''}`}>
                     {/* 타임라인 아이콘 */}
                     <span
                       className="absolute flex items-center justify-center w-[32px] h-[32px] rounded-full -left-[17px]"
                       style={{ backgroundColor: statusConfig.iconBg, boxShadow: `0 0 0 4px white, 0 0 0 5px ${statusConfig.borderColor}` }}
                     >
-                      <StatusIcon status={item.status} />
+                      <StatusIcon status={item.newStatus} />
                     </span>
 
                     {/* 날짜 뱃지 */}
                     <time className="inline-flex items-center px-[10px] py-[4px] mb-[8px] text-[12px] font-medium rounded-full"
                       style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
-                      {new Date(item.changedAt).toLocaleString('ko-KR', {
+                      {new Date(item.timestamp).toLocaleString('ko-KR', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -304,7 +305,7 @@ export default function DiagnosticDetailPage() {
                     {/* 상태 + 변경자 */}
                     <h3 className="flex items-center gap-[8px] mt-[8px] mb-[4px]">
                       <span className="font-title-small text-[var(--color-text-primary)]">
-                        {DIAGNOSTIC_STATUS_LABELS[item.status]}
+                        {DIAGNOSTIC_STATUS_LABELS[item.newStatus]}
                       </span>
                       {isLatest && (
                         <span className="px-[8px] py-[2px] text-[11px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">
@@ -313,7 +314,7 @@ export default function DiagnosticDetailPage() {
                       )}
                     </h3>
                     <p className="font-body-small text-[var(--color-text-secondary)] mb-[8px]">
-                      {item.changedBy}
+                      {item.performedBy.name}
                     </p>
 
                     {/* 코멘트 */}
@@ -328,6 +329,7 @@ export default function DiagnosticDetailPage() {
                 );
               })}
             </ol>
+            </div>
           </div>
         )}
 
