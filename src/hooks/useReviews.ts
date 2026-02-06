@@ -7,10 +7,10 @@ import { QUERY_KEYS } from '../constants/queryKeys';
 import { handleApiError } from '../utils/errorHandler';
 import type { ErrorResponse } from '../types/api.types';
 
-export const useReviewsDashboard = () => {
+export const useReviewsDashboard = (domainCode?: string) => {
   return useQuery({
-    queryKey: QUERY_KEYS.REVIEWS.DASHBOARD,
-    queryFn: reviewsApi.getReviewsDashboard,
+    queryKey: [...QUERY_KEYS.REVIEWS.DASHBOARD, domainCode],
+    queryFn: () => reviewsApi.getReviewsDashboard(domainCode),
   });
 };
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
-import { useReviewsDashboard, useReviews } from '../../src/hooks/useReviews';
+import { useReviews } from '../../src/hooks/useReviews';
 import { useNotifications, useMarkAsRead } from '../../src/hooks/useNotifications';
 import { useAuthStore } from '../../src/store/authStore';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
@@ -243,7 +243,6 @@ export default function HomePage({ userRole }: HomePageProps) {
     userRole === 'approver' ? { domainCode: activeTab, size: 10 } : undefined
   );
 
-  const reviewsDashboardQuery = useReviewsDashboard();
   const reviewsListQuery = useReviews(
     userRole === 'receiver' ? { domainCode: activeTab, size: 10 } : undefined
   );
@@ -279,19 +278,21 @@ export default function HomePage({ userRole }: HomePageProps) {
     ];
   }, [approvalsQuery.data]);
 
-  // Stats for REVIEWER from dashboard API
+  // Stats for REVIEWER from reviews API summary
   const reviewerStats = useMemo(() => {
-    const dashboard = reviewsDashboardQuery.data;
-    if (!dashboard) return [];
+    const summary = reviewsListQuery.data?.summary;
+    if (!summary) return [];
 
     return [
-      { label: '전체 협력사', value: String(dashboard.totalCompanies || 0), color: 'text-[#212529]' },
-      { label: '미제출', value: String(dashboard.notSubmitted || 0), color: 'text-[#b91c1c]' },
-      { label: '검토중', value: String(dashboard.reviewing || 0), color: 'text-[#002554]' },
-      { label: '보완요청', value: String(dashboard.revisionRequired || 0), color: 'text-[#e65100]' },
-      { label: '완료', value: String(dashboard.completed || 0), color: 'text-[#008233]' },
+      { label: '전체 협력사', value: String(summary.totalCompanies || 0), color: 'text-[#212529]' },
+      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]' },
+      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]' },
+      { label: '대기', value: String(summary.pendingCount || 0), color: 'text-[#495057]' },
+      { label: '고위험', value: String(summary.highRiskCount || 0), color: 'text-[#b91c1c]' },
+      { label: '중위험', value: String(summary.mediumRiskCount || 0), color: 'text-[#e65100]' },
+      { label: '저위험', value: String(summary.lowRiskCount || 0), color: 'text-[#008233]' },
     ];
-  }, [reviewsDashboardQuery.data]);
+  }, [reviewsListQuery.data?.summary]);
 
   // Get current stats based on role
   const currentStats = useMemo(() => {
@@ -501,7 +502,7 @@ export default function HomePage({ userRole }: HomePageProps) {
 
         {/* Stats Cards */}
         <div className="bg-white rounded-[20px] p-6 md:p-11 flex flex-wrap gap-8 md:gap-[100px] justify-between md:justify-start">
-          {(userRole === 'receiver' && reviewsDashboardQuery.isLoading) ||
+          {(userRole === 'receiver' && reviewsListQuery.isLoading) ||
           (userRole === 'drafter' && diagnosticsQuery.isLoading) ||
           (userRole === 'approver' && approvalsQuery.isLoading) ? (
             <div className="w-full">
