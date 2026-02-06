@@ -10,9 +10,6 @@ import LoginPage from './features/auth/LoginPage';
 import SignupStep1Page from './features/auth/SignupStep1Page';
 import SignupStep2Page from './features/auth/SignupStep2Page';
 import HomePage from './features/dashboard/HomePage';
-import SafetyPage from './features/dashboard/SafetyPage';
-import CompliancePage from './features/dashboard/CompliancePage';
-import ESGPage from './features/dashboard/ESGPage';
 import FileUploadPage from './features/documents/FileUploadPage';
 import DocumentReviewPage from './features/documents/DocumentReviewPage';
 import PermissionRequestPage from './features/permission/PermissionRequestPage';
@@ -257,31 +254,6 @@ function AppRoutes() {
           </MemberRoute>
         }
       />
-      <Route
-        path="/dashboard/safety"
-        element={
-          <DomainProtectedRoute domainCode="SAFETY">
-            <SafetyPage userRole={legacyRole} />
-          </DomainProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/compliance"
-        element={
-          <DomainProtectedRoute domainCode="COMPLIANCE">
-            <CompliancePage userRole={legacyRole} />
-          </DomainProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard/esg"
-        element={
-          <DomainProtectedRoute domainCode="ESG">
-            <ESGPage userRole={legacyRole} />
-          </DomainProtectedRoute>
-        }
-      />
-
       {/* Document Routes - Safety */}
       <Route
         path="/dashboard/safety/upload"
