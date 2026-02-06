@@ -4,8 +4,9 @@ import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { AlertCircle, ArrowLeft, X, FileText, Download, Bot } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
 import { useAiResult } from '../../src/hooks/useAiRun';
-import type { DomainCode } from '../../src/types/api.types';
-import { DOMAIN_LABELS } from '../../src/types/api.types';
+import { useDiagnosticHistory } from '../../src/hooks/useDiagnostics';
+import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
+import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail } from '../../src/api/aiRun';
 
 interface DocumentReviewPageProps {
@@ -57,6 +58,35 @@ const aiVerdictConfig: Record<string, { label: string; cardBg: string; iconBg: s
   },
 };
 
+const TIMELINE_STATUS_CONFIG: Record<DiagnosticStatus, { iconBg: string; textColor: string; bgColor: string; borderColor: string }> = {
+  WRITING: { iconBg: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6', borderColor: '#e5e7eb' },
+  SUBMITTED: { iconBg: '#2563eb', textColor: '#1d4ed8', bgColor: '#dbeafe', borderColor: '#bfdbfe' },
+  RETURNED: { iconBg: '#dc2626', textColor: '#b91c1c', bgColor: '#fee2e2', borderColor: '#fecaca' },
+  APPROVED: { iconBg: '#16a34a', textColor: '#15803d', bgColor: '#dcfce7', borderColor: '#bbf7d0' },
+  REVIEWING: { iconBg: '#ca8a04', textColor: '#a16207', bgColor: '#fef9c3', borderColor: '#fef08a' },
+  COMPLETED: { iconBg: '#059669', textColor: '#047857', bgColor: '#d1fae5', borderColor: '#a7f3d0' },
+};
+
+function TimelineIcon({ status }: { status: DiagnosticStatus }) {
+  const iconClass = "w-[14px] h-[14px] text-white";
+  switch (status) {
+    case 'WRITING':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>;
+    case 'SUBMITTED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>;
+    case 'RETURNED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>;
+    case 'APPROVED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>;
+    case 'REVIEWING':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+    case 'COMPLETED':
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+    default:
+      return <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+  }
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const year = d.getFullYear();
@@ -86,6 +116,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const { data: review, isLoading, isError } = useReviewDetail(reviewId);
   const diagnosticId = review?.diagnostic?.diagnosticId ?? 0;
   const { data: aiResult } = useAiResult(diagnosticId);
+  const { data: history } = useDiagnosticHistory(diagnosticId);
   const submitReview = useSubmitReview();
 
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -324,6 +355,45 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 <p className="font-body-small text-[#868e96]">
                   분석 일시: {new Date(aiResult.analyzedAt).toLocaleString('ko-KR')}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* 기안 이력 타임라인 */}
+          {history && history.length > 0 && (
+            <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
+              <h2 className="font-title-medium text-[#212529] mb-[20px]">기안 이력</h2>
+              <div className="max-h-[400px] overflow-y-auto pl-[18px] pr-[8px]">
+              <ol className="relative border-l-[2px] border-[#e5e7eb]">
+                {history.map((item, index) => {
+                  const isLatest = index === 0;
+                  const statusConfig = TIMELINE_STATUS_CONFIG[item.newStatus] || TIMELINE_STATUS_CONFIG.WRITING;
+                  return (
+                    <li key={item.historyId} className={`ml-[20px] ${index !== history.length - 1 ? 'pb-[24px]' : ''}`}>
+                      <span
+                        className="absolute flex items-center justify-center w-[28px] h-[28px] rounded-full -left-[15px]"
+                        style={{ backgroundColor: statusConfig.iconBg, boxShadow: `0 0 0 3px white, 0 0 0 4px ${statusConfig.borderColor}` }}
+                      >
+                        <TimelineIcon status={item.newStatus} />
+                      </span>
+                      <time className="inline-flex items-center px-[8px] py-[3px] mb-[6px] text-[11px] font-medium rounded-full"
+                        style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
+                        {new Date(item.timestamp).toLocaleString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </time>
+                      <h3 className="flex items-center gap-[6px] mt-[6px] mb-[2px]">
+                        <span className="font-title-small text-[#212529]">{DIAGNOSTIC_STATUS_LABELS[item.newStatus]}</span>
+                        {isLatest && <span className="px-[6px] py-[1px] text-[10px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
+                      </h3>
+                      <p className="font-body-small text-[#868e96]">{item.performedBy.name}</p>
+                      {item.comment && (
+                        <div className="p-[12px] mt-[8px] rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb]">
+                          <p className="font-body-small text-[#495057] whitespace-pre-wrap">{item.comment}</p>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
               </div>
             </div>
           )}

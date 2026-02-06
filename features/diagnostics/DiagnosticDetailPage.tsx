@@ -62,6 +62,95 @@ const STATUS_STYLES: Record<DiagnosticStatus, string> = {
   COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
+const TIMELINE_STATUS_CONFIG: Record<DiagnosticStatus, { iconBg: string; textColor: string; bgColor: string; borderColor: string }> = {
+  WRITING: {
+    iconBg: '#6b7280',
+    textColor: '#374151',
+    bgColor: '#f3f4f6',
+    borderColor: '#e5e7eb',
+  },
+  SUBMITTED: {
+    iconBg: '#2563eb',
+    textColor: '#1d4ed8',
+    bgColor: '#dbeafe',
+    borderColor: '#bfdbfe',
+  },
+  RETURNED: {
+    iconBg: '#dc2626',
+    textColor: '#b91c1c',
+    bgColor: '#fee2e2',
+    borderColor: '#fecaca',
+  },
+  APPROVED: {
+    iconBg: '#16a34a',
+    textColor: '#15803d',
+    bgColor: '#dcfce7',
+    borderColor: '#bbf7d0',
+  },
+  REVIEWING: {
+    iconBg: '#ca8a04',
+    textColor: '#a16207',
+    bgColor: '#fef9c3',
+    borderColor: '#fef08a',
+  },
+  COMPLETED: {
+    iconBg: '#059669',
+    textColor: '#047857',
+    bgColor: '#d1fae5',
+    borderColor: '#a7f3d0',
+  },
+};
+
+function StatusIcon({ status }: { status: DiagnosticStatus }) {
+  const iconClass = "w-[16px] h-[16px] text-white";
+
+  switch (status) {
+    case 'WRITING':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+      );
+    case 'SUBMITTED':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+      );
+    case 'RETURNED':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+      );
+    case 'APPROVED':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      );
+    case 'REVIEWING':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      );
+    case 'COMPLETED':
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={iconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+  }
+}
+
 export default function DiagnosticDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -82,7 +171,7 @@ export default function DiagnosticDetailPage() {
       {
         id: diagnosticId,
         data: {
-          comment: comment || undefined,
+          submitComment: comment || undefined,
         },
       },
       {
@@ -181,34 +270,65 @@ export default function DiagnosticDetailPage() {
           <AiResultSection result={aiResult} />
         )}
 
-        {/* 이력 */}
+        {/* 이력 타임라인 */}
         {history && history.length > 0 && (
           <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
-            <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 이력</h2>
-            <div className="space-y-[16px]">
-              {history.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-[12px] pb-[16px] border-b border-[var(--color-border-default)] last:border-b-0 last:pb-0"
-                >
-                  <span className={`shrink-0 inline-block px-[8px] py-[2px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
-                    {DIAGNOSTIC_STATUS_LABELS[item.status]}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body-medium text-[var(--color-text-primary)]">
-                      {item.changedBy}
+            <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[24px]">기안 이력</h2>
+            <div className="max-h-[400px] overflow-y-auto pl-[20px] pr-[8px]">
+            <ol className="relative border-l-[2px] border-[#e5e7eb]">
+              {history.map((item, index) => {
+                const isLatest = index === 0;
+                const statusConfig = TIMELINE_STATUS_CONFIG[item.newStatus] || TIMELINE_STATUS_CONFIG.WRITING;
+
+                return (
+                  <li key={item.historyId} className={`ml-[24px] ${index !== history.length - 1 ? 'pb-[32px]' : ''}`}>
+                    {/* 타임라인 아이콘 */}
+                    <span
+                      className="absolute flex items-center justify-center w-[32px] h-[32px] rounded-full -left-[17px]"
+                      style={{ backgroundColor: statusConfig.iconBg, boxShadow: `0 0 0 4px white, 0 0 0 5px ${statusConfig.borderColor}` }}
+                    >
+                      <StatusIcon status={item.newStatus} />
+                    </span>
+
+                    {/* 날짜 뱃지 */}
+                    <time className="inline-flex items-center px-[10px] py-[4px] mb-[8px] text-[12px] font-medium rounded-full"
+                      style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
+                      {new Date(item.timestamp).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </time>
+
+                    {/* 상태 + 변경자 */}
+                    <h3 className="flex items-center gap-[8px] mt-[8px] mb-[4px]">
+                      <span className="font-title-small text-[var(--color-text-primary)]">
+                        {DIAGNOSTIC_STATUS_LABELS[item.newStatus]}
+                      </span>
+                      {isLatest && (
+                        <span className="px-[8px] py-[2px] text-[11px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">
+                          최신
+                        </span>
+                      )}
+                    </h3>
+                    <p className="font-body-small text-[var(--color-text-secondary)] mb-[8px]">
+                      {item.performedBy.name}
                     </p>
+
+                    {/* 코멘트 */}
                     {item.comment && (
-                      <p className="font-body-small text-[var(--color-text-tertiary)] mt-[4px]">
-                        {item.comment}
-                      </p>
+                      <div className="p-[16px] mt-[8px] rounded-[12px] border border-[#e5e7eb] bg-[#f9fafb]">
+                        <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6] whitespace-pre-wrap">
+                          {item.comment}
+                        </p>
+                      </div>
                     )}
-                  </div>
-                  <span className="shrink-0 font-body-small text-[var(--color-text-tertiary)]">
-                    {new Date(item.changedAt).toLocaleString('ko-KR')}
-                  </span>
-                </div>
-              ))}
+                  </li>
+                );
+              })}
+            </ol>
             </div>
           </div>
         )}
