@@ -63,10 +63,10 @@ const REASON_LABELS: Record<string, string> = {
   SIGNATURE_MISSING: '확인 서명란 미기재',
 };
 
-const DOMAIN_TO_DASHBOARD: Record<string, string> = {
-  SAFETY: '/dashboard/safety',
-  ESG: '/dashboard/esg',
-  COMPLIANCE: '/dashboard/compliance',
+const DOMAIN_TO_LIST: Record<string, string> = {
+  SAFETY: '/diagnostics?domainCode=SAFETY',
+  ESG: '/diagnostics?domainCode=ESG',
+  COMPLIANCE: '/diagnostics?domainCode=COMPLIANCE',
 };
 
 export default function ApprovalDetailPage() {
@@ -111,7 +111,7 @@ export default function ApprovalDetailPage() {
           if (showModal === 'APPROVED') {
             submitToReviewerMutation.mutate(approvalId, {
               onSuccess: () => {
-                navigate(approval?.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard');
+                navigate(approval?.domainCode ? DOMAIN_TO_LIST[approval.domainCode] || '/dashboard' : '/dashboard');
               },
             });
           }
@@ -156,7 +156,7 @@ export default function ApprovalDetailPage() {
       <div className="flex flex-col gap-[24px] p-[24px] lg:p-[40px] max-w-[900px] mx-auto w-full">
         {/* 뒤로가기 - 도메인별 대시보드로 이동 */}
         <button
-          onClick={() => navigate(approval.domainCode ? DOMAIN_TO_DASHBOARD[approval.domainCode] || '/dashboard' : '/dashboard')}
+          onClick={() => navigate(approval.domainCode ? DOMAIN_TO_LIST[approval.domainCode] || '/dashboard' : '/dashboard')}
           className="flex items-center gap-[4px] font-body-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] w-fit"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
