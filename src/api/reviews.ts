@@ -3,10 +3,12 @@ import type { BaseResponse, PagedData, ReviewStatus, RiskLevel } from '../types/
 
 export interface ReviewDashboardResponse {
   totalCompanies: number;
-  notSubmitted: number;
-  reviewing: number;
-  revisionRequired: number;
-  completed: number;
+  completedCount: number;
+  inProgressCount: number;
+  pendingCount: number;
+  highRiskCount: number;
+  mediumRiskCount: number;
+  lowRiskCount: number;
 }
 
 export interface ReviewListItem {
@@ -79,15 +81,23 @@ export interface JobResponse {
   status: 'PENDING';
 }
 
-export const getReviewsDashboard = async (): Promise<ReviewDashboardResponse> => {
-  const response = await apiClient.get<BaseResponse<ReviewDashboardResponse>>('/v1/reviews/dashboard');
-  return response.data.data;
+export const getReviewsDashboard = async (domainCode?: string): Promise<ReviewDashboardResponse> => {
+  const response = await apiClient.get<BaseResponse<{ summary: ReviewDashboardResponse } | ReviewDashboardResponse>>('/v1/reviews/dashboard', {
+    params: domainCode ? { domainCode } : undefined,
+  });
+  const data = response.data.data;
+  // summary 객체가 있으면 그 안의 데이터를, 없으면 data 자체를 반환
+  return 'summary' in data ? data.summary : data;
 };
+
+export interface ReviewListResponse extends PagedData<ReviewListItem> {
+  summary?: ReviewDashboardResponse;
+}
 
 export const getReviews = async (
   params: ReviewListParams = {}
-): Promise<PagedData<ReviewListItem>> => {
-  const response = await apiClient.get<BaseResponse<PagedData<ReviewListItem>>>('/v1/reviews', {
+): Promise<ReviewListResponse> => {
+  const response = await apiClient.get<BaseResponse<ReviewListResponse>>('/v1/reviews', {
     params: { page: 0, size: 10, ...params },
   });
   return response.data.data;
