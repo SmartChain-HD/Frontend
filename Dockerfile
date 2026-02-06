@@ -1,33 +1,25 @@
-# 1단계: 빌드 (Node.js)
-FROM node:20-alpine AS build-stage
+# 1단계: 빌드 스테이지 (Gradle 사용)
+FROM gradle:8-jdk17 AS build-stage
 WORKDIR /app
 
-# 패키지 설치
-COPY package*.json ./
-RUN npm install
+# 빌드 속도 향상을 위해 라이브러리 캐시 먼저 복사
+COPY build.gradle settings.gradle ./
+RUN gradle build -x test --no-daemon > /dev/null 2>&1 || true
 
-# 소스 복사
+# 전체 소스 복사 및 빌드
 COPY . .
+# 테스트를 제외하고 실제 실행 가능한 jar 파일 생성
+RUN gradle bootJar -x test --no-daemon
 
-# 빌드 시점에 백엔드 URL 주입
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+# 2단계: 실행 스테이지 (가벼운 JRE 사용)
+FROM openjdk:17-jdk-slim
+WORKDIR /app
 
-# [중요 수정] tsc를 무시하고 vite 빌드만 실행
-RUN npx vite build
+# 빌드 단계에서 생성된 jar 파일만 가져오기
+COPY --from=build-stage /app/build/libs/*.jar app.jar
 
-# 2단계: 실행 (Nginx)
-FROM nginx:stable-alpine
-COPY --from=build-stage /app/dist /usr/share/nginx/html
+# Spring Boot 기본 포트 8080 노출
+EXPOSE 8080
 
-RUN echo "server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
-        try_files \$uri \$uri/ /index.html; \
-    } \
-}" > /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# 운영 환경 프로파일 설정 (README 기준 prod)
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
