@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import svgPaths from '../../imports/svg-h10djjhihc';
 import { useLogout } from '../../src/hooks/useAuth';
 import { useNotifications, useUnreadCount, useMarkAsRead } from '../../src/hooks/useNotifications';
+import { getNotificationLink } from '../../src/api/notifications';
 import { useAuthStore } from '../../src/store/authStore';
 import { maskName } from '../../src/utils/mask';
 
@@ -92,7 +93,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
         {notifications.map((n) => (
           <div
             key={n.notificationId}
-            onClick={() => handleClickItem(n.notificationId, n.read, n.link)}
+            onClick={() => handleClickItem(n.notificationId, n.read, getNotificationLink(n))}
             className={`flex items-start gap-[12px] px-[16px] py-[12px] cursor-pointer transition-colors ${
               n.read ? 'bg-white hover:bg-gray-50' : 'bg-blue-50/50 hover:bg-blue-50'
             }`}
