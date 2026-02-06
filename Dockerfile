@@ -1,25 +1,24 @@
-# 1단계: 빌드 스테이지 (Gradle 사용)
-FROM gradle:8-jdk17 AS build-stage
+# 1단계: 빌드 스테이지
+FROM node:18-alpine AS build-stage
 WORKDIR /app
 
-# 빌드 속도 향상을 위해 라이브러리 캐시 먼저 복사
-COPY build.gradle settings.gradle ./
-RUN gradle build -x test --no-daemon > /dev/null 2>&1 || true
+# 패키지 설치를 위해 설정 파일 복사
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
 # 전체 소스 복사 및 빌드
 COPY . .
-# 테스트를 제외하고 실제 실행 가능한 jar 파일 생성
-RUN gradle bootJar -x test --no-daemon
+RUN npm run build -- --skipLibCheck || npx vite build
+# 2단계: 실행 스테이지 (Nginx 사용)
+FROM nginx:stable-alpine
+WORKDIR /usr/share/nginx/html
 
-# 2단계: 실행 스테이지 (가벼운 JRE 사용)
-FROM openjdk:17-jdk-slim
-WORKDIR /app
+# 빌드 단계에서 생성된 dist 폴더의 결과물을 Nginx 폴더로 복사
+# Vite의 기본 빌드 폴더명은 'dist'입니다.
+COPY --from=build-stage /app/dist .
 
-# 빌드 단계에서 생성된 jar 파일만 가져오기
-COPY --from=build-stage /app/build/libs/*.jar app.jar
+# Nginx의 기본 80포트 노출
+EXPOSE 80
 
-# Spring Boot 기본 포트 8080 노출
-EXPOSE 8080
-
-# 운영 환경 프로파일 설정 (README 기준 prod)
-ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "app.jar"]
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]

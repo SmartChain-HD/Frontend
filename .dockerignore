@@ -1,9 +1,33 @@
-.gradle
+# 의존성 및 빌드 결과물
+node_modules
+dist
 build
 bin
 out
+
+# 환경 변수 및 설정 파일
+.env
+.env.local
+.env.*.local
+
+# 로그 및 디버그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE 및 OS 시스템 파일
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 도커 및 버전 관리
 .git
 .gitignore
-*.md
 Dockerfile
 .dockerignore
+
+# 테스트 및 문서
+tests/
+*.md
