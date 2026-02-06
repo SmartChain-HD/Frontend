@@ -5,6 +5,9 @@ import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviews } from '../../src/hooks/useReviews';
 import { useNotifications, useMarkAsRead } from '../../src/hooks/useNotifications';
+import { useRiskCompanies, useExternalRiskList, useDetectRisk } from '../../src/hooks/useExternalRisk';
+import { parseEvidenceJson } from '../../src/api/externalRisk';
+import type { ExternalRiskResult } from '../../src/api/externalRisk';
 import { useAuthStore } from '../../src/store/authStore';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
 
@@ -209,6 +212,243 @@ function NotificationFeed() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Risk Level Config
+const riskLevelConfig: Record<ExternalRiskResult['riskLevel'], { label: string; color: string; bgColor: string; dotColor: string }> = {
+  HIGH: { label: '높음', color: 'text-[#b91c1c]', bgColor: 'bg-[#fef2f2]', dotColor: '#EF4444' },
+  MEDIUM: { label: '중간', color: 'text-[#e65100]', bgColor: 'bg-[#fff3e0]', dotColor: '#F59E0B' },
+  LOW: { label: '낮음', color: 'text-[#008233]', bgColor: 'bg-[#f0fdf4]', dotColor: '#22C55E' },
+};
+
+// External Risk Panel Component (REVIEWER only)
+function ExternalRiskPanel() {
+  const { data: companiesData } = useRiskCompanies();
+  const { data, isLoading, isError, refetch } = useExternalRiskList({ page: 0, size: 5 });
+  const detectMutation = useDetectRisk();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const results = data?.content || [];
+  const companies = companiesData || [];
+
+  const riskSummary = useMemo(() => {
+    const counts = { HIGH: 0, MEDIUM: 0, LOW: 0 };
+    results.forEach((r) => { counts[r.riskLevel]++; });
+    return counts;
+  }, [results]);
+
+  const handleDetectAll = () => {
+    const companyIds = companies.map((c) => c.companyId);
+    if (companyIds.length > 0) {
+      detectMutation.mutate({ companyIds });
+    }
+  };
+
+  const formatDetectedAt = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ko-KR', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-[20px] p-[44px] h-[555px] flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-[24px]">
+        <p className="font-title-large text-[#212529]">
+          외부 리스크 감지 현황
+        </p>
+        <button
+          onClick={handleDetectAll}
+          disabled={detectMutation.isPending || companies.length === 0}
+          className="px-[16px] py-[8px] bg-[#003087] text-white rounded-[8px] font-title-xsmall hover:bg-[#002554] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-[6px]"
+        >
+          {detectMutation.isPending ? (
+            <>
+              <div className="w-[14px] h-[14px] border-2 border-white border-t-transparent rounded-full animate-spin" />
+              분석중...
+            </>
+          ) : (
+            '전체 재분석'
+          )}
+        </button>
+      </div>
+
+      {/* Risk Summary Badges */}
+      {!isLoading && !isError && results.length > 0 && (
+        <div className="flex gap-[12px] mb-[20px]">
+          {(['HIGH', 'MEDIUM', 'LOW'] as const).map((level) => {
+            const config = riskLevelConfig[level];
+            return (
+              <div
+                key={level}
+                className={`flex items-center gap-[6px] px-[12px] py-[6px] rounded-[8px] ${config.bgColor}`}
+              >
+                <span
+                  className="inline-block w-[8px] h-[8px] rounded-full"
+                  style={{ backgroundColor: config.dotColor }}
+                />
+                <span className={`font-title-xsmall ${config.color}`}>
+                  {config.label} {riskSummary[level]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        {isLoading && (
+          <div className="flex items-center justify-center py-[60px]">
+            <div className="w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {isError && (
+          <div className="flex flex-col items-center justify-center py-[60px] text-center">
+            <p className="font-body-medium text-[var(--color-state-error-text)] mb-[16px]">
+              리스크 데이터를 불러오는 데 실패했습니다.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="px-[16px] py-[8px] bg-[#003087] text-white rounded-[8px] font-title-xsmall hover:bg-[#002554] transition-colors"
+            >
+              다시 시도
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && results.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-[60px] text-center">
+            <svg className="w-[48px] h-[48px] text-[#adb5bd] mb-[12px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <p className="font-body-medium text-[var(--color-text-tertiary)] mb-[16px]">
+              아직 분석된 리스크 결과가 없습니다.
+            </p>
+            <button
+              onClick={handleDetectAll}
+              disabled={detectMutation.isPending || companies.length === 0}
+              className="px-[16px] py-[8px] bg-[#003087] text-white rounded-[8px] font-title-xsmall hover:bg-[#002554] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-[6px]"
+            >
+              {detectMutation.isPending ? (
+                <>
+                  <div className="w-[14px] h-[14px] border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  분석중...
+                </>
+              ) : (
+                '분석 시작'
+              )}
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && results.length > 0 && (
+          <div className="space-y-[12px]">
+            {results.map((item) => {
+              const config = riskLevelConfig[item.riskLevel];
+              const isExpanded = expandedId === item.id;
+              const evidences = isExpanded ? parseEvidenceJson(item.evidenceJson) : [];
+
+              return (
+                <div
+                  key={item.id}
+                  className="border border-[#e9ecef] rounded-[12px] transition-all hover:border-[#dee2e6]"
+                >
+                  {/* Row Header */}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                    className="w-full flex items-center gap-[12px] px-[16px] py-[14px] text-left"
+                  >
+                    {/* Risk Dot */}
+                    <span
+                      className="shrink-0 w-[10px] h-[10px] rounded-full"
+                      style={{ backgroundColor: config.dotColor }}
+                    />
+                    {/* Company Name */}
+                    <span className="font-title-xsmall text-[#212529] min-w-0 truncate">
+                      {item.companyName}
+                    </span>
+                    {/* Risk Badge */}
+                    <span
+                      className={`shrink-0 px-[10px] py-[2px] rounded-[6px] font-detail-medium ${config.color} ${config.bgColor}`}
+                    >
+                      {config.label}
+                    </span>
+                    {/* Date */}
+                    <span className="shrink-0 ml-auto font-body-small text-[#adb5bd]">
+                      {formatDetectedAt(item.detectedAt)}
+                    </span>
+                    {/* Chevron */}
+                    <svg
+                      className={`shrink-0 w-[16px] h-[16px] text-[#adb5bd] transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Expanded Detail */}
+                  {isExpanded && (
+                    <div className="px-[16px] pb-[14px] border-t border-[#f1f3f5]">
+                      {/* Summary */}
+                      <p className="font-body-small text-[#495057] mt-[12px] mb-[12px] leading-relaxed">
+                        {item.summary}
+                      </p>
+
+                      {/* Evidence List */}
+                      {evidences.length > 0 && (
+                        <div className="space-y-[8px]">
+                          <p className="font-detail-medium text-[#868e96]">근거 자료</p>
+                          {evidences.map((ev, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-start gap-[8px] bg-[#f8f9fa] rounded-[8px] px-[12px] py-[10px]"
+                            >
+                              <span className="shrink-0 px-[6px] py-[1px] rounded bg-[#e9ecef] font-detail-medium text-[#495057]">
+                                {ev.source}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                {ev.url ? (
+                                  <a
+                                    href={ev.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-title-xsmall text-[#003087] hover:underline line-clamp-1"
+                                  >
+                                    {ev.title}
+                                  </a>
+                                ) : (
+                                  <p className="font-title-xsmall text-[#212529] line-clamp-1">
+                                    {ev.title}
+                                  </p>
+                                )}
+                                <p className="font-body-small text-[#868e96] line-clamp-2 mt-[2px]">
+                                  {ev.snippet}
+                                </p>
+                              </div>
+                              <span className="shrink-0 font-detail-medium text-[#adb5bd]">
+                                {ev.date}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -604,8 +844,8 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
             </div>
           </div>
 
-          {/* Right: Notification Feed */}
-          <NotificationFeed />
+          {/* Right: External Risk Panel (receiver) or Notification Feed (others) */}
+          {userRole === 'receiver' ? <ExternalRiskPanel /> : <NotificationFeed />}
         </div>
       </div>
     </DashboardLayout>
