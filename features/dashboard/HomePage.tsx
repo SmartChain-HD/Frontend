@@ -255,13 +255,14 @@ export default function HomePage({ userRole }: HomePageProps) {
       return acc;
     }, {} as Record<string, number>);
 
+    const basePath = `/diagnostics?domainCode=${activeTab}`;
     return [
-      { label: '미제출', value: String(statusCounts['WRITING'] || 0), color: 'text-[#b91c1c]' },
-      { label: '검토중', value: String((statusCounts['SUBMITTED'] || 0) + (statusCounts['REVIEWING'] || 0)), color: 'text-[#002554]' },
-      { label: '보완요청', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#e65100]' },
-      { label: '완료', value: String((statusCounts['APPROVED'] || 0) + (statusCounts['COMPLETED'] || 0)), color: 'text-[#008233]' },
+      { label: '미제출', value: String(statusCounts['WRITING'] || 0), color: 'text-[#b91c1c]', path: basePath },
+      { label: '검토중', value: String((statusCounts['SUBMITTED'] || 0) + (statusCounts['REVIEWING'] || 0)), color: 'text-[#002554]', path: basePath },
+      { label: '보완요청', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#e65100]', path: basePath },
+      { label: '완료', value: String((statusCounts['APPROVED'] || 0) + (statusCounts['COMPLETED'] || 0)), color: 'text-[#008233]', path: basePath },
     ];
-  }, [diagnosticsQuery.data]);
+  }, [diagnosticsQuery.data, activeTab]);
 
   // Calculate stats for APPROVER from approvals data
   const approverStats = useMemo(() => {
@@ -271,28 +272,30 @@ export default function HomePage({ userRole }: HomePageProps) {
       return acc;
     }, {} as Record<string, number>);
 
+    const basePath = `/approvals?domainCode=${activeTab}`;
     return [
-      { label: '대기중', value: String(statusCounts['WAITING'] || 0), color: 'text-[#e65100]' },
-      { label: '승인', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]' },
-      { label: '반려', value: String(statusCounts['REJECTED'] || 0), color: 'text-[#b91c1c]' },
+      { label: '대기중', value: String(statusCounts['WAITING'] || 0), color: 'text-[#e65100]', path: basePath },
+      { label: '승인', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: basePath },
+      { label: '반려', value: String(statusCounts['REJECTED'] || 0), color: 'text-[#b91c1c]', path: basePath },
     ];
-  }, [approvalsQuery.data]);
+  }, [approvalsQuery.data, activeTab]);
 
   // Stats for REVIEWER from reviews API summary
   const reviewerStats = useMemo(() => {
     const summary = reviewsListQuery.data?.summary;
     if (!summary) return [];
 
+    const basePath = `/reviews?domainCode=${activeTab}`;
     return [
       { label: '전체 협력사', value: String(summary.totalCompanies || 0), color: 'text-[#212529]' },
-      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]' },
-      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]' },
-      { label: '대기', value: String(summary.pendingCount || 0), color: 'text-[#495057]' },
+      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]', path: basePath },
+      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]', path: basePath },
+      { label: '대기', value: String(summary.pendingCount || 0), color: 'text-[#495057]', path: basePath },
       { label: '고위험', value: String(summary.highRiskCount || 0), color: 'text-[#b91c1c]' },
       { label: '중위험', value: String(summary.mediumRiskCount || 0), color: 'text-[#e65100]' },
       { label: '저위험', value: String(summary.lowRiskCount || 0), color: 'text-[#008233]' },
     ];
-  }, [reviewsListQuery.data?.summary]);
+  }, [reviewsListQuery.data?.summary, activeTab]);
 
   // Get current stats based on role
   const currentStats = useMemo(() => {
@@ -510,7 +513,11 @@ export default function HomePage({ userRole }: HomePageProps) {
             </div>
           ) : currentStats.length > 0 ? (
             currentStats.map((stat, index) => (
-              <div key={index} className="min-w-[120px]">
+              <div
+                key={index}
+                className={`min-w-[120px] ${stat.path ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+                onClick={() => stat.path && navigate(stat.path)}
+              >
                 <p className="font-title-medium text-[#212529] mb-[16px]">
                   {stat.label}
                 </p>
