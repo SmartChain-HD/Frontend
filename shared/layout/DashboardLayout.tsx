@@ -21,7 +21,7 @@ export default function DashboardLayout({ children, hideSidebar }: DashboardLayo
     return 'drafter' as const;
   })();
 
-  const userName = user?.name || '사용자';
+  const userName = user?.maskedName || '사용자';
   const isUserGuest = isGuest();
 
   return (

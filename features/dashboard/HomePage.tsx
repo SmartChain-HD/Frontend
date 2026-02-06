@@ -437,7 +437,7 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
           onClick={() => handleApprovalClick(item.approvalId)}
         >
           <td className="py-[16px] px-[16px] font-body-small text-[#212529]">
-            {item.requester?.name || '-'}
+            {item.requester?.maskedName || '-'}
           </td>
           <td className="py-[16px] px-[16px] font-body-small text-[#495057]">
             {item.diagnostic?.title || '-'}

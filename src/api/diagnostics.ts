@@ -32,7 +32,7 @@ export interface DiagnosticDetail {
   qualitativeProgress: number;
   quantitativeProgress: number;
   overallProgress: number;
-  createdBy: { userId: number; name: string };
+  createdBy: { userId: number; name: string; maskedName: string };
   createdAt: string;
   updatedAt: string;
   submittedAt?: string;

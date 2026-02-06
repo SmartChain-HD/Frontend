@@ -225,7 +225,7 @@ export default function UserManagementPage() {
                     >
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-body-medium text-[#212529]">{user.name}</p>
+                          <p className="font-body-medium text-[#212529]">{user.maskedName}</p>
                           <p className="font-detail-small text-[#868e96]">{user.email}</p>
                         </div>
                       </td>

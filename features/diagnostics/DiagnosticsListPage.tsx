@@ -235,7 +235,7 @@ export default function DiagnosticsListPage() {
           className="border-b border-[var(--color-border-default)] hover:bg-gray-50 cursor-pointer transition-colors"
         >
           <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]">
-            {item.requester?.name || '-'}
+            {item.requester?.maskedName || '-'}
           </td>
           <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]">
             {item.diagnostic?.title || '-'}

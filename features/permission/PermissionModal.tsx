@@ -70,7 +70,7 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
               {action === 'approve' ? '권한을 승인하시겠습니까?' : '권한을 반려하시겠습니까?'}
             </h3>
             <p className="font-body-medium text-[#868e96] text-center">
-              {request.user.name}님의 {request.requestedRole.name} 권한 요청을
+              {request.user.maskedName}님의 {request.requestedRole.name} 권한 요청을
               {action === 'approve' ? ' 승인' : ' 반려'}합니다.
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
               </div>
               <div>
                 <p className="font-detail-small text-[#868e96]">요청자</p>
-                <p className="font-body-medium text-[#212529]">{request.user.name}</p>
+                <p className="font-body-medium text-[#212529]">{request.user.maskedName}</p>
                 <p className="font-detail-small text-[#adb5bd]">{request.user.email}</p>
               </div>
             </div>

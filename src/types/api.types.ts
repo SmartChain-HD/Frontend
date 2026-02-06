@@ -82,6 +82,7 @@ export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 export interface UserSimpleDto {
   userId: number;
   name: string;
+  maskedName: string;
   email: string;
 }
 
@@ -113,6 +114,7 @@ export interface CompanyInfoDto {
 export interface ProcessedByDto {
   userId: number;
   name: string;
+  maskedName: string;
 }
 
 // ============================================
@@ -164,6 +166,7 @@ export interface UserInfoDto {
   userId: number;
   email: string;
   name: string;
+  maskedName: string;
   role?: RoleInfoDto;
   domainRoles?: UserDomainRole[];
   company?: CompanyInfoDto;
@@ -191,6 +194,7 @@ export interface MyInfoResponse {
   userId: number;
   email: string;
   name: string;
+  maskedName: string;
   role?: RoleInfoDto;
   company?: CompanyInfoDto;
   lastLoginAt?: string;
