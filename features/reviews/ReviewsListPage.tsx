@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
 import { useAccessibleDomainOptions } from '../../src/hooks/useDomainGuard';
 import type { ReviewStatus, DomainCode } from '../../src/types/api.types';
@@ -16,11 +16,21 @@ type StatusFilter = ReviewStatus | 'ALL';
 
 export default function ReviewsListPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { domainOptions: accessibleDomainOptions } = useAccessibleDomainOptions();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [domainFilter, setDomainFilter] = useState('');
+  const domainFilter = searchParams.get('domainCode') || '';
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const handleDomainFilterChange = (value: string) => {
+    if (value) {
+      setSearchParams({ domainCode: value });
+    } else {
+      setSearchParams({});
+    }
+    setPage(0);
+  };
 
   const { data, isLoading, isError } = useReviews({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
@@ -91,7 +101,7 @@ export default function ReviewsListPage() {
 
           <select
             value={domainFilter}
-            onChange={(e) => { setDomainFilter(e.target.value); setPage(0); }}
+            onChange={(e) => handleDomainFilterChange(e.target.value)}
             className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] bg-white"
           >
             <option value="">전체 도메인</option>

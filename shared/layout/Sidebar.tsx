@@ -13,10 +13,15 @@ interface MenuItem {
   domainCode?: DomainCode;
 }
 
-const DOMAIN_MENU_ITEMS: MenuItem[] = [
-  { label: '안전보건', path: '/diagnostics?domainCode=SAFETY', domainCode: 'SAFETY' },
-  { label: '컴플라이언스', path: '/diagnostics?domainCode=COMPLIANCE', domainCode: 'COMPLIANCE' },
-  { label: 'ESG', path: '/diagnostics?domainCode=ESG', domainCode: 'ESG' },
+interface DomainMenuItem {
+  label: string;
+  domainCode: DomainCode;
+}
+
+const DOMAIN_ITEMS: DomainMenuItem[] = [
+  { label: '안전보건', domainCode: 'SAFETY' },
+  { label: '컴플라이언스', domainCode: 'COMPLIANCE' },
+  { label: 'ESG', domainCode: 'ESG' },
 ];
 
 export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
@@ -31,15 +36,21 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
     return null;
   }
 
+  const isReviewer = user?.role?.code === 'REVIEWER';
   const menuItems: MenuItem[] = [{ label: '홈', path: '/dashboard' }];
 
-  DOMAIN_MENU_ITEMS.forEach((item) => {
-    if (item.domainCode && accessibleDomains.includes(item.domainCode)) {
-      menuItems.push(item);
+  DOMAIN_ITEMS.forEach((item) => {
+    if (accessibleDomains.includes(item.domainCode)) {
+      const basePath = isReviewer ? '/reviews' : '/diagnostics';
+      menuItems.push({
+        label: item.label,
+        path: `${basePath}?domainCode=${item.domainCode}`,
+        domainCode: item.domainCode,
+      });
     }
   });
 
-  if (user?.role?.code === 'REVIEWER') {
+  if (isReviewer) {
     menuItems.push({ label: '권한 관리', path: '/dashboard/permission' });
   }
 
