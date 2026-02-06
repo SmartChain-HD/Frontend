@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
 import { useAccessibleDomainOptions } from '../../src/hooks/useDomainGuard';
-import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
+import type { ReviewStatus, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS, REVIEW_STATUS_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -12,34 +12,19 @@ const STATUS_STYLES: Record<ReviewStatus, string> = {
   REVISION_REQUIRED: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
-const RISK_STYLES: Record<RiskLevel, string> = {
-  LOW: 'text-green-600',
-  MEDIUM: 'text-yellow-600',
-  HIGH: 'text-red-600',
-};
-
-const RISK_LABELS: Record<RiskLevel, string> = {
-  LOW: '낮음',
-  MEDIUM: '보통',
-  HIGH: '높음',
-};
-
 type StatusFilter = ReviewStatus | 'ALL';
-type RiskFilter = RiskLevel | 'ALL';
 
 export default function ReviewsListPage() {
   const navigate = useNavigate();
   const { domainOptions: accessibleDomainOptions } = useAccessibleDomainOptions();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [domainFilter, setDomainFilter] = useState('');
-  const [riskFilter, setRiskFilter] = useState<RiskFilter>('ALL');
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const { data, isLoading, isError } = useReviews({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
     domainCode: domainFilter || undefined,
-    riskLevel: riskFilter === 'ALL' ? undefined : riskFilter,
     page,
     size: 10,
   });
@@ -114,17 +99,6 @@ export default function ReviewsListPage() {
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
-
-          <select
-            value={riskFilter}
-            onChange={(e) => { setRiskFilter(e.target.value as RiskFilter); setPage(0); }}
-            className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-body-medium text-[var(--color-text-primary)] bg-white"
-          >
-            <option value="ALL">전체 위험등급</option>
-            <option value="LOW">낮음</option>
-            <option value="MEDIUM">보통</option>
-            <option value="HIGH">높음</option>
-          </select>
         </div>
 
         {/* 액션 바 */}
@@ -170,11 +144,9 @@ export default function ReviewsListPage() {
                     className="w-[16px] h-[16px] cursor-pointer"
                   />
                 </th>
-                <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제목</th>
+                <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">기안명</th>
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">도메인</th>
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">회사명</th>
-                <th className="px-[16px] py-[12px] text-center font-title-xsmall text-[var(--color-text-secondary)]">위험등급</th>
-                <th className="px-[16px] py-[12px] text-center font-title-xsmall text-[var(--color-text-secondary)]">점수</th>
                 <th className="px-[16px] py-[12px] text-left font-title-xsmall text-[var(--color-text-secondary)]">제출일</th>
                 <th className="px-[16px] py-[12px] text-center font-title-xsmall text-[var(--color-text-secondary)]">상태</th>
               </tr>
@@ -182,7 +154,7 @@ export default function ReviewsListPage() {
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={8} className="text-center py-[60px]">
+                  <td colSpan={6} className="text-center py-[60px]">
                     <div className="inline-block w-[32px] h-[32px] border-[3px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
                   </td>
                 </tr>
@@ -190,7 +162,7 @@ export default function ReviewsListPage() {
 
               {isError && (
                 <tr>
-                  <td colSpan={8} className="text-center py-[60px]">
+                  <td colSpan={6} className="text-center py-[60px]">
                     <p className="font-body-medium text-[var(--color-state-error-text)]">심사 목록을 불러오는 데 실패했습니다.</p>
                   </td>
                 </tr>
@@ -198,7 +170,7 @@ export default function ReviewsListPage() {
 
               {!isLoading && !isError && reviews.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center py-[60px]">
+                  <td colSpan={6} className="text-center py-[60px]">
                     <p className="font-body-medium text-[var(--color-text-tertiary)]">심사 내역이 없습니다.</p>
                   </td>
                 </tr>
@@ -221,25 +193,13 @@ export default function ReviewsListPage() {
                     className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-primary)]"
                     onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}
                   >
-                    {item.reviewIdLabel || `R-${item.reviewId}`}
+                    {item.diagnostic?.title || item.reviewIdLabel || `R-${item.reviewId}`}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.domainName || DOMAIN_LABELS[item.domainCode as DomainCode] || item.domainCode}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-secondary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {item.company?.companyName || '-'}
-                  </td>
-                  <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
-                    {item.riskLevel ? (
-                      <span className={`font-title-xsmall ${RISK_STYLES[item.riskLevel]}`}>
-                        {RISK_LABELS[item.riskLevel]}
-                      </span>
-                    ) : (
-                      <span className="font-body-medium text-[var(--color-text-tertiary)]">-</span>
-                    )}
-                  </td>
-                  <td className="px-[16px] py-[14px] text-center font-body-medium text-[var(--color-text-primary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
-                    {item.score != null ? item.score : '-'}
                   </td>
                   <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                     {new Date(item.submittedAt).toLocaleDateString('ko-KR')}
