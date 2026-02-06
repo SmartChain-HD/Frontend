@@ -302,13 +302,13 @@ export default function PermissionManagementPage() {
                         <td className="py-[14px] px-[16px] text-center border-b border-[#f1f3f5]">
                           <button
                             onClick={() => handleViewClick(req)}
-                            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-title-small transition-colors ${
                               req.status === 'PENDING'
                                 ? 'bg-[#003087] text-white hover:bg-[#002266]'
                                 : 'bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef]'
                             }`}
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-5 h-5" />
                             {req.status === 'PENDING' ? '처리' : '보기'}
                           </button>
                         </td>
