@@ -125,7 +125,7 @@ export default function PermissionManagementPage() {
   const filteredRequests = searchKeyword
     ? requests.filter(
         (req) =>
-          req.user.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          req.user.maskedName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
           req.company.companyName.toLowerCase().includes(searchKeyword.toLowerCase())
       )
     : requests;
@@ -276,7 +276,7 @@ export default function PermissionManagementPage() {
                         </td>
                         <td className="py-[14px] px-[16px] border-b border-[#f1f3f5]">
                           <div>
-                            <p className="font-body-small text-[#212529]">{req.user.name}</p>
+                            <p className="font-body-small text-[#212529]">{req.user.maskedName}</p>
                             <p className="font-detail-small text-[#adb5bd]">{req.user.email}</p>
                           </div>
                         </td>

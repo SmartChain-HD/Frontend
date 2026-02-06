@@ -166,7 +166,7 @@ export default function DiagnosticDetailPage() {
             <InfoRow label="기안명" value={diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode || '-'} />
             <InfoRow label="도메인" value={diagnostic.domain?.name || DOMAIN_LABELS[diagnostic.domain?.code as DomainCode] || '-'} />
             <InfoRow label="회사명" value={diagnostic.company?.companyName || '-'} />
-            <InfoRow label="기안자" value={diagnostic.createdBy?.name || '-'} />
+            <InfoRow label="기안자" value={diagnostic.createdBy?.maskedName || '-'} />
             <InfoRow label="생성일" value={new Date(diagnostic.createdAt).toLocaleDateString('ko-KR')} />
             <InfoRow label="기안 시작일" value={diagnostic.period?.startDate ? new Date(diagnostic.period.startDate).toLocaleDateString('ko-KR') : '-'} />
             <InfoRow label="기안 종료일" value={diagnostic.period?.endDate ? new Date(diagnostic.period.endDate).toLocaleDateString('ko-KR') : '-'} />

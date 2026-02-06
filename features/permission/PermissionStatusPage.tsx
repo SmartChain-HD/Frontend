@@ -165,7 +165,7 @@ export default function PermissionStatusPage() {
                   </div>
                   <div>
                     <p className="font-detail-small text-[#868e96]">요청자</p>
-                    <p className="font-body-medium text-[#212529]">{user?.name || '사용자'}</p>
+                    <p className="font-body-medium text-[#212529]">{user?.maskedName || '사용자'}</p>
                   </div>
                 </div>
 
@@ -253,7 +253,7 @@ export default function PermissionStatusPage() {
               {requestStatus.processedBy && (
                 <div className="mt-[20px] pt-[20px] border-t border-[#dee2e6]">
                   <p className="font-detail-small text-[#868e96]">
-                    처리자: {requestStatus.processedBy.name}
+                    처리자: {requestStatus.processedBy.maskedName}
                   </p>
                 </div>
               )}

@@ -10,6 +10,7 @@ export interface PermissionsDashboardResponse {
 export interface UserListItem {
   userId: number;
   name: string;
+  maskedName: string;
   email: string;
   role: string;
   roleCode: string;
@@ -57,6 +58,7 @@ export interface ActivityLogItem {
   logId: number;
   userId: number;
   userName: string;
+  maskedUserName: string;
   action: string;
   actionType: string;
   target: string;

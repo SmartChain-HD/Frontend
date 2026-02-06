@@ -5,7 +5,7 @@ import { useLogout } from '../../src/hooks/useAuth';
 import { useNotifications, useUnreadCount, useMarkAsRead } from '../../src/hooks/useNotifications';
 import { getNotificationLink } from '../../src/api/notifications';
 import { useAuthStore } from '../../src/store/authStore';
-import { maskName } from '../../src/utils/mask';
+
 
 interface HeaderProps {
   userName: string;
@@ -182,7 +182,7 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
         {/* User Info */}
         <div className="flex items-center gap-[8px]">
           <p className="font-body-medium text-white">
-            {maskName(userName)}
+            {userName}
           </p>
           {domainRoles.length > 0 ? (
             <div className="hidden lg:flex items-center gap-[4px]">

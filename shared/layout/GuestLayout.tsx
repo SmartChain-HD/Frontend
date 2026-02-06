@@ -9,7 +9,7 @@ interface GuestLayoutProps {
 
 export default function GuestLayout({ children }: GuestLayoutProps) {
   const { user } = useAuthStore();
-  const userName = user?.name || '방문자';
+  const userName = user?.maskedName || '방문자';
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen flex flex-col">

@@ -46,6 +46,7 @@ export interface ReviewListItem {
   assignedTo: {
     userId: number;
     name: string;
+    maskedName: string;
   };
 }
 

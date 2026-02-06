@@ -14,6 +14,7 @@ export interface ApprovalListItem {
   requester: {
     userId: number;
     name: string;
+    maskedName: string;
     email: string;
   };
   domainCode: string;

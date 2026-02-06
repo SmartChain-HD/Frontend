@@ -178,7 +178,7 @@ export default function ApprovalDetailPage() {
           <div className="grid grid-cols-2 gap-[20px]">
             <InfoRow label="도메인" value={approval.domainName || DOMAIN_LABELS[approval.domainCode as DomainCode] || approval.domainCode} />
             <InfoRow label="기안코드" value={approval.diagnostic?.diagnosticCode || '-'} />
-            <InfoRow label="기안자" value={approval.requester?.name || '-'} />
+            <InfoRow label="기안자" value={approval.requester?.maskedName || '-'} />
             <InfoRow label="기안자 이메일" value={approval.requester?.email || '-'} />
             <InfoRow label="요청일" value={approval.requestedAt ? new Date(approval.requestedAt).toLocaleDateString('ko-KR') : '-'} />
             {approval.processedAt && (
