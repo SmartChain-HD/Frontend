@@ -133,7 +133,7 @@ function FileUploadItem({
             {file.name}
           </p>
           <div className="flex items-center gap-[8px] mt-[2px]">
-            <p className={`font-title-xsmall ${style.text}`}>
+            <p className={`font-title-small ${style.text}`}>
               {statusLabel}
             </p>
             {autoTag && file.uploadStatus === 'complete' && (
@@ -794,7 +794,7 @@ export default function DiagnosticFilesPage() {
             </p>
           </div>
           {uploadedFiles.length > 0 && (
-            <div className="flex items-center gap-[16px] text-sm">
+            <div className="flex items-center gap-[16px] font-title-small">
               {processingCount > 0 && (
                 <span className="flex items-center gap-[6px] text-amber-600">
                   <span className="w-[8px] h-[8px] rounded-full bg-amber-500 animate-pulse" />
