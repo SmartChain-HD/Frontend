@@ -25,6 +25,7 @@ import DiagnosticDetailPage from './features/diagnostics/DiagnosticDetailPage';
 import DiagnosticCreatePage from './features/diagnostics/DiagnosticCreatePage';
 import DiagnosticFilesPage from './features/diagnostics/DiagnosticFilesPage';
 import ReviewsListPage from './features/reviews/ReviewsListPage';
+import AiAnalysisPage from './features/documents/AiAnalysisPage';
 import UserManagementPage from './features/management/UserManagementPage';
 import CompanyManagementPage from './features/management/CompanyManagementPage';
 import ActivityLogPage from './features/management/ActivityLogPage';
@@ -313,6 +314,14 @@ function AppRoutes() {
         element={
           <DomainProtectedRoute domainCode="COMPLIANCE">
             <DocumentReviewPage userRole={legacyRole} />
+          </DomainProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/compliance/review/:id/ai-analysis"
+        element={
+          <DomainProtectedRoute domainCode="COMPLIANCE">
+            <AiAnalysisPage />
           </DomainProtectedRoute>
         }
       />

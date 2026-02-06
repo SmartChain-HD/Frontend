@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-import { AlertCircle, ArrowLeft, X, FileText, Download } from 'lucide-react';
+import { AlertCircle, ArrowLeft, X, FileText, Download, Bot } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { DomainCode } from '../../src/types/api.types';
@@ -424,6 +424,19 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                   <ArrowLeft className="w-[20px] h-[20px]" />
                   목록으로 (Back to List)
                 </button>
+                {review.domainCode === 'COMPLIANCE' && (
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/compliance/review/${reviewId}/ai-analysis?diagnosticId=${diagnosticId}&domain=compliance`
+                      )
+                    }
+                    className="px-[32px] py-[14px] bg-[#003087] text-white rounded-[8px] font-title-small hover:bg-[#002554] transition-colors flex items-center gap-[8px]"
+                  >
+                    <Bot className="w-[20px] h-[20px]" />
+                    AI 문서 분석
+                  </button>
+                )}
                 <button
                   onClick={handleReject}
                   className="px-[32px] py-[14px] bg-[#e65100] text-white rounded-[8px] font-title-small hover:bg-[#d84a00] transition-colors"
