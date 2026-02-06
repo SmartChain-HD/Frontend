@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '../../src/hooks/useNotifications';
-import type { NotificationItem } from '../../src/api/notifications';
+import { getNotificationLink, type NotificationItem } from '../../src/api/notifications';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 function formatRelativeTime(dateStr: string): string {
@@ -43,12 +43,14 @@ function NotificationCard({
   onMarkRead: (id: number) => void;
   onNavigate: (link: string) => void;
 }) {
+  const link = getNotificationLink(notification);
+
   const handleClick = () => {
     if (!notification.read) {
       onMarkRead(notification.notificationId);
     }
-    if (notification.link) {
-      onNavigate(notification.link);
+    if (link) {
+      onNavigate(link);
     }
   };
 
@@ -89,7 +91,7 @@ function NotificationCard({
       </div>
 
       {/* 링크 화살표 */}
-      {notification.link && (
+      {link && (
         <div className="shrink-0 pt-[4px] text-[var(--color-text-tertiary)]">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
