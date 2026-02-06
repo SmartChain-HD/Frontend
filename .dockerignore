@@ -1,6 +1,9 @@
-node_modules
-dist
+.gradle
+build
+bin
+out
 .git
-.env
+.gitignore
+*.md
 Dockerfile
 .dockerignore
