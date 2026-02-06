@@ -234,7 +234,7 @@ export default function DiagnosticDetailPage() {
               onClick={() => setShowSubmitModal(true)}
               className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
             >
-              {hasApprovalWorkflow ? '결재자에게 제출' : '심사자에게 제출'}
+              {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
             </button>
           )}
         </div>
@@ -252,7 +252,7 @@ export default function DiagnosticDetailPage() {
 
             <div className="px-[24px] py-[20px] flex flex-col gap-[16px]">
               <p className="font-body-medium text-[var(--color-text-secondary)]">
-                {hasApprovalWorkflow ? '기안을 결재자에게 제출하시겠습니까?' : '기안을 심사자에게 제출하시겠습니까?'}
+                {hasApprovalWorkflow ? '기안을 결재자에게 제출하시겠습니까?' : '기안을 수신자에게 제출하시겠습니까?'}
               </p>
 
               <div>

@@ -9,9 +9,9 @@
 
 | 역할 | 이메일 | 회사 | 담당 도메인 |
 |------|--------|------|-------------|
-| 심사자(ESG) | `reviewer.esg@hdhhi.co.kr` | HD현대중공업 | ESG |
-| 심사자(안전) | `reviewer.safety@hdhhi.co.kr` | HD현대중공업 | SAFETY |
-| 심사자(컴플) | `reviewer.compliance@hdhhi.co.kr` | HD현대중공업 | COMPLIANCE |
+| 수신자(ESG) | `reviewer.esg@hdhhi.co.kr` | HD현대중공업 | ESG |
+| 수신자(안전) | `reviewer.safety@hdhhi.co.kr` | HD현대중공업 | SAFETY |
+| 수신자(컴플) | `reviewer.compliance@hdhhi.co.kr` | HD현대중공업 | COMPLIANCE |
 | 결재자 | `approver@techpartner.co.kr` | 테크파트너 | ESG, COMPLIANCE |
 | 결재자 | `approver@greenmanu.co.kr` | 그린매뉴팩처링 | ESG, SAFETY |
 | 결재자 | `approver@safebuild.co.kr` | 안전건설 | SAFETY |
@@ -98,7 +98,7 @@
 
 ## 5. 심사 데이터 - 상태별 (6건)
 
-| 상태 | 진단 | 회사 | 점수 | 위험도 | 심사자 |
+| 상태 | 진단 | 회사 | 점수 | 위험도 | 수신자 |
 |------|------|------|------|--------|--------|
 | **REVIEWING** | DG-ESG-2025-001 | 테크파트너 | 68 | MEDIUM | reviewer.esg@hdhhi.co.kr |
 | **REVIEWING** | DG-ESG-2025-002 | 그린매뉴팩처링 | 75 | MEDIUM | reviewer.esg@hdhhi.co.kr |
@@ -173,7 +173,7 @@
 - ESG, COMPLIANCE 도메인 권한
 ```
 
-### 심사자 플로우 테스트
+### 수신자 플로우 테스트
 ```
 계정: reviewer.esg@hdhhi.co.kr
 - 심사중 건 있음 (DG-ESG-2025-001, DG-ESG-2025-002)
