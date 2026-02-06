@@ -220,9 +220,9 @@ function formatDate(dateString?: string): string {
   return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function HomePage({ userRole }: HomePageProps) {
+export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
   const navigate = useNavigate();
-  const { getAccessibleDomains } = useAuthStore();
+  const { user, getAccessibleDomains } = useAuthStore();
   const accessibleDomains = getAccessibleDomains();
 
   // 사용자가 접근 가능한 도메인만 필터링
@@ -233,6 +233,17 @@ export default function HomePage({ userRole }: HomePageProps) {
   const [activeTab, setActiveTab] = useState<DomainCode>(
     filteredDomainTabs[0]?.key || 'SAFETY'
   );
+
+  // 현재 선택된 도메인에서의 역할 결정 (domainRoles 우선, 없으면 레거시 역할 사용)
+  const userRole = useMemo(() => {
+    const domainRole = user?.domainRoles?.find((dr) => dr.domainCode === activeTab);
+    if (domainRole) {
+      if (domainRole.roleCode === 'REVIEWER') return 'receiver';
+      if (domainRole.roleCode === 'APPROVER') return 'approver';
+      if (domainRole.roleCode === 'DRAFTER') return 'drafter';
+    }
+    return legacyUserRole;
+  }, [user?.domainRoles, activeTab, legacyUserRole]);
 
   // API calls based on user role
   const diagnosticsQuery = useDiagnosticsList(

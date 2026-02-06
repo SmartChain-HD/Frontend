@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
@@ -51,15 +51,23 @@ export default function DiagnosticsListPage() {
   const { validatedDomainCode: domainCode } = useDomainGuard();
   const { user } = useAuthStore();
 
-  // 역할 결정
-  const getUserRole = (): 'drafter' | 'approver' | 'reviewer' => {
+  // 현재 도메인에서의 역할 결정 (domainRoles 우선, 없으면 레거시 역할 사용)
+  const userRole = useMemo((): 'drafter' | 'approver' | 'reviewer' => {
+    // 도메인별 역할 확인
+    if (domainCode && user?.domainRoles) {
+      const domainRole = user.domainRoles.find((dr) => dr.domainCode === domainCode);
+      if (domainRole) {
+        if (domainRole.roleCode === 'REVIEWER') return 'reviewer';
+        if (domainRole.roleCode === 'APPROVER') return 'approver';
+        if (domainRole.roleCode === 'DRAFTER') return 'drafter';
+      }
+    }
+    // 레거시 전역 역할 확인
     if (!user?.role?.code) return 'drafter';
     if (user.role.code === 'APPROVER') return 'approver';
     if (user.role.code === 'REVIEWER') return 'reviewer';
     return 'drafter';
-  };
-
-  const userRole = getUserRole();
+  }, [domainCode, user?.domainRoles, user?.role?.code]);
 
   // 기안자용 상태
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');

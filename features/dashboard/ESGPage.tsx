@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviews } from '../../src/hooks/useReviews';
+import { useAuthStore } from '../../src/store/authStore';
 import type { DiagnosticStatus, ApprovalStatus, ReviewStatus } from '../../src/types/api.types';
 
 interface ESGPageProps {
@@ -57,8 +59,20 @@ function formatDate(dateString?: string): string {
   return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function ESGPage({ userRole }: ESGPageProps) {
+export default function ESGPage({ userRole: legacyUserRole }: ESGPageProps) {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  // ESG 도메인에서의 역할 결정 (domainRoles 우선, 없으면 레거시 역할 사용)
+  const userRole = useMemo(() => {
+    const domainRole = user?.domainRoles?.find((dr) => dr.domainCode === 'ESG');
+    if (domainRole) {
+      if (domainRole.roleCode === 'REVIEWER') return 'receiver';
+      if (domainRole.roleCode === 'APPROVER') return 'approver';
+      if (domainRole.roleCode === 'DRAFTER') return 'drafter';
+    }
+    return legacyUserRole;
+  }, [user?.domainRoles, legacyUserRole]);
 
   const diagnosticsQuery = useDiagnosticsList(
     userRole === 'drafter' ? { domainCode: 'ESG' } : undefined

@@ -17,6 +17,7 @@ export const useApprovals = (params?: ApprovalListParams) => {
   return useQuery({
     queryKey: QUERY_KEYS.APPROVALS.LIST(params),
     queryFn: () => approvalsApi.getApprovals(params),
+    enabled: !!params,
   });
 };
 

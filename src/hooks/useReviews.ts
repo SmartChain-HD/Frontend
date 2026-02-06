@@ -18,6 +18,7 @@ export const useReviews = (params?: ReviewListParams) => {
   return useQuery({
     queryKey: QUERY_KEYS.REVIEWS.LIST(params),
     queryFn: () => reviewsApi.getReviews(params),
+    enabled: !!params,
   });
 };
 

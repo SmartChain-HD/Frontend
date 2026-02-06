@@ -18,6 +18,7 @@ export const useDiagnosticsList = (params?: DiagnosticsListParams) => {
   return useQuery({
     queryKey: QUERY_KEYS.DIAGNOSTICS.LIST(params),
     queryFn: () => diagnosticsApi.getDiagnostics(params),
+    enabled: !!params,
   });
 };
 
