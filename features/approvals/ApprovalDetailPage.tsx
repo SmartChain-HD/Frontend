@@ -283,7 +283,7 @@ export default function ApprovalDetailPage() {
                 className={`px-[20px] py-[10px] rounded-[8px] font-title-small text-white transition-colors disabled:opacity-50 ${
                   showModal === 'APPROVED'
                     ? 'bg-[var(--color-primary-main)] hover:opacity-90'
-                    : 'bg-red-500 hover:bg-red-600'
+                    : 'bg-[#dc2626] hover:bg-[#b91c1c]'
                 }`}
               >
                 {processApprovalMutation.isPending || submitToReviewerMutation.isPending
