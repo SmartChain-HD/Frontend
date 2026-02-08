@@ -75,7 +75,8 @@ export const previewAiRun = async (
 ): Promise<RunPreviewResponse> => {
   const response = await apiClient.post<BaseResponse<RunPreviewResponse>>(
     `/v1/ai/run/diagnostics/${diagnosticId}/preview`,
-    { fileIds }
+    { fileIds },
+    { timeout: 35000 }
   );
   return response.data.data;
 };
