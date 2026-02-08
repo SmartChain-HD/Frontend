@@ -137,6 +137,7 @@
     color: var(--foreground);
     font-family: var(--font-family-medium);
     font-size: 1.6rem; /* 16px */
+    word-break: keep-all;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
