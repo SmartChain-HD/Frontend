@@ -84,7 +84,11 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401) {
+    const loginErrorCodes = ['A003', 'A005', 'A006'];
+    if (
+      error.response?.status === 401 &&
+      !loginErrorCodes.includes(error.response.data?.code ?? '')
+    ) {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
