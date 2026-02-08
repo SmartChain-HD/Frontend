@@ -38,8 +38,15 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   // Rate limit
   U010: { action: 'toast' },
 
+  // Validation
+  U001: { action: 'toast' },
+
+  // Resource
+  RES_004: { action: 'toast', customMessage: '요청한 파일을 찾을 수 없습니다.' },
+
   // Server
   S001: { action: 'toast', customMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+  S003: { action: 'toast', customMessage: '서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
 
   // Diagnostic
   D001: { action: 'redirect', redirectTo: '/not-found', customMessage: '기안을 찾을 수 없습니다.' },
@@ -54,6 +61,7 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   AI004: { action: 'toast', customMessage: '요청 형식 오류가 발생했습니다. 입력 데이터를 확인해주세요.' },
   AI005: { action: 'toast', customMessage: '필수 항목이 누락되었습니다. 모든 필수 항목을 제출해주세요.' },
   AI006: { action: 'toast', customMessage: '분석 시간이 초과되었습니다. 다시 시도해주세요.' },
+  AI007: { action: 'toast', customMessage: 'AI 분석 요청에 실패했습니다. 파일을 확인 후 다시 시도해주세요.' },
 };
 
 /**
