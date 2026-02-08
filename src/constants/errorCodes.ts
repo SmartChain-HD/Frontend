@@ -62,6 +62,8 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   AI005: { action: 'toast', customMessage: '필수 항목이 누락되었습니다. 모든 필수 항목을 제출해주세요.' },
   AI006: { action: 'toast', customMessage: '분석 시간이 초과되었습니다. 다시 시도해주세요.' },
   AI007: { action: 'toast', customMessage: 'AI 분석 요청에 실패했습니다. 파일을 확인 후 다시 시도해주세요.' },
+  AI009: { action: 'toast', customMessage: '파일 처리 중입니다. 잠시 후 다시 시도해주세요.' },
+  AI010: { action: 'toast', customMessage: '진단 기간을 먼저 설정해주세요.' },
 };
 
 /**
