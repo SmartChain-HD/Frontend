@@ -154,7 +154,7 @@ export default function PermissionManagementPage() {
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   placeholder="이름 또는 회사명으로 검색"
-                  className="w-full h-[48px] pl-[16px] pr-[48px] rounded-[12px] border border-[#dee2e6] text-[14px] focus:outline-none focus:border-[#003087]"
+                  className="w-full h-[48px] pl-[16px] pr-[48px] rounded-[12px] border border-[#dee2e6] font-body-small focus:outline-none focus:border-[#003087]"
                 />
                 <Search className="absolute right-[16px] top-[12px] w-[24px] h-[24px] text-[#adb5bd]" />
               </div>
@@ -168,7 +168,7 @@ export default function PermissionManagementPage() {
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                   className="w-full h-[48px] px-[16px] rounded-[12px] border border-[#dee2e6] flex items-center justify-between bg-white"
                 >
-                  <span className={`text-[14px] ${filterStatus ? 'text-[#212529]' : 'text-[#adb5bd]'}`}>
+                  <span className={`font-body-small ${filterStatus ? 'text-[#212529]' : 'text-[#adb5bd]'}`}>
                     {filterStatus ? STATUS_LABELS[filterStatus] : '전체'}
                   </span>
                   <ChevronDown className="w-5 h-5 text-[#868e96]" />
@@ -183,7 +183,7 @@ export default function PermissionManagementPage() {
                           setIsStatusDropdownOpen(false);
                           setPage(0);
                         }}
-                        className={`w-full px-[16px] py-[12px] text-left text-[14px] hover:bg-[#f8f9fa] ${
+                        className={`w-full px-[16px] py-[12px] text-left font-body-small hover:bg-[#f8f9fa] ${
                           (option.value === 'ALL' && !filterStatus) || option.value === filterStatus
                             ? 'bg-[#eff4fc] text-[#003087]'
                             : 'text-[#212529]'

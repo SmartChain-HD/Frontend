@@ -58,7 +58,7 @@ function formatDate(dateString: string): string {
 function StatusBadge({ status }: { status: RequestStatus }) {
   const config = STATUS_CONFIG[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${config.bgColor} ${config.textColor}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body-small ${config.bgColor} ${config.textColor}`}>
       {config.icon}
       {config.label}
     </span>

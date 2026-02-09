@@ -285,8 +285,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 >
                   <AlertCircle className="w-[24px] h-[24px] text-white" />
                 </div>
-                <p className="text-[13px] font-medium text-[#6b7280] mb-[4px]">위험등급</p>
-                <p className="text-[28px] font-bold" style={{ color: riskConfig.textColor }}>{riskConfig.label}</p>
+                <p className="font-body-small text-[#6b7280] mb-[4px]">위험등급</p>
+                <p className="font-heading-medium" style={{ color: riskConfig.textColor }}>{riskConfig.label}</p>
               </div>
             </div>
 
@@ -301,10 +301,10 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                   className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
                   style={{ backgroundColor: verdictConfig.iconBg, boxShadow: `0 8px 16px ${verdictConfig.iconBg}40` }}
                 >
-                  <span className="text-[20px] font-bold text-white">{verdictConfig.icon}</span>
+                  <span className="font-title-large text-white">{verdictConfig.icon}</span>
                 </div>
-                <p className="text-[13px] font-medium text-[#6b7280] mb-[4px]">AI 판정</p>
-                <p className="text-[28px] font-bold" style={{ color: verdictConfig.textColor }}>{verdictConfig.label}</p>
+                <p className="font-body-small text-[#6b7280] mb-[4px]">AI 판정</p>
+                <p className="font-heading-medium" style={{ color: verdictConfig.textColor }}>{verdictConfig.label}</p>
               </div>
             </div>
           </div>
@@ -382,13 +382,13 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                       >
                         <TimelineIcon status={item.newStatus} />
                       </span>
-                      <time className="inline-flex items-center px-[8px] py-[3px] mb-[6px] text-[11px] font-medium rounded-full"
+                      <time className="inline-flex items-center px-[8px] py-[3px] mb-[6px] font-label-xsmall rounded-full"
                         style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
                         {new Date(item.timestamp).toLocaleString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </time>
                       <h3 className="flex items-center gap-[6px] mt-[6px] mb-[2px]">
                         <span className="font-title-small text-[#212529]">{DIAGNOSTIC_STATUS_LABELS[item.newStatus]}</span>
-                        {isLatest && <span className="px-[6px] py-[1px] text-[10px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
+                        {isLatest && <span className="px-[6px] py-[1px] font-label-xsmall font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
                       </h3>
                       <p className="font-body-small text-[#868e96]">{item.performedBy.name}</p>
                       {item.comment && (
@@ -723,7 +723,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
     <div className="p-[20px] bg-[#f8f9fa] rounded-[12px]">
       <div className="flex items-center justify-between mb-[12px]">
         <span className="font-title-medium text-[#212529]">{displayName}</span>
-        <span className={`px-[12px] py-[6px] rounded-[6px] text-base font-semibold border ${VERDICT_STYLES[verdict]}`}>
+        <span className={`px-[12px] py-[6px] rounded-[6px] font-title-small border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>
@@ -731,7 +731,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.reasons && result.reasons.length > 0 && (
         <ul className="space-y-[8px] mt-[12px]">
           {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[8px] text-[17px] text-[#868e96]">
+            <li key={index} className="flex items-start gap-[8px] font-body-medium text-[#868e96]">
               <span className="w-[5px] h-[5px] bg-[#adb5bd] rounded-full mt-[10px] flex-shrink-0" />
               {REASON_LABELS[reason] || reason}
             </li>
@@ -742,7 +742,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.file_names && result.file_names.length > 0 && (
         <div className="mt-[12px] flex flex-wrap gap-[8px]">
           {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[12px] py-[6px] bg-white text-base text-[#495057] rounded-[6px] border border-[#dee2e6]">
+            <span key={index} className="px-[12px] py-[6px] bg-white font-body-medium text-[#495057] rounded-[6px] border border-[#dee2e6]">
               {fileName}
             </span>
           ))}

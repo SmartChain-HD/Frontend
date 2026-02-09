@@ -291,7 +291,7 @@ export default function DiagnosticDetailPage() {
                     </span>
 
                     {/* 날짜 뱃지 */}
-                    <time className="inline-flex items-center px-[10px] py-[4px] mb-[8px] text-[12px] font-medium rounded-full"
+                    <time className="inline-flex items-center px-[10px] py-[4px] mb-[8px] font-detail-small rounded-full"
                       style={{ backgroundColor: statusConfig.bgColor, color: statusConfig.textColor }}>
                       {new Date(item.timestamp).toLocaleString('ko-KR', {
                         year: 'numeric',
@@ -308,7 +308,7 @@ export default function DiagnosticDetailPage() {
                         {DIAGNOSTIC_STATUS_LABELS[item.newStatus]}
                       </span>
                       {isLatest && (
-                        <span className="px-[8px] py-[2px] text-[11px] font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">
+                        <span className="px-[8px] py-[2px] font-label-xsmall font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">
                           최신
                         </span>
                       )}
@@ -542,7 +542,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         <span className="font-title-medium text-[var(--color-text-primary)]">
           {displayName}
         </span>
-        <span className={`px-[12px] py-[6px] rounded-[6px] text-base font-semibold border ${VERDICT_STYLES[verdict]}`}>
+        <span className={`px-[12px] py-[6px] rounded-[6px] font-title-small border ${VERDICT_STYLES[verdict]}`}>
           {VERDICT_LABELS[verdict]}
         </span>
       </div>
@@ -550,7 +550,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.reasons && result.reasons.length > 0 && (
         <ul className="space-y-[8px] mt-[12px]">
           {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[8px] text-[17px] text-[var(--color-text-secondary)]">
+            <li key={index} className="flex items-start gap-[8px] font-body-medium text-[var(--color-text-secondary)]">
               <span className="w-[5px] h-[5px] bg-gray-400 rounded-full mt-[10px] flex-shrink-0" />
               {REASON_LABELS[reason] || reason}
             </li>
@@ -561,7 +561,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
       {result.file_names && result.file_names.length > 0 && (
         <div className="mt-[12px] flex flex-wrap gap-[8px]">
           {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[12px] py-[6px] bg-white text-base text-gray-700 rounded-[6px] border border-gray-200">
+            <span key={index} className="px-[12px] py-[6px] bg-white font-body-medium text-gray-700 rounded-[6px] border border-gray-200">
               {fileName}
             </span>
           ))}

@@ -139,7 +139,7 @@ function FileUploadItem({
               {statusLabel}
             </p>
             {autoTag && file.uploadStatus === 'complete' && (
-              <span className="px-[6px] py-[1px] bg-blue-100 text-blue-700 text-xs font-medium rounded">
+              <span className="px-[6px] py-[1px] bg-blue-100 text-blue-700 font-detail-small rounded">
                 Auto-tag: {autoTag}
               </span>
             )}
@@ -205,7 +205,7 @@ function FileUploadItem({
 
                 return (
                   <div key={step} className="flex items-center gap-[6px]">
-                    <div className={`w-[16px] h-[16px] rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    <div className={`w-[16px] h-[16px] rounded-full flex items-center justify-center font-label-xsmall font-bold ${
                       isComplete ? 'bg-green-500 text-white' :
                       isActive ? 'bg-amber-500 text-white' :
                       'bg-gray-200 text-gray-500'
@@ -362,7 +362,7 @@ function ParsingResultView({ diagnosticId, fileId }: { diagnosticId: number; fil
       <div className="flex items-center gap-[12px]">
         <div>
           <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">상태</p>
-          <span className={`px-[8px] py-[2px] rounded text-xs font-medium ${
+          <span className={`px-[8px] py-[2px] rounded font-detail-small ${
             parsingResult.parsingStatus === 'SUCCESS'
               ? 'bg-green-100 text-green-700'
               : 'bg-red-100 text-red-700'
@@ -827,7 +827,7 @@ export default function DiagnosticFilesPage() {
             {/* 가이드 */}
             <div className="bg-blue-50 rounded-[12px] p-[16px] flex gap-[12px]">
               <div className="w-[20px] h-[20px] rounded-full bg-[var(--color-primary-main)] flex items-center justify-center flex-shrink-0 mt-[2px]">
-                <span className="text-white text-xs font-bold">!</span>
+                <span className="text-white font-detail-small font-bold">!</span>
               </div>
               <div>
                 <p className="font-title-xsmall text-[var(--color-primary-main)] mb-[4px]">

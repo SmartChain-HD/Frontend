@@ -44,13 +44,13 @@ const getCompanyTypeLabel = (type: string) => {
 const getCompanyTypeBadge = (type: string) => {
   if (type === 'SUPPLIER') {
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#e3f2fd] text-[#1565c0]">
+      <span className="inline-flex items-center px-2 py-1 rounded-full font-detail-small bg-[#e3f2fd] text-[#1565c0]">
         공급업체
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#f3e5f5] text-[#7b1fa2]">
+    <span className="inline-flex items-center px-2 py-1 rounded-full font-detail-small bg-[#f3e5f5] text-[#7b1fa2]">
       협력업체
     </span>
   );
