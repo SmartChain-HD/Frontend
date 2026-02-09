@@ -8,6 +8,7 @@ import { useDiagnosticHistory } from '../../src/hooks/useDiagnostics';
 import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail } from '../../src/api/aiRun';
+import { REASON_LABELS } from '../../src/constants/reasonLabels';
 
 interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
@@ -702,18 +703,6 @@ const VERDICT_STYLES: Record<Verdict, string> = {
   NEED_FIX: 'bg-red-100 text-red-700 border-red-200',
 };
 
-const REASON_LABELS: Record<string, string> = {
-  MISSING_SLOT: '필수 슬롯 누락',
-  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
-  EMPTY_TABLE: '표/데이터 행이 비어있음',
-  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
-  WRONG_YEAR: '문서 대상 연도 불일치',
-  PARSE_FAILED: '파싱 실패',
-  DATE_MISMATCH: '기간 불일치',
-  UNIT_MISSING: '단위 누락',
-  EVIDENCE_MISSING: '근거문서 누락',
-  SIGNATURE_MISSING: '확인 서명란 미기재',
-};
 
 function SlotResultCard({ result }: { result: SlotResultDetail }) {
   const verdict = result.verdict as Verdict;

@@ -11,6 +11,7 @@ import type { AxiosError } from 'axios';
 import type { ErrorResponse } from '../../src/types/api.types';
 import type { AiAnalysisResultResponse, SlotResultDetail } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
+import { REASON_LABELS } from '../../src/constants/reasonLabels';
 
 const STATUS_LABELS: Record<ApprovalStatus, string> = {
   WAITING: '대기',
@@ -50,19 +51,6 @@ const RISK_STYLES: Record<RiskLevel, string> = {
   LOW: 'bg-[#dcfce7] text-[#15803d]',
   MEDIUM: 'bg-[#fef9c3] text-[#a16207]',
   HIGH: 'bg-[#fee2e2] text-[#dc2626]',
-};
-
-const REASON_LABELS: Record<string, string> = {
-  MISSING_SLOT: '필수 슬롯 누락',
-  HEADER_MISMATCH: '필수 헤더(컬럼) 누락',
-  EMPTY_TABLE: '표/데이터 행이 비어있음',
-  OCR_FAILED: 'OCR 판독 불가/텍스트 추출 실패',
-  WRONG_YEAR: '문서 대상 연도 불일치',
-  PARSE_FAILED: '파싱 실패',
-  DATE_MISMATCH: '기간 불일치',
-  UNIT_MISSING: '단위 누락',
-  EVIDENCE_MISSING: '근거문서 누락',
-  SIGNATURE_MISSING: '확인 서명란 미기재',
 };
 
 const DOMAIN_TO_LIST: Record<string, string> = {
