@@ -1007,6 +1007,19 @@ export default function DiagnosticFilesPage() {
             </div>
           </div>
         )}
+
+        {/* 하단 네비게이션 */}
+        <div className="flex justify-start">
+          <button
+            onClick={() => navigate(`/diagnostics/${diagnosticId}`)}
+            className="flex items-center gap-[4px] px-[24px] py-[12px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            기안 상세로 돌아가기
+          </button>
+        </div>
       </div>
 
       {/* 분석 실행 확인 모달 */}
