@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
-import type { ReviewStatus, DomainCode } from '../../src/types/api.types';
+import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
 import { DOMAIN_LABELS, REVIEW_STATUS_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -22,13 +22,28 @@ type StatusFilter = ReviewStatus | 'ALL';
 export default function ReviewsListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const urlStatus = searchParams.get('status');
+  const urlRiskLevel = searchParams.get('riskLevel');
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
+    if (urlStatus && ['REVIEWING', 'APPROVED', 'REVISION_REQUIRED'].includes(urlStatus)) {
+      return urlStatus as ReviewStatus;
+    }
+    return 'ALL';
+  });
+  const [riskLevelFilter, setRiskLevelFilter] = useState<RiskLevel | undefined>(() => {
+    if (urlRiskLevel && ['LOW', 'MEDIUM', 'HIGH'].includes(urlRiskLevel)) {
+      return urlRiskLevel as RiskLevel;
+    }
+    return undefined;
+  });
   const domainFilter = searchParams.get('domainCode') || '';
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const { data, isLoading, isError } = useReviews({
     status: statusFilter === 'ALL' ? undefined : statusFilter,
+    riskLevel: riskLevelFilter,
     domainCode: domainFilter || undefined,
     page,
     size: 10,
@@ -180,6 +195,19 @@ export default function ReviewsListPage() {
               </button>
             ))}
           </div>
+
+          {/* 위험등급 필터 (대시보드에서 진입 시) */}
+          {riskLevelFilter && (
+            <button
+              onClick={() => { setRiskLevelFilter(undefined); setPage(0); setSelectedIds([]); }}
+              className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-full font-title-xsmall bg-[#fef2f2] text-[#b91c1c] hover:bg-[#fee2e2] transition-colors"
+            >
+              위험등급: {{ HIGH: '고위험', MEDIUM: '중위험', LOW: '저위험' }[riskLevelFilter]}
+              <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* 액션 바 */}
