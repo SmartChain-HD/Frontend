@@ -334,29 +334,40 @@ export default function DiagnosticDetailPage() {
         )}
 
         {/* 액션 버튼 */}
-        <div className="flex justify-end gap-[12px]">
-          {canDelete && (
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-state-error-icon)] font-title-small text-[var(--color-state-error-icon)] hover:bg-[var(--color-state-error-bg)] transition-colors"
-            >
-              삭제
-            </button>
-          )}
+        <div className="flex justify-between items-center">
           <button
-            onClick={() => navigate(`/diagnostics/${diagnosticId}/files`)}
-            className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
+            onClick={() => navigate(diagnostic.domain?.code ? `/diagnostics?domainCode=${diagnostic.domain.code}` : '/diagnostics')}
+            className="flex items-center gap-[4px] px-[24px] py-[12px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
           >
-            파일 관리 및 AI 분석
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            목록으로
           </button>
-          {canSubmit && (
+          <div className="flex gap-[12px]">
+            {canDelete && (
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-state-error-icon)] font-title-small text-[var(--color-state-error-icon)] hover:bg-[var(--color-state-error-bg)] transition-colors"
+              >
+                삭제
+              </button>
+            )}
             <button
-              onClick={() => setShowSubmitModal(true)}
-              className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
+              onClick={() => navigate(`/diagnostics/${diagnosticId}/files`)}
+              className="px-[24px] py-[12px] rounded-[8px] border border-[var(--color-primary-main)] font-title-small text-[var(--color-primary-main)] hover:bg-blue-50 transition-colors"
             >
-              {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
+              파일 관리 및 AI 분석
             </button>
-          )}
+            {canSubmit && (
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
+              >
+                {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
