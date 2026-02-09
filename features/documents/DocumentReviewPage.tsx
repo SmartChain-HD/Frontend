@@ -121,6 +121,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showConfirmApproveModal, setShowConfirmApproveModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [categoryCommentE, setCategoryCommentE] = useState('');
   const [categoryCommentS, setCategoryCommentS] = useState('');
@@ -150,11 +151,16 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
     if (isESGDomain) {
       setShowApproveModal(true);
     } else {
-      submitReview.mutate(
-        { id: reviewId, data: { decision: 'APPROVED' } },
-        { onSuccess: () => navigate(listPath) }
-      );
+      setShowConfirmApproveModal(true);
     }
+  };
+
+  const handleConfirmApprove = () => {
+    setShowConfirmApproveModal(false);
+    submitReview.mutate(
+      { id: reviewId, data: { decision: 'APPROVED' } },
+      { onSuccess: () => navigate(listPath) }
+    );
   };
 
   const handleApproveWithComments = () => {
@@ -598,6 +604,35 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
               </button>
               <button
                 onClick={handleApproveWithComments}
+                disabled={isMutating}
+                className="px-[24px] py-[12px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
+              >
+                승인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Approve Modal (SAFETY/COMPLIANCE) */}
+      {showConfirmApproveModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-[20px] p-[32px] w-[480px] max-w-[90%]">
+            <h3 className="font-heading-small text-[#212529] mb-[16px]">
+              승인 확인
+            </h3>
+            <p className="font-body-medium text-[#495057] mb-[24px]">
+              이 문서를 승인하시겠습니까? 승인 후에는 되돌릴 수 없습니다.
+            </p>
+            <div className="flex gap-[12px] justify-end">
+              <button
+                onClick={() => setShowConfirmApproveModal(false)}
+                className="px-[24px] py-[12px] bg-[#e9ecef] text-[#495057] rounded-[8px] font-title-small hover:bg-[#dee2e6] transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleConfirmApprove}
                 disabled={isMutating}
                 className="px-[24px] py-[12px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
               >

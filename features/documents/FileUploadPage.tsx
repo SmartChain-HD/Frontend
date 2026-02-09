@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { useUploadFile, useDeleteFile } from '../../src/hooks/useFiles';
 import { useJobPolling } from '../../src/hooks/useJobs';
@@ -111,7 +112,7 @@ export default function FileUploadPage() {
           },
         ]);
       } catch {
-        // Error handled by mutation
+        toast.error(`"${file.name}" 업로드에 실패했습니다.`);
       }
     }
   };
@@ -121,7 +122,7 @@ export default function FileUploadPage() {
       await deleteMutation.mutateAsync(fileId);
       setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
     } catch {
-      // Error handled by mutation
+      toast.error('파일 삭제에 실패했습니다.');
     }
   };
 

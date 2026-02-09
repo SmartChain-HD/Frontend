@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useApprovalDetail, useProcessApproval, useSubmitToReviewer } from '../../src/hooks/useApprovals';
 import { useAiResult } from '../../src/hooks/useAiRun';
 import { useDiagnosticHistory } from '../../src/hooks/useDiagnostics';
@@ -125,11 +126,14 @@ export default function ApprovalDetailPage() {
     // 반려 시 코멘트 필수
     if (showModal === 'REJECTED' && !comment.trim()) return;
 
+    const decision = showModal;
+    const listPath = approval?.domainCode ? DOMAIN_TO_LIST[approval.domainCode] || '/dashboard' : '/dashboard';
+
     processApprovalMutation.mutate(
       {
         id: approvalId,
         data: {
-          decision: showModal,
+          decision,
           comment: comment || undefined,
         },
       },
@@ -138,13 +142,19 @@ export default function ApprovalDetailPage() {
           setShowModal(null);
           setComment('');
 
-          // 승인인 경우 자동으로 원청에 제출
-          if (showModal === 'APPROVED') {
+          if (decision === 'APPROVED') {
+            // 승인인 경우 자동으로 원청에 제출
             submitToReviewerMutation.mutate(approvalId, {
               onSuccess: () => {
-                navigate(approval?.domainCode ? DOMAIN_TO_LIST[approval.domainCode] || '/dashboard' : '/dashboard');
+                navigate(listPath);
+              },
+              onError: () => {
+                toast.error('승인은 완료되었으나 원청 제출에 실패했습니다. 다시 시도해주세요.');
               },
             });
+          } else {
+            // 반려인 경우 목록으로 이동
+            navigate(listPath);
           }
         },
       }

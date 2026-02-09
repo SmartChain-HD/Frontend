@@ -792,7 +792,7 @@ export default function DiagnosticFilesPage() {
           <div>
             <h1 className="font-heading-small text-[var(--color-text-primary)]">파일 업로드 및 관리</h1>
             <p className="font-body-medium text-[var(--color-text-tertiary)] mt-[8px]">
-              {diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode}
+              {diagnostic.title || diagnostic.summary || '제목 없음'}
             </p>
           </div>
           {uploadedFiles.length > 0 && (

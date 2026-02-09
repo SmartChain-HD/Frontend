@@ -242,7 +242,7 @@ export default function DiagnosticDetailPage() {
 
         {/* 제목 + 상태 */}
         <div className="flex items-start justify-between gap-[16px]">
-          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode}</h1>
+          <h1 className="font-heading-small text-[var(--color-text-primary)]">{diagnostic.title || diagnostic.summary || '제목 없음'}</h1>
           <span className={`shrink-0 inline-block px-[12px] py-[6px] rounded-full font-title-xsmall border ${STATUS_STYLES[diagnostic.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
             {diagnostic.statusLabel || DIAGNOSTIC_STATUS_LABELS[diagnostic.status] || diagnostic.status}
           </span>
@@ -252,7 +252,7 @@ export default function DiagnosticDetailPage() {
         <div className="bg-white rounded-[12px] border border-[var(--color-border-default)] p-[24px]">
           <h2 className="font-title-medium text-[var(--color-text-primary)] mb-[20px]">기안 정보</h2>
           <div className="grid grid-cols-2 gap-[20px]">
-            <InfoRow label="기안명" value={diagnostic.title || diagnostic.summary || diagnostic.diagnosticCode || '-'} />
+            <InfoRow label="기안명" value={diagnostic.title || diagnostic.summary || '-'} />
             <InfoRow label="도메인" value={diagnostic.domain?.name || DOMAIN_LABELS[diagnostic.domain?.code as DomainCode] || '-'} />
             <InfoRow label="회사명" value={diagnostic.company?.companyName || '-'} />
             <InfoRow label="기안자" value={diagnostic.createdBy?.maskedName || '-'} />
