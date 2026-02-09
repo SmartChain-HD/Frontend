@@ -200,7 +200,7 @@ export default function SignupStep2Page() {
                     {...register('name')}
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                    <p className="text-red-500 font-body-small mt-1">{errors.name.message}</p>
                   )}
                 </div>
 
@@ -225,16 +225,16 @@ export default function SignupStep2Page() {
                     </Button>
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                    <p className="text-red-500 font-body-small mt-1">{errors.email.message}</p>
                   )}
                   {emailAvailable === false && (
-                    <p className="text-red-500 text-sm mt-1">이미 사용 중인 이메일입니다.</p>
+                    <p className="text-red-500 font-body-small mt-1">이미 사용 중인 이메일입니다.</p>
                   )}
                   {emailAvailable === true && !emailVerified && (
-                    <p className="text-blue-600 text-sm mt-1">사용 가능한 이메일입니다. 인증코드를 확인해주세요.</p>
+                    <p className="text-blue-600 font-body-small mt-1">사용 가능한 이메일입니다. 인증코드를 확인해주세요.</p>
                   )}
                   {emailVerified && (
-                    <p className="text-green-600 text-sm mt-1">이메일 인증이 완료되었습니다.</p>
+                    <p className="text-green-600 font-body-small mt-1">이메일 인증이 완료되었습니다.</p>
                   )}
                 </div>
 
@@ -253,7 +253,7 @@ export default function SignupStep2Page() {
                           maxLength={6}
                         />
                         {remainingSeconds > 0 && (
-                          <span className="absolute right-4 top-[42px] text-sm text-red-500 font-medium">
+                          <span className="absolute right-4 top-[42px] font-body-small text-red-500">
                             {formatTime(remainingSeconds)}
                           </span>
                         )}
@@ -269,7 +269,7 @@ export default function SignupStep2Page() {
                       </Button>
                     </div>
                     {remainingSeconds <= 0 && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 font-body-small mt-1">
                         인증코드가 만료되었습니다.
                         <button
                           type="button"
@@ -293,7 +293,7 @@ export default function SignupStep2Page() {
                     {...register('password')}
                   />
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                    <p className="text-red-500 font-body-small mt-1">{errors.password.message}</p>
                   )}
                 </div>
 
@@ -307,7 +307,7 @@ export default function SignupStep2Page() {
                     {...register('passwordConfirm')}
                   />
                   {errors.passwordConfirm && (
-                    <p className="text-red-500 text-sm mt-1">{errors.passwordConfirm.message}</p>
+                    <p className="text-red-500 font-body-small mt-1">{errors.passwordConfirm.message}</p>
                   )}
                 </div>
 

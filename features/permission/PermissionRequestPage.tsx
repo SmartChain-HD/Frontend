@@ -259,7 +259,7 @@ export default function PermissionRequestPage() {
                     <Button
                         variant="primary"
                         size="large"
-                        className="w-full h-[64px] rounded-[20px] text-[18px] bg-[#003087]"
+                        className="w-full h-[64px] rounded-[20px] font-title-medium bg-[#003087]"
                         onClick={handleSubmit}
                         disabled={createRequest.isPending || !!pageData?.pendingRequest || !selectedRole || !selectedDomain || !selectedCompanyId}
                     >

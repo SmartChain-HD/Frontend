@@ -90,14 +90,14 @@ export default function UserManagementPage() {
   const getStatusBadge = (status: string) => {
     if (status === 'ACTIVE') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#e8f5e9] text-[#2e7d32]">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-detail-small bg-[#e8f5e9] text-[#2e7d32]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2e7d32]" />
           활성
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#f5f5f5] text-[#757575]">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full font-detail-small bg-[#f5f5f5] text-[#757575]">
         <span className="w-1.5 h-1.5 rounded-full bg-[#757575]" />
         비활성
       </span>

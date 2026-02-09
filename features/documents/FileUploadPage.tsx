@@ -278,7 +278,7 @@ export default function FileUploadPage() {
                             {file.name}
                           </p>
                           <div className="flex items-center gap-[8px]">
-                            <span className={`inline-block px-[8px] py-[2px] rounded-full text-xs font-medium ${JOB_STATUS_STYLES[file.status]}`}>
+                            <span className={`inline-block px-[8px] py-[2px] rounded-full font-detail-small ${JOB_STATUS_STYLES[file.status]}`}>
                               {JOB_STATUS_LABELS[file.status]}
                             </span>
                             {file.status === 'RUNNING' && file.progress !== undefined && (

@@ -250,7 +250,7 @@ export default function ActivityLogPage() {
                     {log.userName}
                   </td>
                   <td className="px-[16px] py-[14px]">
-                    <span className={`inline-block px-[8px] py-[4px] rounded text-xs font-medium ${
+                    <span className={`inline-block px-[8px] py-[4px] rounded font-detail-small ${
                       ACTION_TYPE_STYLES[log.actionType] || 'bg-gray-100 text-gray-700'
                     }`}>
                       {log.action}

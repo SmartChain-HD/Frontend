@@ -352,7 +352,7 @@ export default function AiAnalysisPage() {
               {chatSend.isPending && (
                 <div className="flex items-start gap-[8px]">
                   <div className="w-[28px] h-[28px] rounded-full bg-[#003087] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">AI</span>
+                    <span className="text-white font-detail-small font-bold">AI</span>
                   </div>
                   <div className="bg-[#f1f3f5] rounded-[12px] px-[14px] py-[10px]">
                     <div className="flex gap-[4px]">
@@ -480,11 +480,11 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
       {/* Avatar */}
       {isUser ? (
         <div className="w-[28px] h-[28px] rounded-full bg-[#495057] flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-xs font-bold">U</span>
+          <span className="text-white font-detail-small font-bold">U</span>
         </div>
       ) : (
         <div className="w-[28px] h-[28px] rounded-full bg-[#003087] flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-xs font-bold">AI</span>
+          <span className="text-white font-detail-small font-bold">AI</span>
         </div>
       )}
 
@@ -493,7 +493,7 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
         {/* Attached file indicator */}
         {message.attachedFileName && (
           <div className="flex items-center gap-[4px] mb-[4px]">
-            <span className="inline-flex items-center gap-[4px] px-[8px] py-[2px] bg-[#e7f5ff] text-[#1971c2] rounded font-body-small text-xs">
+            <span className="inline-flex items-center gap-[4px] px-[8px] py-[2px] bg-[#e7f5ff] text-[#1971c2] rounded font-detail-small">
               <FileText className="w-[10px] h-[10px]" />
               {message.attachedFileName}
             </span>
@@ -514,7 +514,7 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
         {message.confidence && (
           <div className="mt-[4px]">
             <span
-              className={`inline-block px-[8px] py-[2px] rounded border text-xs font-medium ${
+              className={`inline-block px-[8px] py-[2px] rounded border font-detail-small ${
                 confidenceColors[message.confidence]
               }`}
             >
@@ -553,13 +553,13 @@ function SourceCard({ source }: { source: SourceItem }) {
   return (
     <div className="bg-white border border-[#dee2e6] rounded-[8px] p-[10px]">
       <div className="flex items-center justify-between mb-[4px]">
-        <span className="font-title-small text-[#212529] text-xs">{source.title}</span>
-        <span className="text-xs text-[#868e96]">{scorePercent}%</span>
+        <span className="font-title-xsmall text-[#212529]">{source.title}</span>
+        <span className="font-detail-small text-[#868e96]">{scorePercent}%</span>
       </div>
       {source.snippet && (
-        <p className="font-body-small text-[#495057] text-xs line-clamp-2">{source.snippet}</p>
+        <p className="font-body-small text-[#495057] line-clamp-2">{source.snippet}</p>
       )}
-      <div className="flex items-center gap-[8px] mt-[4px] text-xs text-[#868e96]">
+      <div className="flex items-center gap-[8px] mt-[4px] font-detail-small text-[#868e96]">
         <span>{source.type}</span>
         {source.loc.page && <span>p.{source.loc.page}</span>}
       </div>
