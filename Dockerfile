@@ -17,6 +17,9 @@ WORKDIR /usr/share/nginx/html
 # Vite의 기본 빌드 폴더명은 'dist'입니다.
 COPY --from=build-stage /app/dist .
 
+# Nginx 설정 파일 복사 (API 리버스 프록시 + SPA fallback)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Nginx의 기본 80포트 노출
 EXPOSE 80
 
