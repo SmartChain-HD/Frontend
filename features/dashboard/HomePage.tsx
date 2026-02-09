@@ -508,12 +508,12 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
 
     const basePath = `/diagnostics?domainCode=${activeTab}`;
     return [
-      { label: '작성중', value: String(statusCounts['WRITING'] || 0), color: 'text-[#495057]', path: basePath },
-      { label: '제출됨', value: String(statusCounts['SUBMITTED'] || 0), color: 'text-[#002554]', path: basePath },
-      { label: '반려됨', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#b91c1c]', path: basePath },
-      { label: '승인됨', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: basePath },
-      { label: '심사중', value: String(statusCounts['REVIEWING'] || 0), color: 'text-[#e65100]', path: basePath },
-      { label: '완료', value: String(statusCounts['COMPLETED'] || 0), color: 'text-[#008233]', path: basePath },
+      { label: '작성중', value: String(statusCounts['WRITING'] || 0), color: 'text-[#495057]', path: `${basePath}&status=WRITING` },
+      { label: '제출됨', value: String(statusCounts['SUBMITTED'] || 0), color: 'text-[#002554]', path: `${basePath}&status=SUBMITTED` },
+      { label: '반려됨', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#b91c1c]', path: `${basePath}&status=RETURNED` },
+      { label: '승인됨', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
+      { label: '심사중', value: String(statusCounts['REVIEWING'] || 0), color: 'text-[#e65100]', path: `${basePath}&status=REVIEWING` },
+      { label: '완료', value: String(statusCounts['COMPLETED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=COMPLETED` },
     ];
   }, [diagnosticsQuery.data, activeTab]);
 
@@ -527,9 +527,9 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
 
     const basePath = `/diagnostics?domainCode=${activeTab}`;
     return [
-      { label: '대기중', value: String(statusCounts['WAITING'] || 0), color: 'text-[#e65100]', path: basePath },
-      { label: '승인', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: basePath },
-      { label: '반려', value: String(statusCounts['REJECTED'] || 0), color: 'text-[#b91c1c]', path: basePath },
+      { label: '대기중', value: String(statusCounts['WAITING'] || 0), color: 'text-[#e65100]', path: `${basePath}&status=WAITING` },
+      { label: '승인', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
+      { label: '반려', value: String(statusCounts['REJECTED'] || 0), color: 'text-[#b91c1c]', path: `${basePath}&status=REJECTED` },
     ];
   }, [approvalsQuery.data, activeTab]);
 
@@ -541,12 +541,12 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
     const basePath = `/reviews?domainCode=${activeTab}`;
     return [
       { label: '전체 협력사', value: String(summary.totalCompanies || 0), color: 'text-[#212529]' },
-      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]', path: basePath },
-      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]', path: basePath },
+      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
+      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]', path: `${basePath}&status=REVIEWING` },
       { label: '대기', value: String(summary.pendingCount || 0), color: 'text-[#495057]', path: basePath },
-      { label: '고위험', value: String(summary.highRiskCount || 0), color: 'text-[#b91c1c]' },
-      { label: '중위험', value: String(summary.mediumRiskCount || 0), color: 'text-[#e65100]' },
-      { label: '저위험', value: String(summary.lowRiskCount || 0), color: 'text-[#008233]' },
+      { label: '고위험', value: String(summary.highRiskCount || 0), color: 'text-[#b91c1c]', path: `${basePath}&riskLevel=HIGH` },
+      { label: '중위험', value: String(summary.mediumRiskCount || 0), color: 'text-[#e65100]', path: `${basePath}&riskLevel=MEDIUM` },
+      { label: '저위험', value: String(summary.lowRiskCount || 0), color: 'text-[#008233]', path: `${basePath}&riskLevel=LOW` },
     ];
   }, [reviewsListQuery.data?.summary, activeTab]);
 

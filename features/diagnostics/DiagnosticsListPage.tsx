@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDiagnosticsList } from '../../src/hooks/useDiagnostics';
 import { useApprovals } from '../../src/hooks/useApprovals';
 import { useReviews } from '../../src/hooks/useReviews';
@@ -69,17 +69,36 @@ export default function DiagnosticsListPage() {
     return 'drafter';
   }, [domainCode, user?.domainRoles, user?.role?.code]);
 
+  // URL 파라미터에서 초기 필터 값 읽기
+  const [searchParams] = useSearchParams();
+  const urlStatus = searchParams.get('status');
+
   // 기안자용 상태
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
+    if (urlStatus && ['WRITING', 'SUBMITTED', 'RETURNED', 'APPROVED', 'REVIEWING', 'COMPLETED'].includes(urlStatus)) {
+      return urlStatus as DiagnosticStatus;
+    }
+    return 'ALL';
+  });
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(0);
 
   // 결재자용 상태
-  const [approvalStatusFilter, setApprovalStatusFilter] = useState<ApprovalStatusFilter>('ALL');
+  const [approvalStatusFilter, setApprovalStatusFilter] = useState<ApprovalStatusFilter>(() => {
+    if (urlStatus && ['WAITING', 'APPROVED', 'REJECTED'].includes(urlStatus)) {
+      return urlStatus as ApprovalStatus;
+    }
+    return 'ALL';
+  });
 
   // 수신자용 상태
-  const [reviewStatusFilter, setReviewStatusFilter] = useState<ReviewStatusFilter>('ALL');
+  const [reviewStatusFilter, setReviewStatusFilter] = useState<ReviewStatusFilter>(() => {
+    if (urlStatus && ['REVIEWING', 'APPROVED', 'REVISION_REQUIRED'].includes(urlStatus)) {
+      return urlStatus as ReviewStatus;
+    }
+    return 'ALL';
+  });
 
   // 데이터 조회
   const diagnosticsQuery = useDiagnosticsList(
