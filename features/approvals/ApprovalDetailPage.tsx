@@ -287,22 +287,33 @@ export default function ApprovalDetailPage() {
         )}
 
         {/* 액션 버튼 */}
-        {isWaiting && (
-          <div className="flex gap-[12px] justify-end">
-            <button
-              onClick={() => setShowModal('REJECTED')}
-              className="px-[24px] py-[12px] rounded-[8px] border border-red-300 text-red-600 font-title-small hover:bg-red-50 transition-colors"
-            >
-              반려
-            </button>
-            <button
-              onClick={() => setShowModal('APPROVED')}
-              className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
-            >
-              원청에 제출
-            </button>
-          </div>
-        )}
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => navigate(approval.domainCode ? DOMAIN_TO_LIST[approval.domainCode] || '/dashboard' : '/dashboard')}
+            className="flex items-center gap-[4px] px-[24px] py-[12px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            목록으로
+          </button>
+          {isWaiting && (
+            <div className="flex gap-[12px]">
+              <button
+                onClick={() => setShowModal('REJECTED')}
+                className="px-[24px] py-[12px] rounded-[8px] border border-red-300 text-red-600 font-title-small hover:bg-red-50 transition-colors"
+              >
+                반려
+              </button>
+              <button
+                onClick={() => setShowModal('APPROVED')}
+                className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
+              >
+                원청에 제출
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 승인/반려 모달 */}
