@@ -48,6 +48,9 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   S001: { action: 'toast', customMessage: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
   S003: { action: 'toast', customMessage: '서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
 
+  // File
+  S002: { action: 'toast', customMessage: '파일 업로드에 실패했습니다. 파일 형식 또는 크기를 확인해주세요.' },
+
   // Diagnostic
   D001: { action: 'redirect', redirectTo: '/not-found', customMessage: '기안을 찾을 수 없습니다.' },
 
