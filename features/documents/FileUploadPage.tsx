@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
+import { useDiagnosticDetail } from '../../src/hooks/useDiagnostics';
 import { useUploadFile, useDeleteFile } from '../../src/hooks/useFiles';
 import { useJobPolling } from '../../src/hooks/useJobs';
 import type { JobStatus } from '../../src/api/jobs';
@@ -42,6 +43,9 @@ export default function FileUploadPage() {
   const [searchParams] = useSearchParams();
   const diagnosticId = searchParams.get('diagnosticId');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: diagnostic } = useDiagnosticDetail(Number(diagnosticId) || 0);
+  const canUpload = diagnostic?.status === 'WRITING' || diagnostic?.status === 'RETURNED';
 
   const uploadMutation = useUploadFile();
   const deleteMutation = useDeleteFile();
@@ -93,6 +97,10 @@ export default function FileUploadPage() {
   const handleFilesUpload = async (files: File[]) => {
     if (!diagnosticId) {
       alert('기안 정보가 없습니다. 다시 시도해주세요.');
+      return;
+    }
+    if (!canUpload) {
+      toast.error('현재 상태에서는 파일을 업로드할 수 없습니다.');
       return;
     }
 
@@ -205,27 +213,41 @@ export default function FileUploadPage() {
               />
 
               {/* Drag & Drop Area */}
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={handleClickUploadArea}
-                className={`border-2 border-dashed rounded-[12px] p-[48px] text-center mb-[32px] transition-all cursor-pointer ${
-                  isDragging
-                    ? 'border-[#003087] bg-[#e3f2fd]'
-                    : 'border-[#dee2e6] hover:border-[#adb5bd] hover:bg-[#f8f9fa]'
-                }`}
-              >
-                <div className="flex flex-col items-center">
-                  <Upload className="w-[48px] h-[48px] text-[#adb5bd] mb-[16px]" />
-                  <p className="font-title-medium text-[#212529] mb-[8px]">
-                    여기에 파일을 놓거나 클릭하여 업로드
-                  </p>
-                  <p className="font-body-small text-[#868e96]">
-                    PDF, JPG, PNG, XLSX, DOC 파일을 업로드할 수 있습니다 (최대 50MB)
-                  </p>
+              {canUpload ? (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={handleClickUploadArea}
+                  className={`border-2 border-dashed rounded-[12px] p-[48px] text-center mb-[32px] transition-all cursor-pointer ${
+                    isDragging
+                      ? 'border-[#003087] bg-[#e3f2fd]'
+                      : 'border-[#dee2e6] hover:border-[#adb5bd] hover:bg-[#f8f9fa]'
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="w-[48px] h-[48px] text-[#adb5bd] mb-[16px]" />
+                    <p className="font-title-medium text-[#212529] mb-[8px]">
+                      여기에 파일을 놓거나 클릭하여 업로드
+                    </p>
+                    <p className="font-body-small text-[#868e96]">
+                      PDF, JPG, PNG, XLSX, DOC 파일을 업로드할 수 있습니다 (최대 50MB)
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="border-2 border-dashed rounded-[12px] p-[48px] text-center mb-[32px] border-[#dee2e6] bg-[#f8f9fa]">
+                  <div className="flex flex-col items-center">
+                    <Upload className="w-[48px] h-[48px] text-[#dee2e6] mb-[16px]" />
+                    <p className="font-title-medium text-[#868e96] mb-[8px]">
+                      현재 상태에서는 파일을 업로드할 수 없습니다
+                    </p>
+                    <p className="font-body-small text-[#868e96]">
+                      작성중 또는 반려됨 상태에서만 파일 업로드가 가능합니다
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Upload Progress */}
               {uploadMutation.isPending && (
@@ -301,7 +323,8 @@ export default function FileUploadPage() {
               <div className="flex gap-[12px]">
                 <button
                   onClick={handleClickUploadArea}
-                  className="flex-1 bg-[#003087] text-white px-[24px] py-[14px] rounded-[8px] font-title-small hover:bg-[#002554] transition-colors flex items-center justify-center gap-[8px]"
+                  disabled={!canUpload}
+                  className="flex-1 bg-[#003087] text-white px-[24px] py-[14px] rounded-[8px] font-title-small hover:bg-[#002554] transition-colors flex items-center justify-center gap-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Upload className="w-[20px] h-[20px]" />
                   파일 추가
