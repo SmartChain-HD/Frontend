@@ -508,12 +508,15 @@ export default function DiagnosticFilesPage() {
     );
   }, [requiredSlotStatus]);
 
-  // 페이지 로드 시 초기 preview 호출 (필수 슬롯 목록용)
+  // 기존 파일 로드 완료 시 preview 호출 (파일 ID 포함)
   useEffect(() => {
-    if (diagnosticId > 0) {
-      callPreview([]);
+    if (diagnosticId > 0 && existingFiles) {
+      const completedIds = existingFiles
+        .filter(f => f.parsingStatus === 'SUCCESS')
+        .map(f => f.fileId);
+      callPreview(completedIds);
     }
-  }, [diagnosticId]);
+  }, [diagnosticId, existingFiles]);
 
   // 분석 완료 감지 → 기안 상세 페이지로 리다이렉트
   useEffect(() => {
@@ -609,6 +612,10 @@ export default function DiagnosticFilesPage() {
   };
 
   const handleFilesUpload = async (files: File[]) => {
+    if (!canUpload) {
+      toast.error('현재 상태에서는 파일을 업로드할 수 없습니다.');
+      return;
+    }
     for (const file of files) {
       // 중복 파일 체크: 기존 파일 및 업로드 중인 파일과 이름 비교
       const existingFileNames = (existingFiles || []).map(f => f.fileName);
@@ -769,6 +776,7 @@ export default function DiagnosticFilesPage() {
     );
   }
 
+  const canUpload = diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED';
   const completedCount = completedFileIds.length;
   const processingCount = uploadedFiles.filter(f => f.uploadStatus === 'uploading' || f.uploadStatus === 'processing').length;
   const errorCount = uploadedFiles.filter(f => f.uploadStatus === 'error').length;
@@ -832,35 +840,49 @@ export default function DiagnosticFilesPage() {
             </div>
 
             {/* 드래그 앤 드롭 영역 */}
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-[12px] p-[48px] text-center cursor-pointer transition-all ${
-                isDragging
-                  ? 'border-[var(--color-primary-main)] bg-blue-50'
-                  : 'border-[var(--color-border-default)] hover:border-[var(--color-primary-light)] hover:bg-gray-50'
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <svg className="w-[48px] h-[48px] mx-auto mb-[16px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <p className="font-title-medium text-[var(--color-text-primary)] mb-[8px]">
-                파일을 드래그하거나 클릭하여 업로드
-              </p>
-              <p className="font-body-small text-[var(--color-text-tertiary)]">
-                PDF, JPG, PNG, XLSX, DOC 파일 지원 (최대 50MB)
-              </p>
-            </div>
+            {canUpload ? (
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-[12px] p-[48px] text-center cursor-pointer transition-all ${
+                  isDragging
+                    ? 'border-[var(--color-primary-main)] bg-blue-50'
+                    : 'border-[var(--color-border-default)] hover:border-[var(--color-primary-light)] hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <svg className="w-[48px] h-[48px] mx-auto mb-[16px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="font-title-medium text-[var(--color-text-primary)] mb-[8px]">
+                  파일을 드래그하거나 클릭하여 업로드
+                </p>
+                <p className="font-body-small text-[var(--color-text-tertiary)]">
+                  PDF, JPG, PNG, XLSX, DOC 파일 지원 (최대 50MB)
+                </p>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed rounded-[12px] p-[48px] text-center border-gray-200 bg-gray-50">
+                <svg className="w-[48px] h-[48px] mx-auto mb-[16px] text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="font-title-medium text-gray-400 mb-[8px]">
+                  현재 상태에서는 파일을 업로드할 수 없습니다
+                </p>
+                <p className="font-body-small text-gray-400">
+                  작성중 또는 반려됨 상태에서만 파일 업로드가 가능합니다
+                </p>
+              </div>
+            )}
 
             {/* 업로드된 파일 목록 */}
             {uploadedFiles.length > 0 && (
