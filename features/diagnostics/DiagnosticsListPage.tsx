@@ -74,8 +74,12 @@ export default function DiagnosticsListPage() {
   const urlStatus = searchParams.get('status');
 
   // 기안자용 상태
+  const validDrafterStatuses = domainCode === 'ESG'
+    ? ['WRITING', 'SUBMITTED', 'REVIEWING', 'APPROVED', 'RETURNED']
+    : ['WRITING', 'REVIEWING', 'APPROVED', 'RETURNED'];
+
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
-    if (urlStatus && ['WRITING', 'SUBMITTED', 'RETURNED', 'APPROVED', 'REVIEWING', 'COMPLETED'].includes(urlStatus)) {
+    if (urlStatus && validDrafterStatuses.includes(urlStatus)) {
       return urlStatus as DiagnosticStatus;
     }
     return 'ALL';
@@ -152,15 +156,26 @@ export default function DiagnosticsListPage() {
     return '기안 관리';
   };
 
-  const statusTabs: { key: StatusFilter; label: string }[] = [
-    { key: 'ALL', label: '전체' },
-    { key: 'WRITING', label: '작성중' },
-    { key: 'SUBMITTED', label: '제출됨' },
-    { key: 'RETURNED', label: '반려됨' },
-    { key: 'APPROVED', label: '승인됨' },
-    { key: 'REVIEWING', label: '심사중' },
-    { key: 'COMPLETED', label: '완료' },
-  ];
+  const statusTabs: { key: StatusFilter; label: string }[] = useMemo(() => {
+    if (domainCode === 'ESG') {
+      return [
+        { key: 'ALL', label: '전체' },
+        { key: 'WRITING', label: '작성중' },
+        { key: 'SUBMITTED', label: '검토중' },
+        { key: 'REVIEWING', label: '심사중' },
+        { key: 'APPROVED', label: '승인됨' },
+        { key: 'RETURNED', label: '반려됨' },
+      ];
+    }
+    // SAFETY, COMPLIANCE
+    return [
+      { key: 'ALL', label: '전체' },
+      { key: 'WRITING', label: '작성중' },
+      { key: 'REVIEWING', label: '심사중' },
+      { key: 'APPROVED', label: '승인됨' },
+      { key: 'RETURNED', label: '반려됨' },
+    ];
+  }, [domainCode]);
 
   const approvalStatusTabs: { key: ApprovalStatusFilter; label: string }[] = [
     { key: 'ALL', label: '전체' },
