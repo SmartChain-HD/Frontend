@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { AlertCircle, ArrowLeft, X, FileText, Download, Bot } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
@@ -9,6 +10,8 @@ import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail } from '../../src/api/aiRun';
 import { REASON_LABELS } from '../../src/constants/reasonLabels';
+import { getDownloadUrl, fetchFileBlob } from '../../src/api/files';
+import type { DownloadUrlResponse } from '../../src/api/files';
 
 interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
@@ -123,6 +126,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showConfirmApproveModal, setShowConfirmApproveModal] = useState(false);
+  const [viewerFile, setViewerFile] = useState<{ fileId: number; fileName: string; personCount?: string } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [categoryCommentE, setCategoryCommentE] = useState('');
   const [categoryCommentS, setCategoryCommentS] = useState('');
@@ -239,6 +243,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const isMutating = submitReview.isPending;
 
   return (
+    <>
     <DashboardLayout>
       <div className="p-[32px]">
         <div className="max-w-[1468px] mx-auto">
@@ -327,10 +332,6 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 <p className="font-title-small text-[#212529]">{review.domainName || DOMAIN_LABELS[review.domainCode as DomainCode] || review.domainCode}</p>
               </div>
               <div>
-                <p className="font-body-small text-[#868e96] mb-[4px]">점수</p>
-                <p className="font-title-small text-[#212529]">{review.score !== null ? `${review.score}점` : '-'}</p>
-              </div>
-              <div>
                 <p className="font-body-small text-[#868e96] mb-[4px]">상태</p>
                 <p className="font-title-small text-[#212529]">{review.statusLabel || review.status}</p>
               </div>
@@ -352,7 +353,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                   <p className="font-body-small text-[#868e96] mb-[12px]">슬롯별 분석 결과</p>
                   <div className="space-y-[12px]">
                     {aiResult.details.slot_results.map((slotResult: SlotResultDetail, index: number) => (
-                      <SlotResultCard key={index} result={slotResult} />
+                      <SlotResultCard key={index} result={slotResult} onFileClick={(fid, fname, pc) => setViewerFile({ fileId: fid, fileName: fname, personCount: pc })} />
                     ))}
                   </div>
                 </div>
@@ -684,6 +685,12 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
         </div>
       )}
     </DashboardLayout>
+
+    {/* 파일 뷰어 모달 */}
+    {viewerFile && (
+      <FileViewerModal fileId={viewerFile.fileId} fileName={viewerFile.fileName} personCount={viewerFile.personCount} onClose={() => setViewerFile(null)} />
+    )}
+    </>
   );
 }
 
@@ -710,8 +717,115 @@ const VERDICT_BADGE: Record<Verdict, React.CSSProperties> = {
   NEED_FIX: { backgroundColor: '#ef4444', color: '#fff' },
 };
 
+// 파일 유형 판별 헬퍼
+function getFileExt(name: string) { return name.split('.').pop()?.toLowerCase() || ''; }
+function isPdf(name: string) { return getFileExt(name) === 'pdf'; }
+function isImage(name: string) { return ['png','jpg','jpeg','gif','webp','bmp','svg'].includes(getFileExt(name)); }
+function isSpreadsheet(name: string) { return ['xlsx','xls','csv'].includes(getFileExt(name)); }
 
-function SlotResultCard({ result }: { result: SlotResultDetail }) {
+// 파일 뷰어 모달
+function FileViewerModal({ fileId, fileName, personCount, onClose }: { fileId: number; fileName: string; personCount?: string; onClose: () => void }) {
+  const [loading, setLoading] = useState(true);
+  const [fileDownload, setFileDownload] = useState<DownloadUrlResponse | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [sheetHtml, setSheetHtml] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+
+    getDownloadUrl(fileId)
+      .then(async (data) => {
+        if (cancelled) return;
+        setFileDownload(data);
+        if (isSpreadsheet(data.fileName)) {
+          const url = await fetchFileBlob(data.downloadUrl);
+          if (cancelled) { URL.revokeObjectURL(url); return; }
+          setBlobUrl(url);
+          const resp = await fetch(url);
+          const buf = await resp.arrayBuffer();
+          const wb = XLSX.read(buf, { type: 'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const html = XLSX.utils.sheet_to_html(ws, { editable: false });
+          if (!cancelled) setSheetHtml(html);
+        } else {
+          const url = await fetchFileBlob(data.downloadUrl);
+          if (cancelled) { URL.revokeObjectURL(url); return; }
+          setBlobUrl(url);
+        }
+      })
+      .catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => {
+      cancelled = true;
+      setBlobUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
+    };
+  }, [fileId]);
+
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  }, [onClose]);
+
+  const name = fileDownload?.fileName || fileName;
+  const viewUrl = blobUrl || fileDownload?.downloadUrl || '';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleBackdropClick}>
+      <div className="bg-white rounded-[16px] w-[90vw] h-[85vh] max-w-[1200px] flex flex-col overflow-hidden shadow-xl">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-[20px] py-[14px] border-b border-[#dee2e6]">
+          <span className="font-title-medium text-[#212529] truncate">{fileName}</span>
+          <button onClick={onClose} className="p-[6px] rounded-[8px] hover:bg-gray-100 transition-colors">
+            <X className="w-[20px] h-[20px] text-[#868e96]" />
+          </button>
+        </div>
+        {/* 본문 */}
+        <div className="flex-1 overflow-auto flex items-center justify-center">
+          {loading ? (
+            <div className="flex flex-col items-center gap-[12px] text-[#868e96]">
+              <div className="w-[32px] h-[32px] border-[3px] border-gray-300 border-t-[#003087] rounded-full animate-spin" />
+              <span className="font-body-medium">파일 불러오는 중...</span>
+            </div>
+          ) : error || !fileDownload ? (
+            <div className="flex flex-col items-center gap-[12px] text-[#868e96]">
+              <AlertCircle className="w-[48px] h-[48px]" />
+              <span className="font-body-medium">파일을 불러올 수 없습니다.</span>
+            </div>
+          ) : isPdf(name) ? (
+            <iframe src={viewUrl} className="w-full h-full border-none" title={name} />
+          ) : isImage(name) ? (
+            <div className="p-[24px] flex flex-col items-center justify-center w-full h-full">
+              <img src={viewUrl} alt={name} className="max-w-full max-h-[calc(100%-48px)] object-contain rounded-[8px]" />
+              {personCount && (
+                <div className="mt-[12px] px-[16px] py-[8px] bg-[#f1f3f5] rounded-[8px]">
+                  <span className="font-body-small text-[#495057]">감지 인원 수: </span>
+                  <span className="font-title-small text-[#212529]">{personCount}명</span>
+                </div>
+              )}
+            </div>
+          ) : isSpreadsheet(name) && sheetHtml ? (
+            <div className="w-full h-full overflow-auto bg-white p-[16px]" dangerouslySetInnerHTML={{ __html: sheetHtml }} />
+          ) : (
+            <div className="flex flex-col items-center gap-[16px] text-[#868e96]">
+              <FileText className="w-[48px] h-[48px]" />
+              <span className="font-body-medium">{name}</span>
+              <span className="font-body-small">이 파일 형식은 미리보기를 지원하지 않습니다.</span>
+              <a href={viewUrl} download={name}
+                className="flex items-center gap-[6px] px-[20px] py-[10px] bg-[#003087] text-white rounded-[8px] font-title-small hover:bg-[#002554] transition-colors">
+                <Download className="w-[16px] h-[16px]" />파일 다운로드
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlotResultCard({ result, onFileClick }: { result: SlotResultDetail; onFileClick: (fileId: number, fileName: string, personCount?: string) => void }) {
   const verdict = result.verdict as Verdict;
   const displayName = result.display_name || result.slot_name;
   const hasReasons = result.reasons && result.reasons.length > 0;
@@ -726,9 +840,22 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         <div className="flex-1 min-w-0">
           <span className="font-title-medium text-[#212529]">{displayName}</span>
           {result.file_names && result.file_names.length > 0 && (
-            <p className="font-body-small text-[#868e96] mt-[4px] truncate">
-              {result.file_names.join(', ')}
-            </p>
+            <div className="flex flex-wrap gap-x-[8px] gap-y-[2px] mt-[4px]">
+              {result.file_names.map((fname, i) => {
+                const fid = result.file_ids?.[i] ? Number(result.file_ids[i]) : null;
+                return fid ? (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); onFileClick(fid, fname, result.extras?.person_count != null ? String(result.extras.person_count) : undefined); }}
+                    className="font-body-small text-[#228be6] hover:underline cursor-pointer truncate max-w-[250px]"
+                  >
+                    {fname}
+                  </button>
+                ) : (
+                  <span key={i} className="font-body-small text-[#868e96] truncate max-w-[250px]">{fname}</span>
+                );
+              })}
+            </div>
           )}
         </div>
         <span
