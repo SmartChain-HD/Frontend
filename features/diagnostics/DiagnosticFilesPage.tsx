@@ -48,17 +48,9 @@ const JOB_STATUS_TO_STEP: Record<JobStatus, string> = {
   FAILED: '실패',
 };
 
-// 상태별 스타일
-const STATUS_STYLES: Record<FileUploadStatus, { bg: string; text: string; border: string }> = {
-  idle: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' },
-  uploading: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  processing: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  complete: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  error: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-};
 
 
-// 업로드 아이템 컴포넌트
+// 업로드 아이템 컴포넌트 (컴팩트 리스트형)
 function FileUploadItem({
   file,
   onRetry,
@@ -78,7 +70,6 @@ function FileUploadItem({
   isDeleting: boolean;
   autoTag?: string;
 }) {
-  const style = STATUS_STYLES[file.uploadStatus];
   const progress = file.uploadStatus === 'uploading'
     ? file.uploadProgress
     : file.uploadStatus === 'processing'
@@ -88,7 +79,7 @@ function FileUploadItem({
         : 0;
 
   const statusLabel = file.uploadStatus === 'uploading'
-    ? `업로드 중 ${file.uploadProgress}%`
+    ? `업로드 ${file.uploadProgress}%`
     : file.uploadStatus === 'processing'
       ? (file.processingStep ? PROCESSING_STEP_LABELS[file.processingStep] || file.processingStep : JOB_STATUS_TO_STEP[file.processingStatus])
       : file.uploadStatus === 'complete'
@@ -97,91 +88,98 @@ function FileUploadItem({
           ? '실패'
           : '대기중';
 
+  const statusColor = file.uploadStatus === 'complete'
+    ? 'bg-green-100 text-green-700'
+    : file.uploadStatus === 'error'
+      ? 'bg-red-100 text-red-700'
+      : file.uploadStatus === 'uploading' || file.uploadStatus === 'processing'
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-gray-100 text-gray-600';
+
+  const isInProgress = file.uploadStatus === 'uploading' || file.uploadStatus === 'processing';
+
   return (
     <div
-      className={`rounded-[12px] border-2 overflow-hidden transition-all ${style.border} ${
-        isSelected ? 'ring-2 ring-[var(--color-primary-main)]' : ''
-      }`}
+      onClick={file.uploadStatus === 'complete' ? onSelect : undefined}
+      className={`px-[12px] py-[10px] rounded-[8px] border transition-all ${
+        isSelected
+          ? 'border-[var(--color-primary-main)] bg-blue-50/50'
+          : 'border-[var(--color-border-default)] hover:border-gray-300'
+      } ${file.uploadStatus === 'complete' ? 'cursor-pointer' : ''}`}
     >
-      {/* 상단: 파일 정보 */}
-      <div
-        onClick={file.uploadStatus === 'complete' ? onSelect : undefined}
-        className={`px-[16px] py-[14px] flex items-center gap-[12px] ${style.bg} ${
-          file.uploadStatus === 'complete' ? 'cursor-pointer hover:brightness-95' : ''
-        }`}
-      >
-        {/* 파일 아이콘 */}
-        <div className="w-[44px] h-[44px] rounded-[10px] bg-white flex items-center justify-center flex-shrink-0 border border-gray-100">
-          {file.uploadStatus === 'uploading' || file.uploadStatus === 'processing' ? (
-            <div className="w-[20px] h-[20px] border-[2px] border-current border-t-transparent rounded-full animate-spin text-[var(--color-primary-main)]" />
+      <div className="flex items-center gap-[10px]">
+        {/* 상태 아이콘 */}
+        <div className="flex-shrink-0">
+          {isInProgress ? (
+            <div className="w-[16px] h-[16px] border-[2px] border-amber-500 border-t-transparent rounded-full animate-spin" />
           ) : file.uploadStatus === 'complete' ? (
-            <svg className="w-[22px] h-[22px] text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg className="w-[16px] h-[16px] text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           ) : file.uploadStatus === 'error' ? (
-            <svg className="w-[22px] h-[22px] text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg className="w-[16px] h-[16px] text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-[22px] h-[22px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-[16px] h-[16px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           )}
         </div>
 
-        {/* 파일 정보 */}
-        <div className="flex-1 min-w-0">
-          <p className="font-body-medium text-[var(--color-text-primary)] truncate">
-            {file.name}
-          </p>
-          <div className="flex items-center gap-[8px] mt-[2px]">
-            <p className={`font-title-small ${style.text}`}>
-              {statusLabel}
-            </p>
-            {autoTag && file.uploadStatus === 'complete' && (
-              <span className="px-[6px] py-[1px] bg-blue-100 text-blue-700 font-detail-small rounded">
-                Auto-tag: {autoTag}
-              </span>
-            )}
-          </div>
-        </div>
+        {/* 파일명 */}
+        <p className="flex-1 min-w-0 font-body-medium text-[var(--color-text-primary)] truncate">
+          {file.name}
+        </p>
 
-        {/* 액션 버튼 */}
-        <div className="flex items-center gap-[8px]">
+        {/* 태그 */}
+        {autoTag && file.uploadStatus === 'complete' && (
+          <span className="px-[6px] py-[2px] bg-blue-50 text-blue-600 font-body-small rounded flex-shrink-0">
+            {autoTag}
+          </span>
+        )}
+
+        {/* 상태 뱃지 */}
+        <span className={`px-[6px] py-[2px] rounded font-body-small flex-shrink-0 ${statusColor}`}>
+          {statusLabel}
+        </span>
+
+        {/* 액션 */}
+        <div className="flex items-center gap-[4px] flex-shrink-0">
           {file.uploadStatus === 'error' && (
             <button
               onClick={(e) => { e.stopPropagation(); onRetry(); }}
               disabled={isRetrying}
-              className="px-[12px] py-[6px] rounded-[8px] bg-white border border-red-200 font-title-xsmall text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors flex items-center gap-[6px]"
+              className="p-[4px] rounded-[6px] text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+              title="재시도"
             >
               {isRetrying ? (
-                <div className="w-[14px] h-[14px] border-[2px] border-red-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-[14px] h-[14px] border-[2px] border-red-500 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               )}
-              재시도
             </button>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
             disabled={isDeleting || file.uploadStatus === 'uploading'}
-            className="p-[8px] rounded-[8px] hover:bg-white/80 transition-colors disabled:opacity-50"
+            className="p-[4px] rounded-[6px] text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
             title="삭제"
           >
-            <svg className="w-[18px] h-[18px] text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* 하단: 진행률 바 */}
-      {(file.uploadStatus === 'uploading' || file.uploadStatus === 'processing') && (
-        <div className="px-[16px] pb-[12px] pt-[4px] bg-white">
-          <div className="flex items-center gap-[12px]">
-            <div className="flex-1 h-[6px] bg-gray-100 rounded-full overflow-hidden">
+      {/* 진행률 바 (인라인) */}
+      {isInProgress && (
+        <div className="mt-[6px] ml-[26px]">
+          <div className="flex items-center gap-[8px]">
+            <div className="flex-1 h-[3px] bg-gray-100 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 rounded-full ${
                   file.uploadStatus === 'uploading' ? 'bg-blue-500' : 'bg-amber-500'
@@ -189,49 +187,18 @@ function FileUploadItem({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="font-detail-small text-gray-500 w-[40px] text-right">
+            <span className="font-body-small text-gray-400 w-[32px] text-right">
               {progress}%
             </span>
           </div>
-          {/* 처리 단계 표시 */}
-          {file.uploadStatus === 'processing' && (
-            <div className="flex items-center gap-[16px] mt-[10px]">
-              {['OCR', 'PARSING', 'VALIDATION', 'METRICS'].map((step, index) => {
-                const currentStepIndex = file.processingStep
-                  ? ['OCR', 'PARSING', 'VALIDATION', 'METRICS'].indexOf(file.processingStep)
-                  : 0;
-                const isActive = index === currentStepIndex;
-                const isComplete = index < currentStepIndex;
-
-                return (
-                  <div key={step} className="flex items-center gap-[6px]">
-                    <div className={`w-[16px] h-[16px] rounded-full flex items-center justify-center font-label-xsmall font-bold ${
-                      isComplete ? 'bg-green-500 text-white' :
-                      isActive ? 'bg-amber-500 text-white' :
-                      'bg-gray-200 text-gray-500'
-                    }`}>
-                      {isComplete ? '✓' : index + 1}
-                    </div>
-                    <span className={`font-detail-small ${
-                      isActive ? 'text-amber-700 font-medium' : 'text-gray-400'
-                    }`}>
-                      {PROCESSING_STEP_LABELS[step]?.replace(' 중', '') || step}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
 
       {/* 에러 메시지 */}
       {file.uploadStatus === 'error' && file.errorMessage && (
-        <div className="px-[16px] pb-[12px] bg-white">
-          <p className="font-body-small text-red-600">
-            {file.errorMessage}
-          </p>
-        </div>
+        <p className="mt-[4px] ml-[26px] font-body-small text-red-500 truncate" title={file.errorMessage}>
+          {file.errorMessage}
+        </p>
       )}
     </div>
   );
@@ -440,6 +407,9 @@ export default function DiagnosticFilesPage() {
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isFileListCollapsed, setIsFileListCollapsed] = useState(false);
+  const [addedFileIds, setAddedFileIds] = useState<Set<number>>(new Set());
+  const [checkedPendingIds, setCheckedPendingIds] = useState<Set<number>>(new Set());
+  const initialLoadDoneRef = useRef(false);
 
   // AI 분석 관련 훅
   const previewMutation = useAiPreview();
@@ -488,6 +458,10 @@ export default function DiagnosticFilesPage() {
     return [...new Set([...existingIds, ...newIds])];
   }, [existingFiles, newlyUploadedFiles]);
 
+  // Add된 파일 / 아직 Add 안 된 파일 분리
+  const addedFiles = uploadedFiles.filter(f => addedFileIds.has(f.id));
+  const pendingFiles = uploadedFiles.filter(f => !addedFileIds.has(f.id));
+
   // UI 표시용: uploadedFiles에서 완료된 파일 수
   const completedFileIds = uploadedFiles
     .filter(f => f.uploadStatus === 'complete')
@@ -508,13 +482,10 @@ export default function DiagnosticFilesPage() {
     );
   }, [requiredSlotStatus]);
 
-  // 기존 파일 로드 완료 시 preview 호출 (파일 ID 포함)
+  // 초기 로드 플래그 (preview와 add는 사용자가 직접 수행)
   useEffect(() => {
-    if (diagnosticId > 0 && existingFiles) {
-      const completedIds = existingFiles
-        .filter(f => f.parsingStatus === 'SUCCESS')
-        .map(f => f.fileId);
-      callPreview(completedIds);
+    if (diagnosticId > 0 && existingFiles && !initialLoadDoneRef.current) {
+      initialLoadDoneRef.current = true;
     }
   }, [diagnosticId, existingFiles]);
 
@@ -735,6 +706,8 @@ export default function DiagnosticFilesPage() {
 
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
+    // 이전 분석 결과 캐시 제거 후 제출 (재제출 시 이전 결과로 바로 리다이렉트 되는 문제 방지)
+    queryClient.removeQueries({ queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId) });
     setIsAnalyzing(true);
     const slotHints = (previewMutation.data?.slot_hint || []).map(h => ({
       file_id: h.file_id,
@@ -886,65 +859,149 @@ export default function DiagnosticFilesPage() {
 
             {/* 업로드된 파일 목록 */}
             {uploadedFiles.length > 0 && (
-              <div className="space-y-[12px]">
-                <button
-                  onClick={() => setIsFileListCollapsed(!isFileListCollapsed)}
-                  className="w-full flex items-center justify-between py-[8px] hover:bg-gray-50 rounded-[8px] px-[4px] transition-colors"
-                >
-                  <h3 className="font-title-small text-[var(--color-text-primary)]">
-                    업로드된 파일 ({uploadedFiles.length})
-                  </h3>
-                  <svg
-                    className={`w-[20px] h-[20px] text-gray-500 transition-transform ${isFileListCollapsed ? '' : 'rotate-180'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {!isFileListCollapsed && (
-                  <div className="space-y-[12px]">
-                    {uploadedFiles.map((file) => (
-                      <FileUploadItem
-                        key={file.id}
-                        file={file}
-                        onRetry={() => handleRetry(file)}
-                        onDelete={() => handleDeleteFile(file.id)}
-                        onSelect={() => setSelectedFileId(file.id)}
-                        isSelected={selectedFileId === file.id}
-                        isRetrying={retryMutation.isPending}
-                        isDeleting={deleteMutation.isPending}
-                        autoTag={getAutoTagForFile(file.id)}
-                      />
+              <div className="space-y-[8px]">
+                {/* 새로 업로드된 파일 (토글 밖, 항상 노출) */}
+                {pendingFiles.length > 0 && (
+                  <div className="space-y-[6px]">
+                    <div className="flex items-center justify-between pt-[4px]">
+                      <h3 className="font-title-small text-[var(--color-text-primary)]">
+                        새 파일 ({pendingFiles.length})
+                      </h3>
+                      {pendingFiles.filter(f => f.uploadStatus === 'complete').length > 0 && (
+                        <button
+                          onClick={() => {
+                            const completePendingIds = pendingFiles
+                              .filter(f => f.uploadStatus === 'complete')
+                              .map(f => f.id);
+                            const allChecked = completePendingIds.every(id => checkedPendingIds.has(id));
+                            if (allChecked) {
+                              setCheckedPendingIds(new Set());
+                            } else {
+                              setCheckedPendingIds(new Set(completePendingIds));
+                            }
+                          }}
+                          className="font-body-small text-[var(--color-primary-main)] hover:underline"
+                        >
+                          {pendingFiles.filter(f => f.uploadStatus === 'complete').every(f => checkedPendingIds.has(f.id))
+                            ? '전체 해제'
+                            : '전체 선택'}
+                        </button>
+                      )}
+                    </div>
+                    {pendingFiles.map((file) => (
+                      <div key={file.id} className="flex items-center gap-[8px]">
+                        {file.uploadStatus === 'complete' ? (
+                          <button
+                            onClick={() => setCheckedPendingIds(prev => {
+                              const next = new Set(prev);
+                              if (next.has(file.id)) next.delete(file.id);
+                              else next.add(file.id);
+                              return next;
+                            })}
+                            className="flex-shrink-0"
+                          >
+                            <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-colors ${
+                              checkedPendingIds.has(file.id)
+                                ? 'bg-[var(--color-primary-main)] border-[var(--color-primary-main)]'
+                                : 'border-gray-300 hover:border-gray-400'
+                            }`}>
+                              {checkedPendingIds.has(file.id) && (
+                                <svg className="w-[12px] h-[12px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                          </button>
+                        ) : (
+                          <div className="w-[18px] flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <FileUploadItem
+                            file={file}
+                            onRetry={() => handleRetry(file)}
+                            onDelete={() => handleDeleteFile(file.id)}
+                            onSelect={() => setSelectedFileId(file.id)}
+                            isSelected={selectedFileId === file.id}
+                            isRetrying={retryMutation.isPending}
+                            isDeleting={deleteMutation.isPending}
+                            autoTag={getAutoTagForFile(file.id)}
+                          />
+                        </div>
+                      </div>
                     ))}
+
+                    {/* Add 버튼 */}
+                    <button
+                      onClick={() => {
+                        const newAddedIds = new Set(addedFileIds);
+                        checkedPendingIds.forEach(id => newAddedIds.add(id));
+                        setAddedFileIds(newAddedIds);
+                        const addedCompletedIds = uploadedFiles
+                          .filter(f => newAddedIds.has(f.id) && f.uploadStatus === 'complete')
+                          .map(f => f.id);
+                        callPreview(addedCompletedIds);
+                        setCheckedPendingIds(new Set());
+                        setIsFileListCollapsed(false);
+                      }}
+                      disabled={previewMutation.isPending || checkedPendingIds.size === 0}
+                      className="w-full py-[12px] rounded-[10px] border-2 border-dashed border-[var(--color-primary-light)] text-[var(--color-primary-main)] font-title-small hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+                    >
+                      {previewMutation.isPending ? (
+                        <>
+                          <span className="w-[16px] h-[16px] border-[2px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
+                          매칭 중...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add ({checkedPendingIds.size}개 파일 추가)
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
 
-                {/* Add 버튼 */}
-                <button
-                  onClick={() => {
-                    callPreview(allCompletedFileIds);
-                    setIsFileListCollapsed(true);
-                  }}
-                  disabled={previewMutation.isPending || completedCount === 0}
-                  className="w-full py-[12px] rounded-[10px] border-2 border-dashed border-[var(--color-primary-light)] text-[var(--color-primary-main)] font-title-small hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
-                >
-                  {previewMutation.isPending ? (
-                    <>
-                      <span className="w-[16px] h-[16px] border-[2px] border-[var(--color-primary-main)] border-t-transparent rounded-full animate-spin" />
-                      매칭 중...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                {/* Add된 파일 (토글 내부) - Add 버튼 아래에 배치 */}
+                {addedFiles.length > 0 && (
+                  <>
+                    <button
+                      onClick={() => setIsFileListCollapsed(!isFileListCollapsed)}
+                      className="w-full flex items-center justify-between py-[8px] hover:bg-gray-50 rounded-[8px] px-[4px] transition-colors"
+                    >
+                      <h3 className="font-title-small text-[var(--color-text-primary)]">
+                        추가된 파일 ({addedFiles.length})
+                      </h3>
+                      <svg
+                        className={`w-[20px] h-[20px] text-gray-500 transition-transform ${isFileListCollapsed ? '' : 'rotate-180'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                       Add (파일 추가 및 미리보기)
-                    </>
-                  )}
-                </button>
+                    </button>
+
+                    {!isFileListCollapsed && (
+                      <div className="space-y-[6px] max-h-[300px] overflow-y-auto">
+                        {addedFiles.map((file) => (
+                          <FileUploadItem
+                            key={file.id}
+                            file={file}
+                            onRetry={() => handleRetry(file)}
+                            onDelete={() => handleDeleteFile(file.id)}
+                            onSelect={() => setSelectedFileId(file.id)}
+                            isSelected={selectedFileId === file.id}
+                            isRetrying={retryMutation.isPending}
+                            isDeleting={deleteMutation.isPending}
+                            autoTag={getAutoTagForFile(file.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* AI001 에러 시 다시 시도 UI */}
                 {previewMutation.isError &&
