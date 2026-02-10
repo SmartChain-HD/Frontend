@@ -696,45 +696,66 @@ const VERDICT_LABELS: Record<Verdict, string> = {
   NEED_FIX: '수정 필요',
 };
 
-const VERDICT_STYLES: Record<Verdict, string> = {
-  PASS: 'bg-green-100 text-green-700 border-green-200',
-  WARN: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  NEED_CLARIFY: 'bg-orange-100 text-orange-700 border-orange-200',
-  NEED_FIX: 'bg-red-100 text-red-700 border-red-200',
+const VERDICT_CARD_BG: Record<Verdict, React.CSSProperties> = {
+  PASS: { backgroundColor: '#d1fae5', borderColor: '#6ee7b7' },
+  WARN: { backgroundColor: '#fef9c3', borderColor: '#fde047' },
+  NEED_CLARIFY: { backgroundColor: '#fef9c3', borderColor: '#fde047' },
+  NEED_FIX: { backgroundColor: '#fee2e2', borderColor: '#fca5a5' },
+};
+
+const VERDICT_BADGE: Record<Verdict, React.CSSProperties> = {
+  PASS: { backgroundColor: '#22c55e', color: '#fff' },
+  WARN: { backgroundColor: '#eab308', color: '#fff' },
+  NEED_CLARIFY: { backgroundColor: '#eab308', color: '#fff' },
+  NEED_FIX: { backgroundColor: '#ef4444', color: '#fff' },
 };
 
 
 function SlotResultCard({ result }: { result: SlotResultDetail }) {
   const verdict = result.verdict as Verdict;
   const displayName = result.display_name || result.slot_name;
+  const hasReasons = result.reasons && result.reasons.length > 0;
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="p-[20px] bg-[#f8f9fa] rounded-[12px]">
-      <div className="flex items-center justify-between mb-[12px]">
-        <span className="font-title-medium text-[#212529]">{displayName}</span>
-        <span className={`px-[12px] py-[6px] rounded-[6px] font-title-small border ${VERDICT_STYLES[verdict]}`}>
+    <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
+      <div
+        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
+        onClick={() => hasReasons && setOpen(prev => !prev)}
+      >
+        <div className="flex-1 min-w-0">
+          <span className="font-title-medium text-[#212529]">{displayName}</span>
+          {result.file_names && result.file_names.length > 0 && (
+            <p className="font-body-small text-[#868e96] mt-[4px] truncate">
+              {result.file_names.join(', ')}
+            </p>
+          )}
+        </div>
+        <span
+          className="px-[20px] py-[8px] rounded-[8px] font-title-medium flex-shrink-0 ml-[16px]"
+          style={VERDICT_BADGE[verdict]}
+        >
           {VERDICT_LABELS[verdict]}
         </span>
+        {hasReasons && (
+          <svg
+            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </div>
-
-      {result.reasons && result.reasons.length > 0 && (
-        <ul className="space-y-[8px] mt-[12px]">
-          {result.reasons.map((reason, index) => (
-            <li key={index} className="flex items-start gap-[8px] font-body-medium text-[#868e96]">
-              <span className="w-[5px] h-[5px] bg-[#adb5bd] rounded-full mt-[10px] flex-shrink-0" />
-              {REASON_LABELS[reason] || reason}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {result.file_names && result.file_names.length > 0 && (
-        <div className="mt-[12px] flex flex-wrap gap-[8px]">
-          {result.file_names.map((fileName, index) => (
-            <span key={index} className="px-[12px] py-[6px] bg-white font-body-medium text-[#495057] rounded-[6px] border border-[#dee2e6]">
-              {fileName}
-            </span>
-          ))}
+      {hasReasons && open && (
+        <div className="px-[20px] pb-[16px]">
+          <ul className="space-y-[6px]">
+            {result.reasons!.map((reason, index) => (
+              <li key={index} className="flex items-start gap-[8px] font-body-small text-[#868e96]">
+                <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[8px] flex-shrink-0" />
+                {REASON_LABELS[reason] || reason}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
