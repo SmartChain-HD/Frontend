@@ -42,9 +42,6 @@ export default function OnboardingPage() {
             SmartChain
           </div>
           <div className="flex gap-2 md:gap-4 items-center">
-            <button onClick={() => scrollTo('features')} className="ob-btn-secondary ob-btn-header">
-              더 알아보기
-            </button>
             <button onClick={() => navigate('/login')} className="ob-btn-primary ob-btn-header">
               시작하기
             </button>
@@ -75,16 +72,16 @@ export default function OnboardingPage() {
             </h1>
 
             <p className="ob-fade-in-up ob-delay-2 font-heading-medium text-[#DDE8F9] mb-[4.8rem] max-w-[800px] mx-auto leading-[160%]">
-              AI 기반 협력사 리스크 관리 플랫폼<br />
-              3,354개 협력사를 자동화된 검증 시스템으로 관리하세요
+              협력사 서류 검증을 자동으로<br />
+              서류 제출부터 승인까지, 한 곳에서 관리하세요
             </p>
 
             <div className="ob-fade-in-up ob-delay-3 flex gap-4 justify-center flex-wrap">
-              <button onClick={() => scrollTo('features')} className="ob-btn-primary">
-                플랫폼 알아보기
+              <button onClick={() => navigate('/login')} className="ob-btn-primary">
+                시작하기
               </button>
-              <button onClick={() => scrollTo('impact')} className="ob-btn-secondary">
-                기대 효과 보기
+              <button onClick={() => scrollTo('features')} className="ob-btn-secondary">
+                자세히 보기
               </button>
             </div>
 
@@ -99,7 +96,7 @@ export default function OnboardingPage() {
               </div>
               <div className="ob-float-3 ob-stat-card">
                 <div className="ob-stat-number font-display-small text-[#00AD1D] mb-[0.8rem]">100%</div>
-                <p className="font-body-medium text-[#DDE8F9]">자동화된 증빙 검증</p>
+                <p className="font-body-medium text-[#DDE8F9]">서류 자동 검증</p>
               </div>
             </div>
           </div>
@@ -111,7 +108,7 @@ export default function OnboardingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
             <h2 className="ob-section-title text-center">왜 SmartChain이 필요한가요?</h2>
-            <p className="ob-section-subtitle text-center">급변하는 규제 환경 속에서 협력사 관리의 복잡도가 증가하고 있습니다</p>
+            <p className="ob-section-subtitle text-center">관련 법규가 강화되면서, 협력사 서류 관리가 점점 더 까다로워지고 있습니다</p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="ob-feature-card bg-gradient-to-br from-red-50 to-white p-10 rounded-[32px] border border-red-100">
@@ -122,9 +119,9 @@ export default function OnboardingPage() {
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
                 </div>
-                <h3 className="font-heading-small text-[#B91C1C] mb-[1.6rem]">중대재해처벌법 전면 확대</h3>
+                <h3 className="font-heading-small text-[#B91C1C] mb-[1.6rem]">안전사고 처벌 강화</h3>
                 <p className="font-body-medium text-[#495057]">
-                  5인 이상 전 사업장 적용 및 위험성평가 인정기준 90점 상향 (2025)
+                  소규모 사업장까지 적용 확대, 안전 기준 상향 (2025)
                 </p>
               </div>
 
@@ -136,9 +133,9 @@ export default function OnboardingPage() {
                     <path d="M3 9h18" />
                   </svg>
                 </div>
-                <h3 className="font-heading-small text-[#E65100] mb-[1.6rem]">하도급법 개정 및 집중 단속</h3>
+                <h3 className="font-heading-small text-[#E65100] mb-[1.6rem]">하도급 불공정 거래 단속 강화</h3>
                 <p className="font-body-medium text-[#495057]">
-                  부당특약 무효화 근거 마련, 공정위 방산업체 현장조사 착수 (2025.03)
+                  불공정 계약 조항 무효화, 공정위 현장조사 본격화 (2025)
                 </p>
               </div>
 
@@ -150,9 +147,9 @@ export default function OnboardingPage() {
                     <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
                   </svg>
                 </div>
-                <h3 className="font-heading-small text-[#002970] mb-[1.6rem]">EU 공급망 실사 지침</h3>
+                <h3 className="font-heading-small text-[#002970] mb-[1.6rem]">해외 수출 시 공급망 증빙 의무화</h3>
                 <p className="font-body-medium text-[#495057]">
-                  CSDDD 발효로 인권·환경 리스크 실사가 법적 의무화, 체계적 증빙 관리 필수
+                  EU 거래를 위해 공급망 관리 증빙이 법적 필수 요건으로 지정
                 </p>
               </div>
             </div>
@@ -165,7 +162,7 @@ export default function OnboardingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
             <h2 className="ob-section-title text-center">SmartChain의 해결책</h2>
-            <p className="ob-section-subtitle text-center">AI 기반 자동화로 협력사 관리의 모든 과정을 혁신합니다</p>
+            <p className="ob-section-subtitle text-center">서류 제출부터 검증, 승인까지 모든 과정을 자동으로 처리합니다</p>
 
             {/* Core Feature */}
             <div className="ob-core-card mb-20">
@@ -177,17 +174,17 @@ export default function OnboardingPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-heading-large text-[#003087] mb-[0.4rem]">증빙 검증 엔진</h3>
-                  <p className="font-body-medium text-[#6B7280]">파일 업로드부터 최종 검증까지 완전 자동화</p>
+                  <h3 className="font-heading-large text-[#003087] mb-[0.4rem]">서류 자동 검증</h3>
+                  <p className="font-body-medium text-[#6B7280]">파일 업로드부터 최종 검증까지 자동으로 처리</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                  { title: '자동 분류 & 검증', desc: 'PDF, XLSX, 이미지 파일을 도메인별로 자동 분류하고 필수 항목 체크리스트 생성' },
-                  { title: '멀티 파서 엔진', desc: 'Pandas, PyMuPDF, OCR을 활용한 파일 타입별 최적화 추출 및 검증' },
-                  { title: '통합 JSON 출력', desc: '슬롯별 검증 결과, 핵심 이슈 요약, 재제출 가이드를 하나의 구조화된 데이터로 제공' },
-                  { title: 'LLM 기반 보완요청', desc: 'AI가 협력사에 전달할 보완요청 문장을 자동 생성, 커뮤니케이션 비용 절감' },
+                  { title: '자동 분류 & 검증', desc: 'PDF, 엑셀, 이미지 등 다양한 파일을 자동 분류하고 필수 항목을 체크합니다' },
+                  { title: '다양한 문서 형식 지원', desc: '문서 형식에 맞는 최적의 방식으로 내용을 추출하고 검증합니다' },
+                  { title: '검증 결과 한눈에 확인', desc: '항목별 검증 결과, 핵심 이슈, 재제출 안내를 한 화면에서 확인할 수 있습니다' },
+                  { title: 'AI 보완요청 자동 작성', desc: 'AI가 부족한 부분을 찾아 보완요청 문구를 자동으로 작성해 줍니다' },
                 ].map((item) => (
                   <div key={item.title} className="bg-gradient-to-br from-[#EFF4FC] to-[#F8F9FA] p-8 rounded-2xl border border-[#DDE8F9]">
                     <div className="flex items-center gap-3 mb-4">
@@ -207,7 +204,7 @@ export default function OnboardingPage() {
                 {
                   gradient: 'linear-gradient(135deg, #003087, #002970)',
                   title: '컴플라이언스',
-                  desc: '법률/사내 규정 검색 챗봇 (RAG 기반)\n관련 조항 요약 및 대응 가이드 제공',
+                  desc: '법률·사내 규정을 AI 챗봇으로 쉽게 검색\n관련 조항 요약 및 대응 방법 안내',
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -221,7 +218,7 @@ export default function OnboardingPage() {
                 {
                   gradient: 'linear-gradient(135deg, #00AD1D, #008233)',
                   title: 'ESG',
-                  desc: '외부 요인 탐지 및 위험도 예측\n뉴스/공시 기반 리스크 신호 자동 감지',
+                  desc: '협력사 관련 외부 위험 요소 자동 탐지\n뉴스·공시 기반으로 위험 신호를 미리 감지',
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -262,7 +259,7 @@ export default function OnboardingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-7xl mx-auto">
             <h2 className="ob-section-title text-center">역할별 최적화된 워크플로우</h2>
-            <p className="ob-section-subtitle text-center">협력사부터 원청까지, 모든 이해관계자를 위한 맞춤형 기능</p>
+            <p className="ob-section-subtitle text-center">협력사부터 원청까지, 각 역할에 맞는 기능을 제공합니다</p>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {[
@@ -338,7 +335,7 @@ export default function OnboardingPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-8xl mx-auto">
             <h2 className="ob-section-title text-center">검증된 기대 효과</h2>
-            <p className="ob-section-subtitle text-center">데이터 기반으로 측정 가능한 성과를 제공합니다</p>
+            <p className="ob-section-subtitle text-center">도입 전후를 비교한 구체적인 개선 효과입니다</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="ob-impact-card">
@@ -352,7 +349,7 @@ export default function OnboardingPage() {
                   {[
                     { label: '현재:', text: '516개 사 관리 (물리적 한계)' },
                     { label: '개선:', text: '3,354개 사 전수 관리 체계 구축' },
-                    { label: '방법:', text: 'SaaS 자동화로 추가 인력 투입 없이 즉시 확장' },
+                    { label: '방법:', text: '추가 인력 없이 시스템 자동화로 즉시 확장' },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-3">
                       <div className="ob-glow-dot bg-[#00AD1D] text-[#00AD1D]" />
@@ -372,7 +369,7 @@ export default function OnboardingPage() {
                 <div className="space-y-4">
                   {[
                     { label: '현재:', text: '협력사 1개사당 120분 소요' },
-                    { label: '개선:', text: '10분 이내로 단축 (자동 파싱 1분 + 최종 승인 10분)' },
+                    { label: '개선:', text: '10분 이내로 단축 (자동 검증 1분 + 최종 승인 10분)' },
                     { label: '효과:', text: '담당자는 고위험군 최종 승인에만 집중' },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-3">
@@ -394,9 +391,9 @@ export default function OnboardingPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
-                    { title: '중대재해처벌법', desc: 'TBM 미이행 사전 식별, 위험성평가 증적 자동 확보' },
-                    { title: '하도급법', desc: '부당특약 탐지, 시정명령/과징금 리스크 예방' },
-                    { title: '감사 대응', desc: '전 과정 이력 추적 및 수정 로그 자동 기록' },
+                    { title: '안전사고 예방', desc: '안전교육 미실시 사전 감지, 위험성평가 기록 자동 보관' },
+                    { title: '하도급 거래 보호', desc: '불공정 계약 조항 탐지, 과징금 위험 사전 예방' },
+                    { title: '감사 대응', desc: '모든 처리 과정과 수정 이력을 자동으로 기록' },
                   ].map((item) => (
                     <div key={item.title} className="bg-gradient-to-br from-[#FFF8E1] to-[#FFFBEB] p-6 rounded-2xl border border-[#FDE68A]">
                       <h4 className="font-title-medium text-[#E65100] mb-[1.2rem]">{item.title}</h4>
@@ -418,7 +415,7 @@ export default function OnboardingPage() {
               SmartChain과 함께<br />협력사 관리를 혁신하세요
             </h2>
             <p className="mb-12 font-body-large text-[#DDE8F9] leading-[160%]">
-              AI 기반 자동화로 효율성을 극대화하고<br />법령 준수 리스크를 사전에 차단합니다
+              서류 검증을 자동화하고<br />법령 위반 위험을 미리 차단하세요
             </p>
             <div className="flex gap-6 justify-center flex-wrap">
               <button
@@ -426,12 +423,6 @@ export default function OnboardingPage() {
                 className="ob-btn-primary text-[2.0rem] py-[2rem] px-[4rem]"
               >
                 시작하기
-              </button>
-              <button
-                onClick={() => scrollTo('features')}
-                className="ob-btn-secondary text-[2.0rem] py-[2rem] px-[4rem]"
-              >
-                더 알아보기
               </button>
             </div>
           </div>
