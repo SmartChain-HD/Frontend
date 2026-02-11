@@ -5,13 +5,18 @@ import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { AlertCircle, ArrowLeft, X, FileText, Download, Bot } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
 import { useAiResult } from '../../src/hooks/useAiRun';
-import { useDiagnosticHistory } from '../../src/hooks/useDiagnostics';
+import { useDiagnosticHistory, useSubmitDiagnostic } from '../../src/hooks/useDiagnostics';
 import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail } from '../../src/api/aiRun';
 import { REASON_LABELS } from '../../src/constants/reasonLabels';
 import { getDownloadUrl, fetchFileBlob } from '../../src/api/files';
 import type { DownloadUrlResponse } from '../../src/api/files';
+
+function maskName(name: string): string {
+  if (name.length <= 2) return name[0] + '*';
+  return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
+}
 
 interface DocumentReviewPageProps {
   userRole: 'receiver' | 'drafter' | 'approver';
@@ -122,6 +127,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   const { data: aiResult } = useAiResult(diagnosticId);
   const { data: history } = useDiagnosticHistory(diagnosticId);
   const submitReview = useSubmitReview();
+  const submitDiagnostic = useSubmitDiagnostic();
 
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -202,8 +208,8 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
   };
 
   const handleSubmitToApprover = () => {
-    submitReview.mutate(
-      { id: reviewId, data: { decision: 'APPROVED' } },
+    submitDiagnostic.mutate(
+      { id: diagnosticId, data: {} },
       { onSuccess: () => navigate(listPath) }
     );
   };
@@ -235,12 +241,14 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
     );
   }
 
-  // AI 분석 결과에서 riskLevel과 verdict 가져오기 (aiResult 우선, 없으면 review에서)
-  const riskLevel = aiResult?.riskLevel ?? review.riskLevel ?? 'MEDIUM';
-  const riskConfig = riskLevelConfig[riskLevel] ?? riskLevelConfig.MEDIUM;
-  const aiVerdict = aiResult?.verdict ?? review.aiVerdict ?? 'NEED_FIX';
-  const verdictConfig = aiVerdictConfig[aiVerdict] ?? aiVerdictConfig.NEED_FIX;
+  // AI 분석 결과에서 riskLevel과 verdict 가져오기
+  const riskLevel = aiResult?.riskLevel ?? review.riskLevel;
+  const hasAiAnalysis = !!riskLevel;
+  const riskConfig = riskLevelConfig[riskLevel ?? 'MEDIUM'] ?? riskLevelConfig.MEDIUM;
+  const aiVerdict = aiResult?.verdict ?? review.aiVerdict;
+  const verdictConfig = aiVerdictConfig[aiVerdict ?? 'NEED_FIX'] ?? aiVerdictConfig.NEED_FIX;
   const isMutating = submitReview.isPending;
+  const isCompleted = review.status === 'APPROVED' || review.status === 'REVISION_REQUIRED';
 
   return (
     <>
@@ -279,40 +287,66 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
           {/* AI 분석 결과 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px] mb-[24px]">
             {/* 위험등급 카드 */}
-            <div
-              className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
-              style={{ backgroundColor: riskConfig.cardBg }}
-            >
-              <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
-              <div className="relative">
-                <div
-                  className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
-                  style={{ backgroundColor: riskConfig.iconBg, boxShadow: `0 8px 16px ${riskConfig.iconBg}40` }}
-                >
-                  <AlertCircle className="w-[24px] h-[24px] text-white" />
+            {hasAiAnalysis ? (
+              <div
+                className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
+                style={{ backgroundColor: riskConfig.cardBg }}
+              >
+                <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+                <div className="relative">
+                  <div
+                    className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
+                    style={{ backgroundColor: riskConfig.iconBg, boxShadow: `0 8px 16px ${riskConfig.iconBg}40` }}
+                  >
+                    <AlertCircle className="w-[24px] h-[24px] text-white" />
+                  </div>
+                  <p className="font-body-small text-[#6b7280] mb-[4px]">위험등급</p>
+                  <p className="font-heading-medium" style={{ color: riskConfig.textColor }}>{riskConfig.label}</p>
                 </div>
-                <p className="font-body-small text-[#6b7280] mb-[4px]">위험등급</p>
-                <p className="font-heading-medium" style={{ color: riskConfig.textColor }}>{riskConfig.label}</p>
               </div>
-            </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm" style={{ backgroundColor: '#f3f4f6' }}>
+                <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+                <div className="relative">
+                  <div className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]" style={{ backgroundColor: '#9ca3af' }}>
+                    <AlertCircle className="w-[24px] h-[24px] text-white" />
+                  </div>
+                  <p className="font-body-small text-[#6b7280] mb-[4px]">위험등급</p>
+                  <p className="font-heading-medium text-[#6b7280]">미분석</p>
+                </div>
+              </div>
+            )}
 
             {/* AI 판정 카드 */}
-            <div
-              className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
-              style={{ backgroundColor: verdictConfig.cardBg }}
-            >
-              <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
-              <div className="relative">
-                <div
-                  className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
-                  style={{ backgroundColor: verdictConfig.iconBg, boxShadow: `0 8px 16px ${verdictConfig.iconBg}40` }}
-                >
-                  <span className="font-title-large text-white">{verdictConfig.icon}</span>
+            {hasAiAnalysis ? (
+              <div
+                className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm"
+                style={{ backgroundColor: verdictConfig.cardBg }}
+              >
+                <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+                <div className="relative">
+                  <div
+                    className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]"
+                    style={{ backgroundColor: verdictConfig.iconBg, boxShadow: `0 8px 16px ${verdictConfig.iconBg}40` }}
+                  >
+                    <span className="font-title-large text-white">{verdictConfig.icon}</span>
+                  </div>
+                  <p className="font-body-small text-[#6b7280] mb-[4px]">AI 판정</p>
+                  <p className="font-heading-medium" style={{ color: verdictConfig.textColor }}>{verdictConfig.label}</p>
                 </div>
-                <p className="font-body-small text-[#6b7280] mb-[4px]">AI 판정</p>
-                <p className="font-heading-medium" style={{ color: verdictConfig.textColor }}>{verdictConfig.label}</p>
               </div>
-            </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-[20px] p-[24px] shadow-sm" style={{ backgroundColor: '#f3f4f6' }}>
+                <div className="absolute top-0 right-0 w-[120px] h-[120px] -mr-[40px] -mt-[40px] rounded-full bg-white/40"></div>
+                <div className="relative">
+                  <div className="w-[48px] h-[48px] rounded-[14px] flex items-center justify-center mb-[16px]" style={{ backgroundColor: '#9ca3af' }}>
+                    <span className="font-title-large text-white">-</span>
+                  </div>
+                  <p className="font-body-small text-[#6b7280] mb-[4px]">AI 판정</p>
+                  <p className="font-heading-medium text-[#6b7280]">미분석</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 기안 정보 */}
@@ -392,7 +426,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                         <span className="font-title-small text-[#212529]">{DIAGNOSTIC_STATUS_LABELS[item.newStatus]}</span>
                         {isLatest && <span className="px-[6px] py-[1px] font-label-xsmall font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
                       </h3>
-                      <p className="font-body-small text-[#868e96]">{item.performedBy.name}</p>
+                      <p className="font-body-small text-[#868e96]">{maskName(item.performedBy.name)}</p>
                       {item.comment && (
                         <div className="p-[12px] mt-[8px] rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb]">
                           <p className="font-body-small text-[#495057] whitespace-pre-wrap">{item.comment}</p>
@@ -476,7 +510,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 </button>
                 <button
                   onClick={handleSubmitToApprover}
-                  disabled={isMutating}
+                  disabled={isMutating || isCompleted}
                   className="px-[32px] py-[14px] bg-[#003087] text-white rounded-[8px] font-title-small hover:bg-[#002554] transition-colors disabled:opacity-50"
                 >
                   결재자에게 제출 (Submit to Approver)
@@ -495,13 +529,14 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 </button>
                 <button
                   onClick={handleReject}
-                  className="px-[32px] py-[14px] bg-[#dc2626] text-white rounded-[8px] font-title-small hover:bg-[#b91c1c] transition-colors"
+                  disabled={isCompleted}
+                  className="px-[32px] py-[14px] bg-[#dc2626] text-white rounded-[8px] font-title-small hover:bg-[#b91c1c] transition-colors disabled:opacity-50"
                 >
                   반려 및 보완 요청 (Reject & Request Fix)
                 </button>
                 <button
                   onClick={handleApprove}
-                  disabled={isMutating}
+                  disabled={isMutating || isCompleted}
                   className="px-[32px] py-[14px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
                 >
                   원청 제출 (Submit to Client)
@@ -533,9 +568,17 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 )}
                 <button
                   onClick={handleReject}
-                  className="px-[32px] py-[14px] bg-[#e65100] text-white rounded-[8px] font-title-small hover:bg-[#d84a00] transition-colors"
+                  disabled={isCompleted}
+                  className="px-[32px] py-[14px] bg-[#e65100] text-white rounded-[8px] font-title-small hover:bg-[#d84a00] transition-colors disabled:opacity-50"
                 >
                   재제출 요청 (Request Resubmission)
+                </button>
+                <button
+                  onClick={handleApprove}
+                  disabled={isMutating || isCompleted}
+                  className="px-[32px] py-[14px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
+                >
+                  승인 (Approve)
                 </button>
               </>
             )}
