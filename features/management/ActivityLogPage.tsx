@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useActivityLogs, useExportActivityLogs } from '../../src/hooks/useManagement';
+import { useActivityLogs } from '../../src/hooks/useManagement';
 import type { ActivityLogParams } from '../../src/api/management';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -14,7 +14,6 @@ const ACTION_TYPE_OPTIONS = [
   { value: 'REJECT', label: '반려' },
   { value: 'SUBMIT', label: '제출' },
   { value: 'DOWNLOAD', label: '다운로드' },
-  { value: 'EXPORT', label: '내보내기' },
 ];
 
 const ACTION_TYPE_STYLES: Record<string, string> = {
@@ -27,7 +26,6 @@ const ACTION_TYPE_STYLES: Record<string, string> = {
   REJECT: 'bg-orange-100 text-orange-700',
   SUBMIT: 'bg-purple-100 text-purple-700',
   DOWNLOAD: 'bg-cyan-100 text-cyan-700',
-  EXPORT: 'bg-indigo-100 text-indigo-700',
 };
 
 export default function ActivityLogPage() {
@@ -38,12 +36,8 @@ export default function ActivityLogPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [actionType, setActionType] = useState('');
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'CSV' | 'EXCEL'>('EXCEL');
 
   const { data, isLoading, isError, refetch } = useActivityLogs(params);
-  const exportMutation = useExportActivityLogs();
-
   const logs = data?.content || [];
   const pageInfo = data?.page;
   const totalPages = pageInfo?.totalPages || 0;
@@ -68,15 +62,6 @@ export default function ActivityLogPage() {
     });
   };
 
-  const handleExport = () => {
-    exportMutation.mutate({
-      format: exportFormat,
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined,
-    });
-    setShowExportModal(false);
-  };
-
   const formatDateTime = (dateStr: string) => {
     return new Date(dateStr).toLocaleString('ko-KR', {
       year: 'numeric',
@@ -96,19 +81,9 @@ export default function ActivityLogPage() {
           <div>
             <h1 className="font-heading-small text-[var(--color-text-primary)]">활동 로그</h1>
             <p className="font-body-medium text-[var(--color-text-tertiary)] mt-[4px]">
-              시스템 활동 이력을 조회하고 내보낼 수 있습니다
+              시스템 활동 이력을 조회합니다
             </p>
           </div>
-          <button
-            onClick={() => setShowExportModal(true)}
-            disabled={exportMutation.isPending}
-            className="flex items-center gap-[8px] px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors disabled:opacity-50"
-          >
-            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {exportMutation.isPending ? '내보내는 중...' : '내보내기'}
-          </button>
         </div>
 
         {/* 필터 영역 */}
@@ -301,86 +276,6 @@ export default function ActivityLogPage() {
         )}
       </div>
 
-      {/* 내보내기 모달 */}
-      {showExportModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-[16px] w-full max-w-[400px] mx-[16px] shadow-xl">
-            <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
-              <h2 className="font-title-medium text-[var(--color-text-primary)]">
-                활동 로그 내보내기
-              </h2>
-            </div>
-
-            <div className="px-[24px] py-[20px] space-y-[16px]">
-              <p className="font-body-medium text-[var(--color-text-secondary)]">
-                내보내기 형식을 선택하세요.
-              </p>
-
-              <div className="space-y-[8px]">
-                <label className="flex items-center gap-[12px] p-[12px] border border-[var(--color-border-default)] rounded-[8px] cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="EXCEL"
-                    checked={exportFormat === 'EXCEL'}
-                    onChange={() => setExportFormat('EXCEL')}
-                    className="w-[18px] h-[18px] text-[var(--color-primary-main)]"
-                  />
-                  <div className="flex-1">
-                    <p className="font-title-small text-[var(--color-text-primary)]">Excel (.xlsx)</p>
-                    <p className="font-body-small text-[var(--color-text-tertiary)]">
-                      Microsoft Excel 형식
-                    </p>
-                  </div>
-                </label>
-                <label className="flex items-center gap-[12px] p-[12px] border border-[var(--color-border-default)] rounded-[8px] cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="CSV"
-                    checked={exportFormat === 'CSV'}
-                    onChange={() => setExportFormat('CSV')}
-                    className="w-[18px] h-[18px] text-[var(--color-primary-main)]"
-                  />
-                  <div className="flex-1">
-                    <p className="font-title-small text-[var(--color-text-primary)]">CSV (.csv)</p>
-                    <p className="font-body-small text-[var(--color-text-tertiary)]">
-                      쉼표로 구분된 텍스트 파일
-                    </p>
-                  </div>
-                </label>
-              </div>
-
-              {(fromDate || toDate) && (
-                <div className="p-[12px] bg-gray-50 rounded-[8px]">
-                  <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[4px]">
-                    내보내기 기간
-                  </p>
-                  <p className="font-body-medium text-[var(--color-text-primary)]">
-                    {fromDate || '시작일 없음'} ~ {toDate || '종료일 없음'}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="px-[24px] py-[16px] border-t border-[var(--color-border-default)] flex justify-end gap-[12px]">
-              <button
-                onClick={() => setShowExportModal(false)}
-                className="px-[20px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleExport}
-                disabled={exportMutation.isPending}
-                className="px-[20px] py-[10px] rounded-[8px] bg-[var(--color-primary-main)] font-title-small text-white hover:opacity-90 transition-colors disabled:opacity-50"
-              >
-                {exportMutation.isPending ? '내보내는 중...' : '내보내기'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </DashboardLayout>
   );
 }

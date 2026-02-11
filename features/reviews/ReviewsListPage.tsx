@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useReviews, useBulkReport, useExportReviews } from '../../src/hooks/useReviews';
+import { useReviews } from '../../src/hooks/useReviews';
 import type { ReviewStatus, RiskLevel, DomainCode } from '../../src/types/api.types';
-import { DOMAIN_LABELS, REVIEW_STATUS_LABELS } from '../../src/types/api.types';
+import { DOMAIN_LABELS } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
 const STATUS_STYLES: Record<ReviewStatus, string> = {
@@ -15,6 +15,12 @@ const RISK_BADGE_STYLES: Record<string, string> = {
   red: 'text-[#b91c1c] bg-[#fef2f2]',
   yellow: 'text-[#e65100] bg-[#fff3e0]',
   green: 'text-[#008233] bg-[#f0fdf4]',
+};
+
+const STATUS_LABELS: Record<ReviewStatus, string> = {
+  REVIEWING: '심사중',
+  APPROVED: '승인됨',
+  REVISION_REQUIRED: '보완됨',
 };
 
 type StatusFilter = ReviewStatus | 'ALL';
@@ -49,9 +55,6 @@ export default function ReviewsListPage() {
     size: 10,
   });
 
-  const bulkReportMutation = useBulkReport();
-  const exportMutation = useExportReviews();
-
   const reviews = data?.content || [];
   const totalPages = data?.page?.totalPages || 0;
   const dashboardData = data?.summary;
@@ -70,21 +73,11 @@ export default function ReviewsListPage() {
     }
   };
 
-  const handleBulkReport = () => {
-    if (selectedIds.length === 0) return;
-    bulkReportMutation.mutate(selectedIds);
-  };
-
-  const handleExport = (format: 'EXCEL' | 'CSV') => {
-    const ids = selectedIds.length > 0 ? selectedIds : reviews.map((r) => r.reviewId);
-    exportMutation.mutate({ format, reviewIds: ids });
-  };
-
   const statusTabs: { key: StatusFilter; label: string }[] = [
     { key: 'ALL', label: '전체' },
     { key: 'REVIEWING', label: '심사중' },
-    { key: 'APPROVED', label: '승인' },
-    { key: 'REVISION_REQUIRED', label: '보완요청' },
+    { key: 'APPROVED', label: '승인됨' },
+    { key: 'REVISION_REQUIRED', label: '보완됨' },
   ];
 
   const domainLabel = domainFilter ? (DOMAIN_LABELS[domainFilter as DomainCode] || domainFilter) : '';
@@ -98,7 +91,7 @@ export default function ReviewsListPage() {
 
         {/* 대시보드 통계 */}
         {dashboardData && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-[16px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
             {/* 총 협력사 */}
             <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
               <div className="w-[40px] h-[40px] rounded-full bg-[#dbeafe] flex items-center justify-center mb-[12px]">
@@ -110,70 +103,40 @@ export default function ReviewsListPage() {
               <p className="font-title-large text-[#111827]">{dashboardData.totalCompanies}</p>
             </div>
 
-            {/* 완료 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#dcfce7] flex items-center justify-center mb-[12px]">
-                <svg className="w-[20px] h-[20px] text-[#16a34a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">완료</p>
-              <p className="font-title-large text-[#16a34a]">{dashboardData.completedCount}</p>
-            </div>
-
-            {/* 진행중 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
+            {/* 심사중 */}
+            <div className="bg-white rounded-[16px] p-[20px] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => { setStatusFilter('REVIEWING'); setPage(0); setSelectedIds([]); }}>
               <div className="w-[40px] h-[40px] rounded-full bg-[#dbeafe] flex items-center justify-center mb-[12px]">
                 <svg className="w-[20px] h-[20px] text-[#2563eb]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">진행중</p>
+              <p className="font-body-small text-[#6b7280] mb-[4px]">심사중</p>
               <p className="font-title-large text-[#2563eb]">{dashboardData.inProgressCount}</p>
             </div>
 
-            {/* 대기 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#f3f4f6] flex items-center justify-center mb-[12px]">
-                <svg className="w-[20px] h-[20px] text-[#6b7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* 승인됨 */}
+            <div className="bg-white rounded-[16px] p-[20px] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => { setStatusFilter('APPROVED'); setPage(0); setSelectedIds([]); }}>
+              <div className="w-[40px] h-[40px] rounded-full bg-[#dcfce7] flex items-center justify-center mb-[12px]">
+                <svg className="w-[20px] h-[20px] text-[#16a34a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">대기</p>
-              <p className="font-title-large text-[#6b7280]">{dashboardData.pendingCount}</p>
+              <p className="font-body-small text-[#6b7280] mb-[4px]">승인됨</p>
+              <p className="font-title-large text-[#16a34a]">{dashboardData.completedCount}</p>
             </div>
 
-            {/* 고위험 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#fee2e2] flex items-center justify-center mb-[12px]">
-                <svg className="w-[20px] h-[20px] text-[#dc2626]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* 보완됨 */}
+            <div className="bg-white rounded-[16px] p-[20px] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => { setStatusFilter('REVISION_REQUIRED'); setPage(0); setSelectedIds([]); }}>
+              <div className="w-[40px] h-[40px] rounded-full bg-[#fff3e0] flex items-center justify-center mb-[12px]">
+                <svg className="w-[20px] h-[20px] text-[#e65100]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">고위험</p>
-              <p className="font-title-large text-[#dc2626]">{dashboardData.highRiskCount}</p>
-            </div>
-
-            {/* 중위험 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#fef3c7] flex items-center justify-center mb-[12px]">
-                <svg className="w-[20px] h-[20px] text-[#d97706]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">중위험</p>
-              <p className="font-title-large text-[#d97706]">{dashboardData.mediumRiskCount}</p>
-            </div>
-
-            {/* 저위험 */}
-            <div className="bg-white rounded-[16px] p-[20px] shadow-sm">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#dcfce7] flex items-center justify-center mb-[12px]">
-                <svg className="w-[20px] h-[20px] text-[#16a34a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <p className="font-body-small text-[#6b7280] mb-[4px]">저위험</p>
-              <p className="font-title-large text-[#16a34a]">{dashboardData.lowRiskCount}</p>
+              <p className="font-body-small text-[#6b7280] mb-[4px]">보완됨</p>
+              <p className="font-title-large text-[#e65100]">{dashboardData.pendingCount}</p>
             </div>
           </div>
         )}
@@ -196,48 +159,17 @@ export default function ReviewsListPage() {
             ))}
           </div>
 
-          {/* 위험등급 필터 (대시보드에서 진입 시) */}
-          {riskLevelFilter && (
-            <button
-              onClick={() => { setRiskLevelFilter(undefined); setPage(0); setSelectedIds([]); }}
-              className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-full font-title-xsmall bg-[#fef2f2] text-[#b91c1c] hover:bg-[#fee2e2] transition-colors"
-            >
-              위험등급: {{ HIGH: '고위험', MEDIUM: '중위험', LOW: '저위험' }[riskLevelFilter]}
-              <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* 액션 바 */}
-        <div className="flex items-center justify-between">
-          <p className="font-body-medium text-[var(--color-text-tertiary)]">
-            {selectedIds.length > 0 ? `${selectedIds.length}건 선택됨` : ''}
-          </p>
-          <div className="flex gap-[8px]">
-            <button
-              onClick={handleBulkReport}
-              disabled={selectedIds.length === 0 || bulkReportMutation.isPending}
-              className="px-[16px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-title-xsmall text-[var(--color-text-secondary)] hover:bg-gray-50 disabled:opacity-40 transition-colors"
-            >
-              {bulkReportMutation.isPending ? '생성 중...' : '일괄 리포트'}
-            </button>
-            <button
-              onClick={() => handleExport('EXCEL')}
-              disabled={exportMutation.isPending}
-              className="px-[16px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-title-xsmall text-[var(--color-text-secondary)] hover:bg-gray-50 disabled:opacity-40 transition-colors"
-            >
-              Excel
-            </button>
-            <button
-              onClick={() => handleExport('CSV')}
-              disabled={exportMutation.isPending}
-              className="px-[16px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-title-xsmall text-[var(--color-text-secondary)] hover:bg-gray-50 disabled:opacity-40 transition-colors"
-            >
-              CSV
-            </button>
-          </div>
+          {/* 위험등급 드롭다운 */}
+          <select
+            value={riskLevelFilter || ''}
+            onChange={(e) => { setRiskLevelFilter((e.target.value || undefined) as RiskLevel | undefined); setPage(0); setSelectedIds([]); }}
+            className="px-[12px] py-[8px] rounded-[8px] border border-[var(--color-border-default)] font-title-xsmall text-[var(--color-text-secondary)] bg-white"
+          >
+            <option value="">위험등급: 전체</option>
+            <option value="HIGH">고위험</option>
+            <option value="MEDIUM">중위험</option>
+            <option value="LOW">저위험</option>
+          </select>
         </div>
 
         {/* 테이블 */}
@@ -323,7 +255,7 @@ export default function ReviewsListPage() {
                     </td>
                     <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
                       <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${STATUS_STYLES[item.status]}`}>
-                        {REVIEW_STATUS_LABELS[item.status]}
+                        {STATUS_LABELS[item.status]}
                       </span>
                     </td>
                   </tr>
