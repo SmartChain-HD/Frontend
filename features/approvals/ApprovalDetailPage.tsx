@@ -267,7 +267,12 @@ export default function ApprovalDetailPage() {
                       <span className="font-title-small text-[var(--color-text-primary)]">{DIAGNOSTIC_STATUS_LABELS[item.newStatus]}</span>
                       {isLatest && <span className="px-[6px] py-[1px] font-label-xsmall font-semibold rounded-full bg-[#dbeafe] text-[#1d4ed8]">최신</span>}
                     </h3>
-                    <p className="font-body-small text-[var(--color-text-secondary)]">{item.performedBy.name}</p>
+                    <p className="font-body-small text-[var(--color-text-secondary)]">
+                      {item.performedBy.name}
+                      {item.performedBy.role && (
+                        <span className="ml-[6px] text-[var(--color-text-tertiary)]">({{ DRAFTER: '기안자', APPROVER: '결재자', REVIEWER: '수신자' }[item.performedBy.role] || item.performedBy.role})</span>
+                      )}
+                    </p>
                     {item.comment && (
                       <div className="p-[12px] mt-[8px] rounded-[10px] border border-[#e5e7eb] bg-[#f9fafb]">
                         <p className="font-body-small text-[var(--color-text-primary)] whitespace-pre-wrap">{item.comment}</p>

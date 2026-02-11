@@ -313,6 +313,9 @@ export default function DiagnosticDetailPage() {
                     </h3>
                     <p className="font-body-small text-[var(--color-text-secondary)] mb-[8px]">
                       {item.performedBy.name}
+                      {item.performedBy.role && (
+                        <span className="ml-[6px] text-[var(--color-text-tertiary)]">({{ DRAFTER: '기안자', APPROVER: '결재자', REVIEWER: '수신자' }[item.performedBy.role] || item.performedBy.role})</span>
+                      )}
                     </p>
 
                     {/* 코멘트 */}
