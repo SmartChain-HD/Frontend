@@ -39,6 +39,7 @@ export const useSubmitReview = () => {
     onSuccess: () => {
       toast.success('심사 처리가 완료되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['diagnostics'] });
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       handleApiError(error);
