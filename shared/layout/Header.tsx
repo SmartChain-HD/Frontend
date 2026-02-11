@@ -207,7 +207,7 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
         </div>
 
         {/* Notification Icon with Badge */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative flex items-center" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown((prev) => !prev)}
             className="size-[24px] cursor-pointer relative"
