@@ -220,7 +220,8 @@ export default function DiagnosticDetailPage() {
 
   // ESG 도메인만 결재자 워크플로우 존재
   const hasApprovalWorkflow = diagnostic.domain?.code === 'ESG';
-  const canSubmit = diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED';
+  const isSubmittableStatus = diagnostic.status === 'WRITING' || diagnostic.status === 'RETURNED';
+  const canSubmit = isSubmittableStatus && !!aiResult;
   const canDelete = diagnostic.status === 'WRITING';
 
   return (
@@ -356,6 +357,11 @@ export default function DiagnosticDetailPage() {
             >
               파일 관리 및 AI 분석
             </button>
+            {isSubmittableStatus && !aiResult && (
+              <span className="font-body-small text-[var(--color-text-tertiary)] self-center">
+                AI 분석을 완료해야 제출할 수 있습니다
+              </span>
+            )}
             {canSubmit && (
               <button
                 onClick={() => setShowSubmitModal(true)}
