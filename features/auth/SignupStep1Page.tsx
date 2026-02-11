@@ -51,7 +51,7 @@ export default function SignupStep1Page() {
                         <span className="leading-[1.4] text-[var(--color-primary-main)]">1단계</span>
                         <span className="leading-[1.4]">/2단계</span>
                       </p>
-                      <p className="font-title-medium leading-[1.35]">개인정보 활용동의</p>
+                      <p className="font-title-medium leading-[1.35]">개인정보 수집 동의</p>
                     </div>
 
                     {/* Agreement Section */}
@@ -83,17 +83,17 @@ export default function SignupStep1Page() {
                     {/* Terms Detail */}
                     <div className="flex flex-col gap-[12px] items-start shrink-0 w-full">
                       <p className="font-title-small leading-[1.4] text-[var(--color-text-primary)] w-full">
-                        [필수] 개인정보수집 및 이용
+                        [필수] 개인정보 수집 및 이용
                       </p>
                       <div className="bg-white relative rounded-[24px] shrink-0 w-full max-h-[120px] lg:max-h-[200px] overflow-y-auto">
                         <div className="overflow-clip rounded-[inherit] size-full">
                           <div className="flex flex-col gap-[12px] items-start p-[24px] text-[var(--color-text-primary)] w-full">
-                            <p className="font-title-small leading-[1.4]">약관동의 및 개인정보수집이용동의</p>
+                            <p className="font-title-small leading-[1.4]">개인정보 수집 및 이용 안내</p>
                             <div className="font-body-small leading-[1.5]">
                               <ol className="list-decimal pl-[24px]">
-                                <li>수집하는 개인정보 항목: 이름, 이메일, 비밀번호</li>
-                                <li>수집 목적: 서비스 제공 및 회원 관리</li>
-                                <li>보유 기간: 회원 탈퇴 시까지</li>
+                                <li>수집 항목: 이름, 이메일, 비밀번호</li>
+                                <li>이용 목적: 서비스 제공 및 회원 관리</li>
+                                <li>보관 기간: 회원 탈퇴 시까지</li>
                               </ol>
                             </div>
                           </div>
@@ -107,7 +107,7 @@ export default function SignupStep1Page() {
                       <div className="overflow-clip rounded-[inherit] size-full">
                         <div className="flex flex-wrap gap-[10px] items-center p-[24px] relative w-full">
                           <p className="flex-1 font-body-small leading-[1.5] min-w-[200px] text-[var(--color-state-info-text)]">
-                            개인정보수집 및 이용에 대한 안내 사항을 읽고 동의합니다.
+                            위 개인정보 수집 및 이용 안내를 읽었으며 이에 동의합니다.
                           </p>
                           <div className="flex gap-[10px] items-center shrink-0">
                             <RadioButton
