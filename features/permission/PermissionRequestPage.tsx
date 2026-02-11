@@ -77,7 +77,7 @@ export default function PermissionRequestPage() {
   return (
     <GuestLayout>
       <div className="flex justify-center w-full py-[48px] px-4">
-        <div className="bg-white rounded-[32px] p-[48px] w-full max-w-[1392px] shadow-[4px_4px_20px_0px_rgba(0,0,0,0.1)] border border-[#b0cbef]">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="bg-white rounded-[32px] p-[48px] w-full max-w-[1392px] shadow-[4px_4px_20px_0px_rgba(0,0,0,0.1)] border border-[#b0cbef]">
             <div className="flex flex-col gap-[24px]">
                 <h1 className="font-heading-medium text-[#212529]">시스템 권한요청</h1>
 
@@ -260,7 +260,7 @@ export default function PermissionRequestPage() {
                         variant="primary"
                         size="large"
                         className="w-full h-[64px] rounded-[20px] font-title-medium bg-[#003087]"
-                        onClick={handleSubmit}
+                        type="submit"
                         disabled={createRequest.isPending || !!pageData?.pendingRequest || !selectedRole || !selectedDomain || !selectedCompanyId}
                     >
                         {createRequest.isPending ? '요청 중...' : '권한요청'}
@@ -268,7 +268,7 @@ export default function PermissionRequestPage() {
                 </div>
 
             </div>
-        </div>
+        </form>
       </div>
     </GuestLayout>
   );

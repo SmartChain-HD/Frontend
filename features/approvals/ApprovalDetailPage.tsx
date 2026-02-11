@@ -314,7 +314,7 @@ export default function ApprovalDetailPage() {
       {/* 승인/반려 모달 */}
       {showModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-[16px] w-full max-w-[480px] mx-[16px] shadow-xl">
+          <form onSubmit={(e) => { e.preventDefault(); handleProcess(); }} className="bg-white rounded-[16px] w-full max-w-[480px] mx-[16px] shadow-xl">
             <div className="px-[24px] py-[20px] border-b border-[var(--color-border-default)]">
               <h2 className="font-title-medium text-[var(--color-text-primary)]">
                 {showModal === 'APPROVED' ? '원청에 제출' : '결재 반려'}
@@ -347,13 +347,14 @@ export default function ApprovalDetailPage() {
 
             <div className="px-[24px] py-[16px] border-t border-[var(--color-border-default)] flex justify-end gap-[12px]">
               <button
+                type="button"
                 onClick={() => { setShowModal(null); setComment(''); }}
                 className="px-[20px] py-[10px] rounded-[8px] border border-[var(--color-border-default)] font-title-small text-[var(--color-text-secondary)] hover:bg-gray-50 transition-colors"
               >
                 취소
               </button>
               <button
-                onClick={handleProcess}
+                type="submit"
                 disabled={processApprovalMutation.isPending || submitToReviewerMutation.isPending || (showModal === 'REJECTED' && !comment.trim())}
                 className={`px-[20px] py-[10px] rounded-[8px] font-title-small text-white transition-colors disabled:opacity-50 ${
                   showModal === 'APPROVED'
@@ -366,7 +367,7 @@ export default function ApprovalDetailPage() {
                   : showModal === 'APPROVED' ? '원청에 제출' : '반려'}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </DashboardLayout>
