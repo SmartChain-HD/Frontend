@@ -153,7 +153,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
       const draft = clarifications
         .map((c) => c.message)
         .join('\n\n---\n\n');
-      setRejectReason(draft);
+      setRejectReason(draft.slice(0, 2000));
     }
     setShowRejectModal(true);
   };
@@ -707,12 +707,18 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                 <X className="w-[24px] h-[24px] text-[#868e96]" />
               </button>
             </div>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="보완이 필요한 사항을 상세히 입력해주세요..."
-              className="w-full h-[200px] border border-[#dee2e6] rounded-[12px] p-[16px] font-body-medium resize-none focus:outline-none focus:border-[#003087] mb-[24px]"
-            />
+            <div className="mb-[24px]">
+              <textarea
+                value={rejectReason}
+                onChange={(e) => { if (e.target.value.length <= 2000) setRejectReason(e.target.value); }}
+                maxLength={2000}
+                placeholder="보완이 필요한 사항을 상세히 입력해주세요..."
+                className={`w-full h-[200px] border rounded-[12px] p-[16px] font-body-medium resize-none focus:outline-none ${rejectReason.length >= 2000 ? 'border-[#dc2626] focus:border-[#dc2626]' : 'border-[#dee2e6] focus:border-[#003087]'}`}
+              />
+              <div className={`text-right mt-[4px] font-body-small ${rejectReason.length >= 2000 ? 'text-[#dc2626]' : 'text-[#868e96]'}`}>
+                {rejectReason.length.toLocaleString()} / 2,000자
+              </div>
+            </div>
             <div className="flex gap-[12px] justify-end">
               <button
                 type="button"
