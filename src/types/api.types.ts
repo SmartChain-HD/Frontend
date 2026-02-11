@@ -160,6 +160,9 @@ export interface LoginResponse {
   user: UserInfoDto;
   remainingAttempts?: number;
   warningMessage?: string;
+  passwordExpired?: boolean;
+  passwordExpiresAt?: string;
+  passwordExpiresInDays?: number;
 }
 
 export interface UserInfoDto {
@@ -170,6 +173,18 @@ export interface UserInfoDto {
   role?: RoleInfoDto;
   domainRoles?: UserDomainRole[];
   company?: CompanyInfoDto;
+}
+
+// --- 비밀번호 변경 ---
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
 }
 
 // --- 토큰 갱신 ---
@@ -387,6 +402,8 @@ export const ERROR_CODES = {
   ACCESS_DENIED: 'A004',
   ACCOUNT_LOCKED_PERMANENT: 'A005',
   ACCOUNT_LOCKED_TEMPORARY: 'A006',
+  PASSWORD_EXPIRED: 'A007',
+  PASSWORD_REUSE_DENIED: 'A008',
   PERMISSION_DENIED_RESOURCE: 'PERM_001',
   PERMISSION_DENIED_ACTION: 'PERM_002',
 

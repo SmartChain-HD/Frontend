@@ -8,7 +8,7 @@ import { useAuthStore } from '../store/authStore';
 import type { AuthUser } from '../store/authStore';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { handleApiError } from '../utils/errorHandler';
-import type { ErrorResponse } from '../types/api.types';
+import type { ChangePasswordRequest, ErrorResponse } from '../types/api.types';
 
 export const useLogin = () => {
   const navigate = useNavigate();
@@ -16,6 +16,11 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data) => {
+      if (data.passwordExpired) {
+        navigate('/change-password', { state: { expired: true } });
+        return;
+      }
+
       const user = data.user;
       toast.success(`${user.name}님, 환영합니다.`);
       if (!user.role || user.role.code === 'GUEST') {
@@ -108,6 +113,22 @@ export const useVerifyEmail = () => {
     mutationFn: authApi.verifyEmail,
     onSuccess: () => {
       toast.success('이메일 인증이 완료되었습니다.');
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      handleApiError(error);
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) => authApi.changePassword(data),
+    onSuccess: () => {
+      toast.success('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      useAuthStore.getState().logout();
+      navigate('/login');
     },
     onError: (error: AxiosError<ErrorResponse>) => {
       handleApiError(error);

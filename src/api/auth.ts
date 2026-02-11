@@ -13,6 +13,8 @@ import type {
   EmailVerificationRequest,
   EmailVerificationResponse,
   MyInfoResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
 } from '../types/api.types';
 import type { AuthUser } from '../store/authStore';
 
@@ -72,5 +74,10 @@ export const logout = async (): Promise<void> => {
 
 export const getMe = async (): Promise<MyInfoResponse> => {
   const response = await apiClient.get<BaseResponse<MyInfoResponse>>('/v1/auth/me');
+  return response.data.data;
+};
+
+export const changePassword = async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+  const response = await apiClient.post<BaseResponse<ChangePasswordResponse>>('/v1/auth/change-password', data);
   return response.data.data;
 };
