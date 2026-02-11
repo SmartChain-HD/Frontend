@@ -589,12 +589,13 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
       {/* ESG Approve Modal */}
       {showApproveModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-[20px] p-[32px] w-[700px] max-w-[90%]">
+          <form onSubmit={(e) => { e.preventDefault(); handleApproveWithComments(); }} className="bg-white rounded-[20px] p-[32px] w-[700px] max-w-[90%]">
             <div className="flex items-center justify-between mb-[24px]">
               <h3 className="font-heading-small text-[#212529]">
                 ESG 심사 승인
               </h3>
               <button
+                type="button"
                 onClick={() => setShowApproveModal(false)}
                 className="p-[8px] hover:bg-[#f1f3f5] rounded-[8px] transition-colors"
               >
@@ -642,27 +643,28 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
 
             <div className="flex gap-[12px] justify-end">
               <button
+                type="button"
                 onClick={() => setShowApproveModal(false)}
                 className="px-[24px] py-[12px] bg-[#e9ecef] text-[#495057] rounded-[8px] font-title-small hover:bg-[#dee2e6] transition-colors"
               >
                 취소
               </button>
               <button
-                onClick={handleApproveWithComments}
+                type="submit"
                 disabled={isMutating}
                 className="px-[24px] py-[12px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
               >
                 승인
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
       {/* Confirm Approve Modal (SAFETY/COMPLIANCE) */}
       {showConfirmApproveModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-[20px] p-[32px] w-[480px] max-w-[90%]">
+          <form onSubmit={(e) => { e.preventDefault(); handleConfirmApprove(); }} className="bg-white rounded-[20px] p-[32px] w-[480px] max-w-[90%]">
             <h3 className="font-heading-small text-[#212529] mb-[16px]">
               승인 확인
             </h3>
@@ -671,32 +673,34 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
             </p>
             <div className="flex gap-[12px] justify-end">
               <button
+                type="button"
                 onClick={() => setShowConfirmApproveModal(false)}
                 className="px-[24px] py-[12px] bg-[#e9ecef] text-[#495057] rounded-[8px] font-title-small hover:bg-[#dee2e6] transition-colors"
               >
                 취소
               </button>
               <button
-                onClick={handleConfirmApprove}
+                type="submit"
                 disabled={isMutating}
                 className="px-[24px] py-[12px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
               >
                 승인
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-[20px] p-[32px] w-[600px] max-w-[90%]">
+          <form onSubmit={(e) => { e.preventDefault(); handleRequestFix(); }} className="bg-white rounded-[20px] p-[32px] w-[600px] max-w-[90%]">
             <div className="flex items-center justify-between mb-[24px]">
               <h3 className="font-heading-small text-[#212529]">
                 보완 요청 사유 입력
               </h3>
               <button
+                type="button"
                 onClick={() => setShowRejectModal(false)}
                 className="p-[8px] hover:bg-[#f1f3f5] rounded-[8px] transition-colors"
               >
@@ -711,20 +715,21 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
             />
             <div className="flex gap-[12px] justify-end">
               <button
+                type="button"
                 onClick={() => setShowRejectModal(false)}
                 className="px-[24px] py-[12px] bg-[#e9ecef] text-[#495057] rounded-[8px] font-title-small hover:bg-[#dee2e6] transition-colors"
               >
                 취소
               </button>
               <button
-                onClick={handleRequestFix}
+                type="submit"
                 disabled={isMutating || !rejectReason.trim()}
                 className="px-[24px] py-[12px] bg-[#dc2626] text-white rounded-[8px] font-title-small hover:bg-[#b91c1c] transition-colors disabled:opacity-50"
               >
                 보완 요청 전송
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </DashboardLayout>

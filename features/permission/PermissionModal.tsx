@@ -55,7 +55,7 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
   if (showConfirm) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="bg-white rounded-[20px] p-[32px] w-[400px] flex flex-col gap-[24px] shadow-xl">
+        <form onSubmit={(e) => { e.preventDefault(); handleConfirm(); }} className="bg-white rounded-[20px] p-[32px] w-[400px] flex flex-col gap-[24px] shadow-xl">
           <div className="flex flex-col items-center gap-4">
             {action === 'approve' ? (
               <div className="w-16 h-16 bg-[#e8f5e9] rounded-full flex items-center justify-center">
@@ -82,6 +82,7 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
               className="flex-1"
               onClick={() => setShowConfirm(false)}
               disabled={isProcessing}
+              type="button"
             >
               취소
             </Button>
@@ -89,24 +90,24 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
               variant="primary"
               size="large"
               className={`flex-1 ${action === 'reject' ? 'bg-[#c62828] hover:bg-[#b71c1c]' : ''}`}
-              onClick={handleConfirm}
+              type="submit"
               disabled={isProcessing}
             >
               {isProcessing ? '처리 중...' : '확인'}
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     );
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-[24px] p-[32px] w-[560px] flex flex-col gap-[24px] shadow-xl max-h-[90vh] overflow-y-auto">
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="bg-white rounded-[24px] p-[32px] w-[560px] flex flex-col gap-[24px] shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h2 className="font-heading-small text-[#212529]">권한 요청 상세</h2>
-          <button onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button type="button" onClick={handleClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5 text-[#868e96]" />
           </button>
         </div>
@@ -243,11 +244,11 @@ export default function PermissionModal({ isOpen, request, onClose, onConfirm, i
           className={`w-full h-[56px] rounded-[16px] ${
             action === 'reject' ? 'bg-[#c62828] hover:bg-[#b71c1c]' : 'bg-[#003087]'
           }`}
-          onClick={handleSubmit}
+          type="submit"
         >
           {action === 'approve' ? '승인하기' : '반려하기'}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }
