@@ -12,6 +12,7 @@ import Footer from '../../shared/layout/Footer';
 import type { AxiosError } from 'axios';
 import { useLogin } from '../../src/hooks/useAuth';
 import { useAuthStore } from '../../src/store/authStore';
+import { getMe } from '../../src/api/auth';
 import { loginSchema, type LoginFormData } from '../../src/validation/auth';
 import type { ErrorResponse } from '../../src/types/api.types';
 import { getLoginErrorMessage, getAccountLockState, formatLockTime, type AccountLockState } from '../../src/utils/errorHandler';
@@ -118,10 +119,18 @@ function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  // 이미 인증된 사용자는 대시보드로 리다이렉트
+  // 이미 인증된 사용자는 토큰 유효성 확인 후 대시보드로 리다이렉트
   useEffect(() => {
     if (isAuthenticated && !loginMutation.isPending) {
-      navigate('/dashboard', { replace: true });
+      let cancelled = false;
+      getMe()
+        .then(() => {
+          if (!cancelled) navigate('/dashboard', { replace: true });
+        })
+        .catch(() => {
+          // 토큰 만료 — interceptor가 logout 처리
+        });
+      return () => { cancelled = true; };
     }
   }, [isAuthenticated, loginMutation.isPending, navigate]);
 
