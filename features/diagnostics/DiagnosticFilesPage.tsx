@@ -418,6 +418,8 @@ export default function DiagnosticFilesPage() {
   const { data: aiResult } = useAiResult(diagnosticId, isAnalyzing);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // 재제출 시 이전 결과와 새 결과를 구분하기 위해 제출 시점의 analyzedAt 저장
+  const prevAnalyzedAtRef = useRef<string | null>(null);
 
   // 모든 업로드된 파일 표시
   // 새로 업로드한 파일 상태를 우선 사용 (job polling 결과 반영)
@@ -490,9 +492,15 @@ export default function DiagnosticFilesPage() {
   }, [diagnosticId, existingFiles]);
 
   // 분석 완료 감지 → 기안 상세 페이지로 리다이렉트
+  // 재제출 시 이전 결과(analyzedAt 동일)와 새 결과를 구분
   useEffect(() => {
     if (isAnalyzing && aiResult) {
+      // 이전 결과와 analyzedAt이 같으면 아직 새 결과가 아님 → skip
+      if (prevAnalyzedAtRef.current && aiResult.analyzedAt === prevAnalyzedAtRef.current) {
+        return;
+      }
       setIsAnalyzing(false);
+      prevAnalyzedAtRef.current = null;
       navigate(`/diagnostics/${diagnosticId}`);
     }
   }, [aiResult, isAnalyzing, navigate, diagnosticId]);
@@ -706,7 +714,8 @@ export default function DiagnosticFilesPage() {
 
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
-    // 이전 분석 결과 캐시 제거 후 제출 (재제출 시 이전 결과로 바로 리다이렉트 되는 문제 방지)
+    // 이전 분석 결과의 analyzedAt을 저장하여 새 결과와 구분
+    prevAnalyzedAtRef.current = aiResult?.analyzedAt ?? null;
     queryClient.removeQueries({ queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId) });
     setIsAnalyzing(true);
     const slotHints = (previewMutation.data?.slot_hint || []).map(h => ({

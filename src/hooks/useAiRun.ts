@@ -35,7 +35,6 @@ export const useAiResult = (diagnosticId: number, polling = false) => {
     queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId),
     queryFn: () => aiRunApi.getAiResult(diagnosticId),
     enabled: diagnosticId > 0,
-    // polling 파라미터가 true일 때만 5초마다 재시도
     refetchInterval: polling ? 5000 : false,
     retry: false,
   });
