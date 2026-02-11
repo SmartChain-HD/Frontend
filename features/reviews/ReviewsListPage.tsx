@@ -11,10 +11,10 @@ const STATUS_STYLES: Record<ReviewStatus, string> = {
   REVISION_REQUIRED: 'text-[#e65100] bg-[#fff3e0]',
 };
 
-const RISK_BADGE_STYLES: Record<string, string> = {
-  red: 'text-[#b91c1c] bg-[#fef2f2]',
-  yellow: 'text-[#e65100] bg-[#fff3e0]',
-  green: 'text-[#008233] bg-[#f0fdf4]',
+const RISK_LEVEL_CONFIG: Record<string, { label: string; style: string }> = {
+  HIGH: { label: '고위험', style: 'text-[#b91c1c] bg-[#fef2f2]' },
+  MEDIUM: { label: '중위험', style: 'text-[#e65100] bg-[#fff3e0]' },
+  LOW: { label: '저위험', style: 'text-[#008233] bg-[#f0fdf4]' },
 };
 
 const STATUS_LABELS: Record<ReviewStatus, string> = {
@@ -218,7 +218,9 @@ export default function ReviewsListPage() {
               )}
 
               {reviews.map((item) => {
-                const riskStyle = item.riskColorClass ? RISK_BADGE_STYLES[item.riskColorClass] : 'bg-gray-100 text-gray-600 border-gray-200';
+                const riskConfig = item.riskLevel ? RISK_LEVEL_CONFIG[item.riskLevel] : null;
+                const riskLabel = riskConfig?.label || item.riskLevelLabel;
+                const riskStyle = riskConfig?.style || (item.riskColorClass ? `text-[#6b7280] bg-gray-100` : '');
                 return (
                   <tr
                     key={item.reviewId}
@@ -242,12 +244,12 @@ export default function ReviewsListPage() {
                       {item.company?.companyName || '-'}
                     </td>
                     <td className="px-[16px] py-[14px] text-center" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
-                      {item.riskLevelLabel ? (
+                      {riskLabel ? (
                         <span className={`inline-block px-[10px] py-[4px] rounded-full font-title-xsmall border ${riskStyle}`}>
-                          {item.riskLevelLabel}
+                          {riskLabel}
                         </span>
                       ) : (
-                        <span className="font-body-medium text-[var(--color-text-tertiary)]">-</span>
+                        <span className="font-body-medium text-[var(--color-text-tertiary)]">미분석</span>
                       )}
                     </td>
                     <td className="px-[16px] py-[14px] font-body-medium text-[var(--color-text-tertiary)]" onClick={() => navigate(`/dashboard/${item.domainCode.toLowerCase()}/review/${item.reviewId}`)}>
