@@ -507,14 +507,20 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
     }, {} as Record<string, number>);
 
     const basePath = `/diagnostics?domainCode=${activeTab}`;
-    return [
+    const totalCount = content.length;
+    const stats = [
+      { label: '전체', value: String(totalCount), color: 'text-[#212529]', path: basePath },
       { label: '작성중', value: String(statusCounts['WRITING'] || 0), color: 'text-[#495057]', path: `${basePath}&status=WRITING` },
-      { label: '제출됨', value: String(statusCounts['SUBMITTED'] || 0), color: 'text-[#002554]', path: `${basePath}&status=SUBMITTED` },
-      { label: '반려됨', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#b91c1c]', path: `${basePath}&status=RETURNED` },
-      { label: '승인됨', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
-      { label: '심사중', value: String(statusCounts['REVIEWING'] || 0), color: 'text-[#e65100]', path: `${basePath}&status=REVIEWING` },
-      { label: '완료', value: String(statusCounts['COMPLETED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=COMPLETED` },
     ];
+    if (activeTab === 'ESG') {
+      stats.push({ label: '검토중', value: String(statusCounts['SUBMITTED'] || 0), color: 'text-[#002554]', path: `${basePath}&status=SUBMITTED` });
+    }
+    stats.push(
+      { label: '심사중', value: String(statusCounts['REVIEWING'] || 0), color: 'text-[#e65100]', path: `${basePath}&status=REVIEWING` },
+      { label: '승인됨', value: String(statusCounts['APPROVED'] || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
+      { label: '반려됨', value: String(statusCounts['RETURNED'] || 0), color: 'text-[#b91c1c]', path: `${basePath}&status=RETURNED` },
+    );
+    return stats;
   }, [diagnosticsQuery.data, activeTab]);
 
   // Calculate stats for APPROVER from approvals data
