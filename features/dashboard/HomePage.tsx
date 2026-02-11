@@ -54,9 +54,9 @@ const approvalStatusColors: Record<ApprovalStatus, string> = {
 };
 
 const reviewStatusLabels: Record<ReviewStatus, string> = {
-  REVIEWING: '검토중',
-  APPROVED: '적합',
-  REVISION_REQUIRED: '보완필요',
+  REVIEWING: '심사중',
+  APPROVED: '승인됨',
+  REVISION_REQUIRED: '보완됨',
 };
 
 const reviewStatusColors: Record<ReviewStatus, string> = {
@@ -546,13 +546,10 @@ export default function HomePage({ userRole: legacyUserRole }: HomePageProps) {
 
     const basePath = `/reviews?domainCode=${activeTab}`;
     return [
-      { label: '전체 협력사', value: String(summary.totalCompanies || 0), color: 'text-[#212529]' },
-      { label: '완료', value: String(summary.completedCount || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
-      { label: '진행중', value: String(summary.inProgressCount || 0), color: 'text-[#002554]', path: `${basePath}&status=REVIEWING` },
-      { label: '대기', value: String(summary.pendingCount || 0), color: 'text-[#495057]', path: basePath },
-      { label: '고위험', value: String(summary.highRiskCount || 0), color: 'text-[#b91c1c]', path: `${basePath}&riskLevel=HIGH` },
-      { label: '중위험', value: String(summary.mediumRiskCount || 0), color: 'text-[#e65100]', path: `${basePath}&riskLevel=MEDIUM` },
-      { label: '저위험', value: String(summary.lowRiskCount || 0), color: 'text-[#008233]', path: `${basePath}&riskLevel=LOW` },
+      { label: '총 협력사', value: String(summary.totalCompanies || 0), color: 'text-[#212529]' },
+      { label: '심사중', value: String(summary.inProgressCount || 0), color: 'text-[#2563eb]', path: `${basePath}&status=REVIEWING` },
+      { label: '승인됨', value: String(summary.completedCount || 0), color: 'text-[#008233]', path: `${basePath}&status=APPROVED` },
+      { label: '보완됨', value: String(summary.pendingCount || 0), color: 'text-[#e65100]', path: `${basePath}&status=REVISION_REQUIRED` },
     ];
   }, [reviewsListQuery.data?.summary, activeTab]);
 
