@@ -5,7 +5,7 @@ import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { AlertCircle, ArrowLeft, X, FileText, Download, Bot } from 'lucide-react';
 import { useReviewDetail, useSubmitReview } from '../../src/hooks/useReviews';
 import { useAiResult } from '../../src/hooks/useAiRun';
-import { useDiagnosticHistory, useSubmitDiagnostic } from '../../src/hooks/useDiagnostics';
+import { useDiagnosticDetail, useDiagnosticHistory, useSubmitDiagnostic } from '../../src/hooks/useDiagnostics';
 import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail } from '../../src/api/aiRun';
@@ -124,6 +124,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
 
   const { data: review, isLoading, isError } = useReviewDetail(reviewId);
   const diagnosticId = review?.diagnostic?.diagnosticId ?? 0;
+  const { data: diagnosticDetail } = useDiagnosticDetail(diagnosticId);
   const { data: aiResult } = useAiResult(diagnosticId);
   const { data: history } = useDiagnosticHistory(diagnosticId);
   const submitReview = useSubmitReview();
@@ -170,7 +171,6 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
     setShowConfirmApproveModal(false);
     submitReview.mutate(
       { id: reviewId, data: { decision: 'APPROVED' } },
-      { onSuccess: () => navigate(listPath) }
     );
   };
 
@@ -188,7 +188,6 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
       {
         onSuccess: () => {
           setShowApproveModal(false);
-          navigate(listPath);
         },
       }
     );
@@ -352,7 +351,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
           {/* 기안 정보 */}
           <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
             <h2 className="font-title-medium text-[#212529] mb-[16px]">기안 정보</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px]">
               <div>
                 <p className="font-body-small text-[#868e96] mb-[4px]">기안명</p>
                 <p className="font-title-small text-[#212529]">{review.diagnostic?.title || '-'}</p>
@@ -368,6 +367,14 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
               <div>
                 <p className="font-body-small text-[#868e96] mb-[4px]">상태</p>
                 <p className="font-title-small text-[#212529]">{review.statusLabel || review.status}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">기안자명</p>
+                <p className="font-title-small text-[#212529]">{diagnosticDetail?.createdBy?.maskedName || '-'}</p>
+              </div>
+              <div>
+                <p className="font-body-small text-[#868e96] mb-[4px]">기안자 이메일</p>
+                <p className="font-title-small text-[#212529]">{diagnosticDetail?.createdBy?.email || '-'}</p>
               </div>
             </div>
           </div>
@@ -583,7 +590,7 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
                   disabled={isMutating || isCompleted}
                   className="px-[32px] py-[14px] bg-[#00ad1d] text-white rounded-[8px] font-title-small hover:bg-[#008a18] transition-colors disabled:opacity-50"
                 >
-                  승인 (Approve)
+                  완료 (Complete)
                 </button>
               </>
             )}
