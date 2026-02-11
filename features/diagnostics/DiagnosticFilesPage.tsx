@@ -484,10 +484,19 @@ export default function DiagnosticFilesPage() {
     );
   }, [requiredSlotStatus]);
 
-  // 초기 로드 플래그 (preview와 add는 사용자가 직접 수행)
+  // 초기 로드 시 preview 자동 호출 (슬롯 목록을 즉시 표시)
   useEffect(() => {
     if (diagnosticId > 0 && existingFiles && !initialLoadDoneRef.current) {
       initialLoadDoneRef.current = true;
+      // 기존 완료 파일을 addedFileIds에 자동 추가
+      const existingCompleteIds = existingFiles
+        .filter(f => f.parsingStatus === 'SUCCESS')
+        .map(f => f.fileId);
+      if (existingCompleteIds.length > 0) {
+        setAddedFileIds(new Set(existingCompleteIds));
+      }
+      // preview 호출하여 슬롯 목록 로드
+      previewMutation.mutate({ diagnosticId, fileIds: existingCompleteIds });
     }
   }, [diagnosticId, existingFiles]);
 
