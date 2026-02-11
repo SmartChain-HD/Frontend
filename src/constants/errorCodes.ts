@@ -14,6 +14,8 @@ export const ERROR_HANDLERS: Record<string, ErrorConfig> = {
   A004: { action: 'toast' },
   A005: { action: 'toast', customMessage: '계정이 영구 잠금되었습니다. 관리자에게 문의해주세요.' },
   A006: { action: 'silent' }, // LoginPage에서 직접 처리
+  A007: { action: 'silent' }, // 비밀번호 만료 — LoginPage에서 직접 처리
+  A008: { action: 'toast', customMessage: '이전에 사용한 비밀번호는 재사용할 수 없습니다.' },
 
   // Permission
   PERM_001: { action: 'redirect', redirectTo: '/dashboard', customMessage: '해당 리소스에 대한 접근 권한이 없습니다' },
@@ -174,6 +176,10 @@ export const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   A005: '계정이 영구 잠금되었습니다. 관리자에게 문의해주세요.',
   A006: '계정이 일시 잠금되었습니다.',
   ACCOUNT_LOCKED: '계정이 잠금되었습니다.',
+
+  // 비밀번호 만료/재사용
+  A007: '비밀번호가 만료되었습니다. 새 비밀번호로 변경해주세요.',
+  A008: '이전에 사용한 비밀번호는 재사용할 수 없습니다.',
 
   // 서버 오류 (500)
   S001: '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',

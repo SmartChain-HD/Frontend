@@ -240,6 +240,14 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
         {/* Divider */}
         <div className="h-[24px] w-px bg-white/30" />
 
+        {/* Change Password */}
+        <Link
+          to="/change-password"
+          className="hidden md:block font-title-medium text-white cursor-pointer hover:opacity-80 whitespace-nowrap"
+        >
+          비밀번호 변경
+        </Link>
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}

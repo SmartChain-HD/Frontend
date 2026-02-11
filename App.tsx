@@ -26,6 +26,7 @@ import AiAnalysisPage from './features/documents/AiAnalysisPage';
 import UserManagementPage from './features/management/UserManagementPage';
 import CompanyManagementPage from './features/management/CompanyManagementPage';
 import ActivityLogPage from './features/management/ActivityLogPage';
+import ChangePasswordPage from './features/auth/ChangePasswordPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -128,6 +129,16 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup/step1" element={<SignupStep1Page />} />
       <Route path="/signup/step2" element={<SignupStep2Page />} />
+
+      {/* Change Password */}
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <ChangePasswordPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Permission Routes */}
       <Route
