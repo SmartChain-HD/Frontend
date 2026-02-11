@@ -58,9 +58,9 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-hidden md:overflow-hidden overflow-y-auto">
+    <div className="bg-[var(--color-page-bg)] h-screen w-full flex flex-col overflow-y-auto md:overflow-hidden">
       <div className="flex-1 flex items-center justify-center p-4 md:p-8 lg:p-12 min-h-0">
-        <div className="bg-white flex flex-col lg:flex-row w-full max-w-[1400px] h-full max-h-[700px] rounded-[20px] shadow-lg overflow-hidden">
+        <div className="bg-white flex flex-col lg:flex-row w-full max-w-[1400px] h-auto md:h-full md:max-h-[700px] rounded-[20px] shadow-lg overflow-hidden">
           <LeftPanel />
 
           <div className="flex-1 w-full p-6 md:p-8 flex flex-col justify-center items-center">
