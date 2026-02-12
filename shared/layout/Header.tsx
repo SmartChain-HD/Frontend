@@ -145,7 +145,7 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
   return (
     <div className="bg-[#002554] h-[60px] md:h-[85px] w-full flex items-center justify-between px-[16px] md:px-[30px] shadow-md z-50 relative">
       {/* Left Side */}
-      <div className="flex items-center gap-[12px] md:gap-[24px]">
+      <div className="flex items-center gap-[12px] md:gap-[24px] min-w-0">
         {/* Hamburger Menu (mobile) */}
         {showMenuButton && (
           <button
@@ -169,16 +169,16 @@ export default function Header({ userName, userRole, onToggleSidebar, showMenuBu
         </Link>
 
         {/* Divider */}
-        <div className="hidden md:block h-[24px] w-px bg-white/30" />
+        <div className="hidden md:block h-[24px] w-px bg-white/30 shrink-0" />
 
         {/* System Title */}
-        <p className="hidden md:block font-title-medium text-white whitespace-nowrap">
+        <p className="hidden md:block font-title-medium text-white truncate min-w-0">
           현대중공업 협력사 통합관리시스템
         </p>
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-[12px] md:gap-[24px]">
+      <div className="flex items-center gap-[12px] md:gap-[24px] shrink-0">
         {/* User Info */}
         <div className="flex items-center gap-[8px]">
           <p className="font-body-medium text-white">
