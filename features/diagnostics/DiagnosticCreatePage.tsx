@@ -54,18 +54,10 @@ export default function DiagnosticCreatePage() {
       setValue('domainCode', selectedCampaign.domainCode, { shouldValidate: true, shouldDirty: true });
     }
 
-    // 기간 자동 설정
+    // 기간 자동 설정 (캠페인 날짜를 그대로 사용)
     if (selectedCampaign.startDate && selectedCampaign.endDate) {
-      const startDate = new Date(selectedCampaign.startDate);
-      const endDate = new Date(selectedCampaign.endDate);
-
-      const periodStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-      const periodEnd = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
-
-      const formatDate = (d: Date) => d.toISOString().split('T')[0];
-
-      setValue('periodStartDate', formatDate(periodStart), { shouldValidate: true, shouldDirty: true });
-      setValue('periodEndDate', formatDate(periodEnd), { shouldValidate: true, shouldDirty: true });
+      setValue('periodStartDate', selectedCampaign.startDate, { shouldValidate: true, shouldDirty: true });
+      setValue('periodEndDate', selectedCampaign.endDate, { shouldValidate: true, shouldDirty: true });
     }
   }, [selectedCampaignId, campaigns, setValue]);
 
