@@ -9,7 +9,7 @@ import {
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
-import type { AiAnalysisResultResponse, SlotResultDetail } from '../../src/api/aiRun';
+import type { AiAnalysisResultResponse, SlotResultDetail, CrossValidationResult } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { REASON_LABELS } from '../../src/constants/reasonLabels';
 
@@ -360,18 +360,26 @@ export default function DiagnosticDetailPage() {
             >
               파일 관리 및 AI 분석
             </button>
-            {isSubmittableStatus && !aiResult && (
-              <span className="font-body-small text-[var(--color-text-tertiary)] self-center">
-                AI 분석을 완료해야 제출할 수 있습니다
-              </span>
-            )}
-            {canSubmit && (
-              <button
-                onClick={() => setShowSubmitModal(true)}
-                className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
-              >
-                {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
-              </button>
+            {isSubmittableStatus && (
+              <div className="relative group">
+                <button
+                  onClick={canSubmit ? () => setShowSubmitModal(true) : undefined}
+                  disabled={!canSubmit}
+                  className={`px-[24px] py-[12px] rounded-[8px] font-title-small transition-colors ${
+                    canSubmit
+                      ? 'bg-[var(--color-primary-main)] text-white hover:opacity-90 cursor-pointer'
+                      : 'bg-[var(--color-primary-main)]/40 text-white cursor-not-allowed'
+                  }`}
+                >
+                  {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
+                </button>
+                {!canSubmit && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[8px] px-[12px] py-[8px] bg-[var(--color-text-primary)] text-white font-body-small rounded-[8px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
+                    AI 분석을 완료해야 제출할 수 있습니다
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-[var(--color-text-primary)]" />
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -508,6 +516,20 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
           </div>
         )}
 
+        {/* 교차검증 결과 */}
+        {details?.crossValidations && details.crossValidations.length > 0 && (
+          <div>
+            <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[12px]">
+              교차검증 결과
+            </p>
+            <div className="space-y-[12px]">
+              {details.crossValidations.map((cv, index) => (
+                <CrossValidationCard key={index} result={cv} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 분석 정보 */}
         <div className="grid grid-cols-2 gap-[16px] pt-[16px] border-t border-[var(--color-border-default)]">
           <div>
@@ -524,6 +546,59 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CrossValidationCard({ result }: { result: CrossValidationResult }) {
+  const verdict = result.verdict as Verdict;
+  const title = result.displayNames.join(' × ');
+  const hasReasons = result.reasons && result.reasons.length > 0;
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
+      <div
+        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
+        onClick={() => hasReasons && setOpen(prev => !prev)}
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-[8px]">
+            <svg className="w-[16px] h-[16px] text-[var(--color-text-tertiary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span className="font-title-medium text-[var(--color-text-primary)]">
+              {title}
+            </span>
+          </div>
+        </div>
+        <span
+          className="px-[20px] py-[8px] rounded-[8px] font-title-medium flex-shrink-0 ml-[16px]"
+          style={VERDICT_BADGE[verdict]}
+        >
+          {VERDICT_LABELS[verdict]}
+        </span>
+        {hasReasons && (
+          <svg
+            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
+      </div>
+      {hasReasons && open && (
+        <div className="px-[20px] pb-[16px]">
+          <ul className="space-y-[6px]">
+            {result.reasons.map((reason, index) => (
+              <li key={index} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
+                <span className="w-[4px] h-[4px] bg-gray-500 rounded-full mt-[8px] flex-shrink-0" />
+                {REASON_LABELS[reason] || reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

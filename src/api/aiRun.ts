@@ -60,6 +60,14 @@ export interface ClarificationDetail {
   file_ids: string[];
 }
 
+export interface CrossValidationResult {
+  slots: string[];
+  displayNames: string[];
+  verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+  reasons: string[];
+  extras?: Record<string, unknown>;
+}
+
 // 최상위 extras 타입
 export interface AnalysisExtras {
   service_why?: string;
@@ -69,6 +77,7 @@ export interface AnalysisExtras {
 export interface AiAnalysisDetails {
   slot_results: SlotResultDetail[];
   clarifications: ClarificationDetail[];
+  crossValidations?: CrossValidationResult[];
   extras?: AnalysisExtras;
 }
 
