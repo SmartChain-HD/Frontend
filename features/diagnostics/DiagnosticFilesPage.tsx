@@ -424,6 +424,7 @@ export default function DiagnosticFilesPage() {
     });
   }, [diagnosticId]);
   const [checkedPendingIds, setCheckedPendingIds] = useState<Set<number>>(new Set());
+  const [checkedAddedIds, setCheckedAddedIds] = useState<Set<number>>(new Set());
   const initialLoadDoneRef = useRef(false);
 
   // AI 분석 관련 훅
@@ -489,8 +490,8 @@ export default function DiagnosticFilesPage() {
     .filter(f => f.uploadStatus === 'complete')
     .map(f => f.id);
 
-  // preview 데이터: initialPreviewData를 단일 소스로 사용
-  const previewData = initialPreviewData;
+  // preview 데이터: mutation 결과를 우선 사용 (isPending과 동시에 갱신되어 stale 데이터 방지)
+  const previewData = previewMutation.data ?? initialPreviewData;
   const requiredSlotStatus = previewData?.required_slot_status || [];
   const missingRequiredSlots = previewData?.missing_required_slots || [];
   const hasMissingRequiredSlots = missingRequiredSlots.length > 0;
@@ -793,6 +794,51 @@ export default function DiagnosticFilesPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const idsToDelete = [...checkedAddedIds];
+    if (idsToDelete.length === 0) return;
+
+    try {
+      // 병렬로 삭제 API 호출
+      await Promise.all(idsToDelete.map(id => deleteMutation.mutateAsync(id)));
+
+      // 로컬 state 일괄 정리
+      const deletedSet = new Set(idsToDelete);
+      setNewlyUploadedFiles(prev => prev.filter(f => !deletedSet.has(f.id)));
+      setAddedFileIds(prev => {
+        const next = new Set(prev);
+        deletedSet.forEach(id => next.delete(id));
+        return next;
+      });
+      if (selectedFileId && deletedSet.has(selectedFileId)) {
+        setSelectedFileId(null);
+      }
+
+      // 쿼리 캐시 invalidate (1회)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
+
+      // preview 호출 (1회) — removedFileIds에 삭제된 파일 ID 전체 전달
+      try {
+        const result = await previewMutation.mutateAsync({
+          diagnosticId,
+          fileIds: [],
+          removedFileIds: idsToDelete.map(String),
+          packageId: packageIdRef.current || undefined,
+        });
+        setInitialPreviewData(result);
+        if (result.package_id) packageIdRef.current = result.package_id;
+      } catch {
+        // preview 실패 시 무시
+      }
+
+      // 체크 초기화 및 토스트
+      setCheckedAddedIds(new Set());
+      toast.success(`${idsToDelete.length}개 파일이 삭제되었습니다`);
+    } catch {
+      toast.error('일부 파일 삭제에 실패했습니다');
+    }
+  };
+
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
     // 이전 결과 ID 저장하여 polling에서 이전 결과 필터링
@@ -1055,39 +1101,100 @@ export default function DiagnosticFilesPage() {
                 {/* Add된 파일 (토글 내부) - Add 버튼 아래에 배치 */}
                 {addedFiles.length > 0 && (
                   <>
-                    <button
-                      onClick={() => setIsFileListCollapsed(!isFileListCollapsed)}
-                      className="w-full flex items-center justify-between py-[8px] hover:bg-gray-50 rounded-[8px] px-[4px] transition-colors"
-                    >
-                      <h3 className="font-title-small text-[var(--color-text-primary)]">
-                        추가된 파일 ({addedFiles.length})
-                      </h3>
-                      <svg
-                        className={`w-[20px] h-[20px] text-gray-500 transition-transform ${isFileListCollapsed ? '' : 'rotate-180'}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="flex items-center justify-between py-[8px] px-[4px]">
+                      <button
+                        onClick={() => setIsFileListCollapsed(!isFileListCollapsed)}
+                        className="flex items-center gap-[4px] hover:bg-gray-50 rounded-[8px] transition-colors"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+                        <h3 className="font-title-small text-[var(--color-text-primary)]">
+                          추가된 파일 ({addedFiles.length})
+                        </h3>
+                        <svg
+                          className={`w-[20px] h-[20px] text-gray-500 transition-transform ${isFileListCollapsed ? '' : 'rotate-180'}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {!isFileListCollapsed && (
+                        <button
+                          onClick={() => {
+                            const allIds = addedFiles.map(f => f.id);
+                            const allChecked = allIds.every(id => checkedAddedIds.has(id));
+                            setCheckedAddedIds(allChecked ? new Set() : new Set(allIds));
+                          }}
+                          className="font-body-small text-[var(--color-primary-main)] hover:underline"
+                        >
+                          {addedFiles.every(f => checkedAddedIds.has(f.id)) ? '전체 해제' : '전체 선택'}
+                        </button>
+                      )}
+                    </div>
 
                     {!isFileListCollapsed && (
                       <div className="space-y-[6px] max-h-[300px] overflow-y-auto">
                         {addedFiles.map((file) => (
-                          <FileUploadItem
-                            key={file.id}
-                            file={file}
-                            onRetry={() => handleRetry(file)}
-                            onDelete={() => handleDeleteFile(file.id)}
-                            onSelect={() => setSelectedFileId(file.id)}
-                            isSelected={selectedFileId === file.id}
-                            isRetrying={retryMutation.isPending}
-                            isDeleting={deleteMutation.isPending}
-                            autoTag={getAutoTagForFile(file.id)}
-                          />
+                          <div key={file.id} className="flex items-center gap-[8px]">
+                            <button
+                              onClick={() => setCheckedAddedIds(prev => {
+                                const next = new Set(prev);
+                                if (next.has(file.id)) next.delete(file.id);
+                                else next.add(file.id);
+                                return next;
+                              })}
+                              className="flex-shrink-0"
+                            >
+                              <div className={`w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center transition-colors ${
+                                checkedAddedIds.has(file.id)
+                                  ? 'bg-[var(--color-primary-main)] border-[var(--color-primary-main)]'
+                                  : 'border-gray-300 hover:border-gray-400'
+                              }`}>
+                                {checkedAddedIds.has(file.id) && (
+                                  <svg className="w-[12px] h-[12px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <FileUploadItem
+                                file={file}
+                                onRetry={() => handleRetry(file)}
+                                onDelete={() => handleDeleteFile(file.id)}
+                                onSelect={() => setSelectedFileId(file.id)}
+                                isSelected={selectedFileId === file.id}
+                                isRetrying={retryMutation.isPending}
+                                isDeleting={deleteMutation.isPending}
+                                autoTag={getAutoTagForFile(file.id)}
+                              />
+                            </div>
+                          </div>
                         ))}
                       </div>
+                    )}
+
+                    {/* 선택 삭제 버튼 (파일 목록 아래) */}
+                    {!isFileListCollapsed && checkedAddedIds.size > 0 && (
+                      <button
+                        onClick={handleBulkDelete}
+                        disabled={deleteMutation.isPending || previewMutation.isPending}
+                        className="w-full py-[12px] rounded-[10px] border-2 border-dashed border-red-300 text-red-600 font-title-small hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+                      >
+                        {deleteMutation.isPending || previewMutation.isPending ? (
+                          <>
+                            <span className="w-[16px] h-[16px] border-[2px] border-red-500 border-t-transparent rounded-full animate-spin" />
+                            삭제 중...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            선택 삭제 ({checkedAddedIds.size}개 파일 삭제)
+                          </>
+                        )}
+                      </button>
                     )}
                   </>
                 )}
