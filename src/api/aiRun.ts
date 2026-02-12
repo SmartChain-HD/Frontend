@@ -46,9 +46,18 @@ export interface ClarificationDetail {
   file_ids: string[];
 }
 
+export interface CrossValidationResult {
+  slots: string[];
+  displayNames: string[];
+  verdict: 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
+  reasons: string[];
+  extras?: Record<string, unknown>;
+}
+
 export interface AiAnalysisDetails {
   slot_results: SlotResultDetail[];
   clarifications: ClarificationDetail[];
+  crossValidations?: CrossValidationResult[];
   extras?: Record<string, unknown>;
 }
 
