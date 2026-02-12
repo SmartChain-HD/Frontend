@@ -9,7 +9,7 @@ import { useDiagnosticDetail, useDiagnosticHistory, useSubmitDiagnostic } from '
 import type { DomainCode, DiagnosticStatus } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { SlotResultDetail, CrossValidationResult } from '../../src/api/aiRun';
-import { REASON_LABELS } from '../../src/constants/reasonLabels';
+
 import { getDownloadUrl, fetchFileBlob } from '../../src/api/files';
 import type { DownloadUrlResponse } from '../../src/api/files';
 
@@ -383,11 +383,6 @@ export default function DocumentReviewPage({ userRole }: DocumentReviewPageProps
           {aiResult && (
             <div className="bg-white rounded-[16px] border border-[#dee2e6] p-[24px] mb-[24px]">
               <h2 className="font-title-medium text-[#212529] mb-[16px]">AI 분석 결과 상세</h2>
-
-              <div className="mb-[16px]">
-                <p className="font-body-small text-[#868e96] mb-[8px]">분석 요약</p>
-                <p className="font-body-medium text-[#212529] leading-[1.6]">{aiResult.whySummary}</p>
-              </div>
 
               {aiResult.details?.slot_results && aiResult.details.slot_results.length > 0 && (
                 <div>
@@ -905,15 +900,10 @@ function FileViewerModal({ fileId, fileName, personCount, onClose }: { fileId: n
 function CrossValidationCard({ result }: { result: CrossValidationResult }) {
   const verdict = result.verdict as Verdict;
   const title = result.displayNames.join(' × ');
-  const hasReasons = result.reasons && result.reasons.length > 0;
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
-      <div
-        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
-        onClick={() => hasReasons && setOpen(prev => !prev)}
-      >
+      <div className="flex items-center px-[20px] py-[16px]">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-[8px]">
             <svg className="w-[16px] h-[16px] text-[#868e96] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -928,27 +918,17 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
         >
           {VERDICT_LABELS[verdict]}
         </span>
-        {hasReasons && (
-          <svg
-            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        )}
       </div>
-      {hasReasons && open && (
-        <div className="px-[20px] pb-[16px]">
-          <ul className="space-y-[6px]">
-            {result.reasons.map((reason, index) => (
-              <li key={index} className="flex items-start gap-[8px] font-body-small text-[#868e96]">
-                <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[8px] flex-shrink-0" />
-                {REASON_LABELS[reason] || reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {(() => {
+        const summaryText = verdict === 'PASS'
+          ? (result.extras?.success_points as string | undefined)
+          : (result.extras?.issue_points as string | undefined);
+        return summaryText ? (
+          <div className="px-[20px] pb-[16px]">
+            <p className="font-body-small text-[#495057] leading-[1.6] whitespace-pre-line">{summaryText}</p>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
@@ -956,15 +936,10 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
 function SlotResultCard({ result, onFileClick }: { result: SlotResultDetail; onFileClick: (fileId: number, fileName: string, personCount?: string) => void }) {
   const verdict = result.verdict as Verdict;
   const displayName = result.display_name || result.slot_name;
-  const hasReasons = result.reasons && result.reasons.length > 0;
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
-      <div
-        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
-        onClick={() => hasReasons && setOpen(prev => !prev)}
-      >
+      <div className="flex items-center px-[20px] py-[16px]">
         <div className="flex-1 min-w-0">
           <span className="font-title-medium text-[#212529]">{displayName}</span>
           {result.file_names && result.file_names.length > 0 && (
@@ -974,7 +949,7 @@ function SlotResultCard({ result, onFileClick }: { result: SlotResultDetail; onF
                 return fid ? (
                   <button
                     key={i}
-                    onClick={(e) => { e.stopPropagation(); onFileClick(fid, fname, result.extras?.person_count != null ? String(result.extras.person_count) : undefined); }}
+                    onClick={() => onFileClick(fid, fname, result.extras?.person_count != null ? String(result.extras.person_count) : undefined)}
                     className="font-body-small text-[#228be6] hover:underline cursor-pointer truncate max-w-[250px]"
                   >
                     {fname}
@@ -992,27 +967,17 @@ function SlotResultCard({ result, onFileClick }: { result: SlotResultDetail; onF
         >
           {VERDICT_LABELS[verdict]}
         </span>
-        {hasReasons && (
-          <svg
-            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        )}
       </div>
-      {hasReasons && open && (
-        <div className="px-[20px] pb-[16px]">
-          <ul className="space-y-[6px]">
-            {result.reasons!.map((reason, index) => (
-              <li key={index} className="flex items-start gap-[8px] font-body-small text-[#868e96]">
-                <span className="w-[4px] h-[4px] bg-[#adb5bd] rounded-full mt-[8px] flex-shrink-0" />
-                {REASON_LABELS[reason] || reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {(() => {
+        const summaryText = verdict === 'PASS'
+          ? result.extras?.success_points
+          : result.extras?.issue_points;
+        return summaryText ? (
+          <div className="px-[20px] pb-[16px]">
+            <p className="font-body-small text-[#495057] leading-[1.6] whitespace-pre-line">{summaryText}</p>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
