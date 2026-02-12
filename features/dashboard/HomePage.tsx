@@ -260,7 +260,7 @@ function ExternalRiskPanel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-[24px]">
         <p className="font-title-large text-[#212529]">
-          외부 리스크 감지 현황
+          AI 협력사 외부 리스크 감지
         </p>
         <button
           onClick={handleDetectAll}
@@ -273,7 +273,7 @@ function ExternalRiskPanel() {
               분석중...
             </>
           ) : (
-            '전체 재분석'
+            '업데이트'
           )}
         </button>
       </div>
