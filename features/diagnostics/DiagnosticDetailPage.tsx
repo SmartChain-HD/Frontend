@@ -11,7 +11,7 @@ import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/ap
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
 import type { AiAnalysisResultResponse, SlotResultDetail, CrossValidationResult } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
-import { REASON_LABELS } from '../../src/constants/reasonLabels';
+
 
 type Verdict = 'PASS' | 'WARN' | 'NEED_CLARIFY' | 'NEED_FIX';
 
@@ -494,14 +494,6 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
       </div>
 
       <div className="p-[24px] space-y-[24px]">
-        {/* 요약 */}
-        <div>
-          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 요약</p>
-          <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
-            {result.whySummary}
-          </p>
-        </div>
-
         {/* 슬롯별 결과 */}
         {details?.slot_results && details.slot_results.length > 0 && (
           <div>
@@ -553,15 +545,10 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
 function CrossValidationCard({ result }: { result: CrossValidationResult }) {
   const verdict = result.verdict as Verdict;
   const title = result.displayNames.join(' × ');
-  const hasReasons = result.reasons && result.reasons.length > 0;
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
-      <div
-        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
-        onClick={() => hasReasons && setOpen(prev => !prev)}
-      >
+      <div className="flex items-center px-[20px] py-[16px]">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-[8px]">
             <svg className="w-[16px] h-[16px] text-[var(--color-text-tertiary)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -578,27 +565,17 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
         >
           {VERDICT_LABELS[verdict]}
         </span>
-        {hasReasons && (
-          <svg
-            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        )}
       </div>
-      {hasReasons && open && (
-        <div className="px-[20px] pb-[16px]">
-          <ul className="space-y-[6px]">
-            {result.reasons.map((reason, index) => (
-              <li key={index} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
-                <span className="w-[4px] h-[4px] bg-gray-500 rounded-full mt-[8px] flex-shrink-0" />
-                {REASON_LABELS[reason] || reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {(() => {
+        const summaryText = verdict === 'PASS'
+          ? (result.extras?.success_points as string | undefined)
+          : (result.extras?.issue_points as string | undefined);
+        return summaryText ? (
+          <div className="px-[20px] pb-[16px]">
+            <p className="font-body-small text-[var(--color-text-secondary)] leading-[1.6] whitespace-pre-line">{summaryText}</p>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
@@ -606,15 +583,10 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
 function SlotResultCard({ result }: { result: SlotResultDetail }) {
   const verdict = result.verdict as Verdict;
   const displayName = result.display_name || result.slot_name;
-  const hasReasons = result.reasons && result.reasons.length > 0;
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
-      <div
-        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
-        onClick={() => hasReasons && setOpen(prev => !prev)}
-      >
+      <div className="flex items-center px-[20px] py-[16px]">
         <div className="flex-1 min-w-0">
           <span className="font-title-medium text-[var(--color-text-primary)]">
             {displayName}
@@ -631,27 +603,17 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         >
           {VERDICT_LABELS[verdict]}
         </span>
-        {hasReasons && (
-          <svg
-            className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        )}
       </div>
-      {hasReasons && open && (
-        <div className="px-[20px] pb-[16px]">
-          <ul className="space-y-[6px]">
-            {result.reasons!.map((reason, index) => (
-              <li key={index} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
-                <span className="w-[4px] h-[4px] bg-gray-500 rounded-full mt-[8px] flex-shrink-0" />
-                {REASON_LABELS[reason] || reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {(() => {
+        const summaryText = verdict === 'PASS'
+          ? result.extras?.success_points
+          : result.extras?.issue_points;
+        return summaryText ? (
+          <div className="px-[20px] pb-[16px]">
+            <p className="font-body-small text-[var(--color-text-secondary)] leading-[1.6] whitespace-pre-line">{summaryText}</p>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
