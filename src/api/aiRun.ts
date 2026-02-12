@@ -29,6 +29,20 @@ export interface SlotResult {
   extractedData?: Record<string, unknown>;
 }
 
+// 슬롯별 extras 타입
+export interface SlotExtras {
+  analysis_message?: string;
+  analysis_detail?: string;
+  reason_descriptions?: string;
+  success_points?: string;
+  issue_points?: string;
+  person_count?: string;
+  person_count_yolo?: string;
+  person_count_llm?: string;
+  person_count_gap?: string;
+  [key: string]: unknown;
+}
+
 // 새 API 응답 타입
 export interface SlotResultDetail {
   slot_name: string;
@@ -37,7 +51,7 @@ export interface SlotResultDetail {
   reasons: string[];
   file_ids: string[];
   file_names: string[];
-  extras?: Record<string, unknown>;
+  extras?: SlotExtras;
 }
 
 export interface ClarificationDetail {
@@ -54,11 +68,17 @@ export interface CrossValidationResult {
   extras?: Record<string, unknown>;
 }
 
+// 최상위 extras 타입
+export interface AnalysisExtras {
+  service_why?: string;
+  [key: string]: unknown;
+}
+
 export interface AiAnalysisDetails {
   slot_results: SlotResultDetail[];
   clarifications: ClarificationDetail[];
   crossValidations?: CrossValidationResult[];
-  extras?: Record<string, unknown>;
+  extras?: AnalysisExtras;
 }
 
 export interface AiAnalysisResultResponse {
@@ -80,11 +100,17 @@ export interface AiResultDetailResponse extends AiAnalysisResultResponse {
 
 export const previewAiRun = async (
   diagnosticId: number,
-  fileIds: number[]
+  fileIds: number[],
+  removedFileIds?: string[],
+  packageId?: string
 ): Promise<RunPreviewResponse> => {
   const response = await apiClient.post<BaseResponse<RunPreviewResponse>>(
     `/v1/ai/run/diagnostics/${diagnosticId}/preview`,
-    { fileIds },
+    {
+      fileIds,
+      ...(removedFileIds?.length ? { removedFileIds } : {}),
+      ...(packageId ? { packageId } : {}),
+    },
     { timeout: 35000 }
   );
   return response.data.data;

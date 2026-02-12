@@ -7,8 +7,8 @@ import type { ErrorResponse } from '../types/api.types';
 
 export const useAiPreview = () => {
   return useMutation({
-    mutationFn: ({ diagnosticId, fileIds }: { diagnosticId: number; fileIds: number[] }) =>
-      aiRunApi.previewAiRun(diagnosticId, fileIds),
+    mutationFn: ({ diagnosticId, fileIds, removedFileIds, packageId }: { diagnosticId: number; fileIds: number[]; removedFileIds?: string[]; packageId?: string }) =>
+      aiRunApi.previewAiRun(diagnosticId, fileIds, removedFileIds, packageId),
     onError: (error: AxiosError<ErrorResponse>) => {
       handleApiError(error);
     },
