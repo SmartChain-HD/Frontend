@@ -9,7 +9,7 @@ import {
 import { useAiResult } from '../../src/hooks/useAiRun';
 import type { DiagnosticStatus, DomainCode, RiskLevel } from '../../src/types/api.types';
 import { DOMAIN_LABELS, DIAGNOSTIC_STATUS_LABELS } from '../../src/types/api.types';
-import type { AiAnalysisResultResponse, SlotResultDetail, CrossValidationResult } from '../../src/api/aiRun';
+import type { AiAnalysisResultResponse, SlotResultDetail, ClarificationDetail, CrossValidationResult } from '../../src/api/aiRun';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 import { REASON_LABELS } from '../../src/constants/reasonLabels';
 
@@ -49,6 +49,26 @@ const RISK_STYLES: Record<RiskLevel, string> = {
   MEDIUM: 'bg-[#fef9c3] text-[#a16207]',
   HIGH: 'bg-[#fee2e2] text-[#dc2626]',
 };
+
+// why 라인 파싱: "[파일명] : 사유" → { fileName, reason }[]
+function parseWhyLines(why: string): { fileName: string; reason: string }[] {
+  const lines = why.split('\n').filter(l => l.trim());
+  const parsed: { fileName: string; reason: string }[] = [];
+  const regex = /^\[(.*?)\]\s*:\s*(.*)$/;
+  for (const line of lines) {
+    const match = line.match(regex);
+    if (match) {
+      parsed.push({ fileName: match[1], reason: match[2] });
+    }
+  }
+  return parsed;
+}
+
+// points 파싱: "|" 구분 문자열 → 배열
+function parsePoints(points: string | undefined): string[] {
+  if (!points) return [];
+  return points.split('|').map(s => s.trim()).filter(Boolean);
+}
 
 const STATUS_STYLES: Record<DiagnosticStatus, string> = {
   WRITING: 'bg-gray-50 text-gray-700 border-gray-200',
@@ -497,9 +517,36 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
         {/* 요약 */}
         <div>
           <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 요약</p>
-          <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
-            {result.whySummary}
-          </p>
+          {(() => {
+            const whyLines = parseWhyLines(result.whySummary);
+            if (whyLines.length > 0) {
+              return (
+                <div className="overflow-x-auto rounded-[8px] border border-[var(--color-border-default)]">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-[16px] py-[10px] text-left font-title-xsmall text-[var(--color-text-tertiary)] w-[240px]">파일명</th>
+                        <th className="px-[16px] py-[10px] text-left font-title-xsmall text-[var(--color-text-tertiary)]">사유</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {whyLines.map((line, idx) => (
+                        <tr key={idx} className="border-t border-[var(--color-border-default)]">
+                          <td className="px-[16px] py-[10px] font-body-small text-[var(--color-text-primary)] align-top">{line.fileName}</td>
+                          <td className="px-[16px] py-[10px] font-body-small text-[var(--color-text-secondary)]">{line.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            }
+            return (
+              <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6] whitespace-pre-line">
+                {result.whySummary}
+              </p>
+            );
+          })()}
         </div>
 
         {/* 슬롯별 결과 */}
@@ -509,9 +556,21 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
               슬롯별 분석 결과
             </p>
             <div className="space-y-[12px]">
-              {details.slot_results.map((slotResult, index) => (
-                <SlotResultCard key={index} result={slotResult} />
-              ))}
+              {(() => {
+                const slotNameMap = new Map(
+                  details.slot_results.map(s => [s.slot_name, s.display_name || s.slot_name])
+                );
+                // 교차 검증 슬롯의 display_name을 한글명으로 변환
+                const enriched = details.slot_results.map(s => {
+                  if (!s.slot_name.includes('__x__') || s.display_name) return s;
+                  const crossName = s.slot_name.split('__x__').map(n => slotNameMap.get(n) || n).join(' + ');
+                  return { ...s, display_name: crossName };
+                });
+                const clarifications = details.clarifications || [];
+                return enriched.map((slotResult, index) => (
+                  <SlotResultCard key={index} result={slotResult} clarifications={clarifications} />
+                ));
+              })()}
             </div>
           </div>
         )}
@@ -603,22 +662,46 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
   );
 }
 
-function SlotResultCard({ result }: { result: SlotResultDetail }) {
+function SlotResultCard({ result, clarifications }: { result: SlotResultDetail; clarifications: ClarificationDetail[] }) {
   const verdict = result.verdict as Verdict;
+  const isCrossValidation = result.slot_name.includes('__x__');
   const displayName = result.display_name || result.slot_name;
-  const hasReasons = result.reasons && result.reasons.length > 0;
+  const extras = result.extras;
   const [open, setOpen] = useState(false);
+
+  // fallback 규칙: analysis_message → clarifications[].message → reasons
+  const slotClarification = clarifications.find(c => c.slot_name === result.slot_name);
+  const mainMessage = extras?.analysis_message || slotClarification?.message || null;
+  // 상세: analysis_detail → reason_descriptions
+  const detailText = extras?.analysis_detail || extras?.reason_descriptions || null;
+  // points
+  const successPoints = parsePoints(extras?.success_points);
+  const issuePoints = parsePoints(extras?.issue_points);
+  const points = verdict === 'PASS' ? successPoints : issuePoints;
+  const pointsLabel = verdict === 'PASS' ? '적합 근거' : '지적 사항';
+  // person count (이미지 슬롯)
+  const hasPersonCount = extras?.person_count_yolo || extras?.person_count_llm;
+  // 펼칠 내용이 있는지
+  const hasDetail = mainMessage || detailText || points.length > 0 || hasPersonCount
+    || (result.reasons && result.reasons.length > 0);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
       <div
-        className={`flex items-center px-[20px] py-[16px] ${hasReasons ? 'cursor-pointer' : ''}`}
-        onClick={() => hasReasons && setOpen(prev => !prev)}
+        className={`flex items-center px-[20px] py-[16px] ${hasDetail ? 'cursor-pointer' : ''}`}
+        onClick={() => hasDetail && setOpen(prev => !prev)}
       >
         <div className="flex-1 min-w-0">
-          <span className="font-title-medium text-[var(--color-text-primary)]">
-            {displayName}
-          </span>
+          <div className="flex items-center gap-[8px]">
+            {isCrossValidation && (
+              <span className="px-[6px] py-[2px] rounded bg-purple-100 text-purple-700 font-detail-small flex-shrink-0">
+                교차 검증
+              </span>
+            )}
+            <span className="font-title-medium text-[var(--color-text-primary)]">
+              {displayName}
+            </span>
+          </div>
           {result.file_names && result.file_names.length > 0 && (
             <p className="font-body-small text-[var(--color-text-tertiary)] mt-[4px] truncate">
               {result.file_names.join(', ')}
@@ -631,7 +714,7 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
         >
           {VERDICT_LABELS[verdict]}
         </span>
-        {hasReasons && (
+        {hasDetail && (
           <svg
             className={`w-[20px] h-[20px] ml-[8px] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -640,16 +723,72 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
           </svg>
         )}
       </div>
-      {hasReasons && open && (
-        <div className="px-[20px] pb-[16px]">
-          <ul className="space-y-[6px]">
-            {result.reasons!.map((reason, index) => (
-              <li key={index} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
-                <span className="w-[4px] h-[4px] bg-gray-500 rounded-full mt-[8px] flex-shrink-0" />
-                {REASON_LABELS[reason] || reason}
-              </li>
-            ))}
-          </ul>
+      {hasDetail && open && (
+        <div className="px-[20px] pb-[16px] space-y-[12px]">
+          {/* 1순위: analysis_message */}
+          {mainMessage && (
+            <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
+              {mainMessage}
+            </p>
+          )}
+
+          {/* 2순위: analysis_detail / reason_descriptions */}
+          {detailText && (
+            <p className="font-body-small text-[var(--color-text-secondary)] leading-[1.6] whitespace-pre-line">
+              {detailText}
+            </p>
+          )}
+
+          {/* 3순위: success_points / issue_points */}
+          {points.length > 0 && (
+            <div>
+              <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[6px]">{pointsLabel}</p>
+              <ul className="space-y-[4px]">
+                {points.map((point, idx) => (
+                  <li key={idx} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
+                    <span className={`w-[4px] h-[4px] rounded-full mt-[8px] flex-shrink-0 ${verdict === 'PASS' ? 'bg-green-500' : 'bg-red-500'}`} />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 이미지 슬롯: person_count */}
+          {hasPersonCount && (
+            <div className="flex flex-wrap gap-[12px] p-[12px] bg-white/60 rounded-[8px]">
+              {extras?.person_count_yolo && (
+                <div>
+                  <p className="font-detail-small text-[var(--color-text-tertiary)]">YOLO 인원수</p>
+                  <p className="font-title-small text-[var(--color-text-primary)]">{extras.person_count_yolo}명</p>
+                </div>
+              )}
+              {extras?.person_count_llm && (
+                <div>
+                  <p className="font-detail-small text-[var(--color-text-tertiary)]">LLM 인원수</p>
+                  <p className="font-title-small text-[var(--color-text-primary)]">{extras.person_count_llm}명</p>
+                </div>
+              )}
+              {extras?.person_count_gap && (
+                <div>
+                  <p className="font-detail-small text-[var(--color-text-tertiary)]">차이</p>
+                  <p className="font-title-small text-[var(--color-text-primary)]">{extras.person_count_gap}명</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* fallback: extras 없으면 기존 reasons 코드 노출 */}
+          {!mainMessage && !detailText && points.length === 0 && result.reasons && result.reasons.length > 0 && (
+            <ul className="space-y-[6px]">
+              {result.reasons.map((reason, index) => (
+                <li key={index} className="flex items-start gap-[8px] font-body-small text-[var(--color-text-secondary)]">
+                  <span className="w-[4px] h-[4px] bg-gray-500 rounded-full mt-[8px] flex-shrink-0" />
+                  {REASON_LABELS[reason] || reason}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

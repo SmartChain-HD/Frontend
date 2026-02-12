@@ -258,10 +258,15 @@ function ExternalRiskPanel() {
   return (
     <div className="bg-white rounded-[20px] p-[44px] h-[555px] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-[24px]">
-        <p className="font-title-large text-[#212529]">
-          외부 리스크 감지 현황
-        </p>
+      <div className="flex items-start justify-between mb-[24px]">
+        <div>
+          <p className="font-title-large text-[#212529]">
+            협력사 외부 리스크 감지 현황
+          </p>
+          <p className="font-body-small text-[var(--color-text-tertiary)] mt-[4px]">
+            뉴스 및 외부 데이터 기반으로 협력사의 ESG 리스크를 자동 감지합니다.
+          </p>
+        </div>
         <button
           onClick={handleDetectAll}
           disabled={detectMutation.isPending || companies.length === 0}
@@ -273,7 +278,7 @@ function ExternalRiskPanel() {
               분석중...
             </>
           ) : (
-            '전체 재분석'
+            '업데이트'
           )}
         </button>
       </div>
