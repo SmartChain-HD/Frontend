@@ -360,18 +360,26 @@ export default function DiagnosticDetailPage() {
             >
               파일 관리 및 AI 분석
             </button>
-            {isSubmittableStatus && !aiResult && (
-              <span className="font-body-small text-[var(--color-text-tertiary)] self-center">
-                AI 분석을 완료해야 제출할 수 있습니다
-              </span>
-            )}
-            {canSubmit && (
-              <button
-                onClick={() => setShowSubmitModal(true)}
-                className="px-[24px] py-[12px] rounded-[8px] bg-[var(--color-primary-main)] text-white font-title-small hover:opacity-90 transition-colors"
-              >
-                {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
-              </button>
+            {isSubmittableStatus && (
+              <div className="relative group">
+                <button
+                  onClick={canSubmit ? () => setShowSubmitModal(true) : undefined}
+                  disabled={!canSubmit}
+                  className={`px-[24px] py-[12px] rounded-[8px] font-title-small transition-colors ${
+                    canSubmit
+                      ? 'bg-[var(--color-primary-main)] text-white hover:opacity-90 cursor-pointer'
+                      : 'bg-[var(--color-primary-main)]/40 text-white cursor-not-allowed'
+                  }`}
+                >
+                  {hasApprovalWorkflow ? '결재자에게 제출' : '수신자에게 제출'}
+                </button>
+                {!canSubmit && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[8px] px-[12px] py-[8px] bg-[var(--color-text-primary)] text-white font-body-small rounded-[8px] whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
+                    AI 분석을 완료해야 제출할 수 있습니다
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-[var(--color-text-primary)]" />
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
