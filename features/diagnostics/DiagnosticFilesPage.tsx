@@ -14,7 +14,8 @@ import {
 import * as filesApi from '../../src/api/files';
 import type { AxiosError } from 'axios';
 import type { JobStatus } from '../../src/api/jobs';
-import type { SlotStatus, SlotHint } from '../../src/api/aiRun';
+import { previewAiRun } from '../../src/api/aiRun';
+import type { SlotStatus, SlotHint, RunPreviewResponse } from '../../src/api/aiRun';
 import type { ErrorResponse } from '../../src/types/api.types';
 import DashboardLayout from '../../shared/layout/DashboardLayout';
 
@@ -407,7 +408,21 @@ export default function DiagnosticFilesPage() {
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isFileListCollapsed, setIsFileListCollapsed] = useState(false);
-  const [addedFileIds, setAddedFileIds] = useState<Set<number>>(new Set());
+  const [addedFileIds, _setAddedFileIds] = useState<Set<number>>(() => {
+    try {
+      const stored = sessionStorage.getItem(`addedFileIds-${diagnosticId}`);
+      return stored ? new Set(JSON.parse(stored) as number[]) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  const setAddedFileIds = useCallback((update: Set<number> | ((prev: Set<number>) => Set<number>)) => {
+    _setAddedFileIds(prev => {
+      const next = typeof update === 'function' ? update(prev) : update;
+      sessionStorage.setItem(`addedFileIds-${diagnosticId}`, JSON.stringify([...next]));
+      return next;
+    });
+  }, [diagnosticId]);
   const [checkedPendingIds, setCheckedPendingIds] = useState<Set<number>>(new Set());
   const initialLoadDoneRef = useRef(false);
 
@@ -418,8 +433,13 @@ export default function DiagnosticFilesPage() {
   const { data: aiResult } = useAiResult(diagnosticId, isAnalyzing);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
-  // 재제출 시 이전 결과와 새 결과를 구분하기 위해 제출 시점의 analyzedAt 저장
-  const prevAnalyzedAtRef = useRef<string | null>(null);
+  // 초기 preview 데이터 (직접 API 호출 결과)
+  const [initialPreviewData, setInitialPreviewData] = useState<RunPreviewResponse | null>(null);
+  const [isInitialPreviewLoading, setIsInitialPreviewLoading] = useState(true);
+  // preview 응답에서 받은 package_id를 다음 호출에 재사용
+  const packageIdRef = useRef<string | null>(null);
+  // 재분석 시 이전 결과 ID 저장
+  const prevResultIdRef = useRef<number | null>(null);
 
   // 모든 업로드된 파일 표시
   // 새로 업로드한 파일 상태를 우선 사용 (job polling 결과 반영)
@@ -464,18 +484,27 @@ export default function DiagnosticFilesPage() {
   const addedFiles = uploadedFiles.filter(f => addedFileIds.has(f.id));
   const pendingFiles = uploadedFiles.filter(f => !addedFileIds.has(f.id));
 
-  // UI 표시용: uploadedFiles에서 완료된 파일 수
-  const completedFileIds = uploadedFiles
+  // UI 표시용: Add된 파일 중 완료된 파일 수
+  const completedFileIds = addedFiles
     .filter(f => f.uploadStatus === 'complete')
     .map(f => f.id);
 
-  // preview 데이터 (조건부 return 이전에 정의해야 hooks 순서 유지)
-  const previewData = previewMutation.data;
+  // preview 데이터: initialPreviewData를 단일 소스로 사용
+  const previewData = initialPreviewData;
   const requiredSlotStatus = previewData?.required_slot_status || [];
   const missingRequiredSlots = previewData?.missing_required_slots || [];
   const hasMissingRequiredSlots = missingRequiredSlots.length > 0;
 
-  // required_slot_status에서 SUBMITTED 상태인 슬롯 Set 생성
+  // file_id → file_name 매핑 (슬롯 체크리스트용)
+  const fileIdToName = useMemo(() => {
+    const map = new Map<string, string>();
+    uploadedFiles.forEach(f => {
+      map.set(String(f.id), f.name);
+    });
+    return map;
+  }, [uploadedFiles]);
+
+  // 체크 상태: 백엔드 required_slot_status의 status 기반
   const submittedSlots = useMemo(() => {
     return new Set(
       requiredSlotStatus
@@ -484,32 +513,57 @@ export default function DiagnosticFilesPage() {
     );
   }, [requiredSlotStatus]);
 
-  // 초기 로드 시 preview 자동 호출 (슬롯 목록을 즉시 표시)
+  // 초기 로드 시 preview 직접 호출
+  // cleanup에서 cancelled 처리하면 StrictMode 이중실행 시 결과가 버려지므로 제거
   useEffect(() => {
     if (diagnosticId > 0 && existingFiles && !initialLoadDoneRef.current) {
       initialLoadDoneRef.current = true;
-      // 기존 완료 파일을 addedFileIds에 자동 추가
+      // 이번 세션에서 업로드한 파일 ID (auto-add에서 제외)
+      const newlyUploadedIds = new Set(newlyUploadedFiles.map(f => f.id));
+      // 기존 완료 파일 ID (이번 세션 업로드 제외)
       const existingCompleteIds = existingFiles
-        .filter(f => f.parsingStatus === 'SUCCESS')
+        .filter(f => f.parsingStatus === 'SUCCESS' && !newlyUploadedIds.has(f.fileId))
         .map(f => f.fileId);
-      if (existingCompleteIds.length > 0) {
-        setAddedFileIds(new Set(existingCompleteIds));
+      // sessionStorage에 저장된 addedFileIds가 없으면 기존 완료 파일 전체를 자동 Add
+      // (최초 진입 또는 sessionStorage가 비어있는 경우)
+      const storedAdded = sessionStorage.getItem(`addedFileIds-${diagnosticId}`);
+      if (!storedAdded) {
+        if (existingCompleteIds.length > 0) {
+          setAddedFileIds(new Set(existingCompleteIds));
+        } else {
+          // 파일 없이 방문해도 기록을 남겨서, 이후 업로드된 파일이 auto-add 되지 않도록 함
+          sessionStorage.setItem(`addedFileIds-${diagnosticId}`, '[]');
+        }
       }
-      // preview 호출하여 슬롯 목록 로드
-      previewMutation.mutate({ diagnosticId, fileIds: existingCompleteIds });
+      // preview 직접 호출하여 슬롯 목록 및 매칭 정보 로드
+      // addedFileIds에 있는 파일만 전송 (Add 안 한 파일은 보내지 않음)
+      const storedIds: number[] = storedAdded ? JSON.parse(storedAdded) : existingCompleteIds;
+      const previewFileIds = existingCompleteIds.filter(id => storedIds.includes(id));
+      if (previewFileIds.length > 0) {
+        setIsInitialPreviewLoading(true);
+        previewAiRun(diagnosticId, previewFileIds)
+          .then(data => {
+            setInitialPreviewData(data);
+            if (data.package_id) packageIdRef.current = data.package_id;
+          })
+          .catch(() => {})
+          .finally(() => setIsInitialPreviewLoading(false));
+      } else {
+        setIsInitialPreviewLoading(false);
+      }
     }
   }, [diagnosticId, existingFiles]);
 
   // 분석 완료 감지 → 기안 상세 페이지로 리다이렉트
-  // 재제출 시 이전 결과(analyzedAt 동일)와 새 결과를 구분
+  // 이전 결과 ID와 동일하면 아직 새 결과가 아님
   useEffect(() => {
     if (isAnalyzing && aiResult) {
-      // 이전 결과와 analyzedAt이 같으면 아직 새 결과가 아님 → skip
-      if (prevAnalyzedAtRef.current && aiResult.analyzedAt === prevAnalyzedAtRef.current) {
+      // 이전 결과와 같은 ID면 skip (아직 새 결과 아님)
+      if (prevResultIdRef.current !== null && aiResult.id === prevResultIdRef.current) {
         return;
       }
       setIsAnalyzing(false);
-      prevAnalyzedAtRef.current = null;
+      prevResultIdRef.current = null;
       navigate(`/diagnostics/${diagnosticId}`);
     }
   }, [aiResult, isAnalyzing, navigate, diagnosticId]);
@@ -553,25 +607,27 @@ export default function DiagnosticFilesPage() {
 
   // 슬롯 힌트에서 파일 ID로 슬롯명 찾기
   const getAutoTagForFile = useCallback((fileId: number): string | undefined => {
-    const slotHints = previewMutation.data?.slot_hint || [];
+    const slotHints = previewData?.slot_hint || [];
     const hint = slotHints.find(h => h.file_id === String(fileId));
     return hint ? (hint.display_name || hint.slot_name) : undefined;
-  }, [previewMutation.data?.slot_hint]);
-
-  // file_id → file_name 매핑 (슬롯 체크리스트용)
-  const fileIdToName = useMemo(() => {
-    const map = new Map<string, string>();
-    uploadedFiles.forEach(f => {
-      map.set(String(f.id), f.name);
-    });
-    return map;
-  }, [uploadedFiles]);
+  }, [previewData?.slot_hint]);
 
 
   // preview 호출 함수
-  const callPreview = useCallback((fileIds: number[]) => {
+  const callPreview = useCallback(async (fileIds: number[], removedFileIds?: string[]) => {
     if (diagnosticId > 0) {
-      previewMutation.mutate({ diagnosticId, fileIds });
+      try {
+        const result = await previewMutation.mutateAsync({
+          diagnosticId,
+          fileIds,
+          removedFileIds,
+          packageId: packageIdRef.current || undefined,
+        });
+        setInitialPreviewData(result);
+        if (result.package_id) packageIdRef.current = result.package_id;
+      } catch {
+        // Error handled by mutation
+      }
     }
   }, [diagnosticId]);
 
@@ -708,26 +764,42 @@ export default function DiagnosticFilesPage() {
     try {
       await deleteMutation.mutateAsync(fileId);
       setNewlyUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+      // addedFileIds에서도 제거
+      setAddedFileIds(prev => {
+        const next = new Set(prev);
+        next.delete(fileId);
+        return next;
+      });
       if (selectedFileId === fileId) {
         setSelectedFileId(null);
       }
-      // 파일 목록 쿼리 갱신
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
-      // 삭제된 파일을 제외한 나머지 파일로 preview 재호출 (완료 대기)
-      const remainingFileIds = allCompletedFileIds.filter(id => id !== fileId);
-      await previewMutation.mutateAsync({ diagnosticId, fileIds: remainingFileIds });
+      // 파일 목록 쿼리 갱신 (await 없이 — preview 호출을 블로킹하지 않도록)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES.LIST(diagnosticId) });
+      // removedFileIds로 삭제된 파일을 전달하여 슬롯 상태 갱신
+      try {
+        const result = await previewMutation.mutateAsync({
+          diagnosticId,
+          fileIds: [],
+          removedFileIds: [String(fileId)],
+          packageId: packageIdRef.current || undefined,
+        });
+        setInitialPreviewData(result);
+        if (result.package_id) packageIdRef.current = result.package_id;
+      } catch {
+        // preview 실패 시 무시 (슬롯 상태만 갱신 안 됨)
+      }
     } catch {
-      // Error handled by mutation
+      // delete 실패 시 — Error handled by mutation
     }
   };
 
   const handleSubmitAiRun = () => {
     setShowSubmitModal(false);
-    // 이전 분석 결과의 analyzedAt을 저장하여 새 결과와 구분
-    prevAnalyzedAtRef.current = aiResult?.analyzedAt ?? null;
+    // 이전 결과 ID 저장하여 polling에서 이전 결과 필터링
+    prevResultIdRef.current = aiResult?.id ?? null;
     queryClient.removeQueries({ queryKey: QUERY_KEYS.AI_RUN.RESULT(diagnosticId) });
     setIsAnalyzing(true);
-    const slotHints = (previewMutation.data?.slot_hint || []).map(h => ({
+    const slotHints = (previewData?.slot_hint || []).map(h => ({
       file_id: h.file_id,
       slot_name: h.slot_name,
       display_name: h.display_name,
@@ -954,10 +1026,9 @@ export default function DiagnosticFilesPage() {
                         const newAddedIds = new Set(addedFileIds);
                         checkedPendingIds.forEach(id => newAddedIds.add(id));
                         setAddedFileIds(newAddedIds);
-                        const addedCompletedIds = uploadedFiles
-                          .filter(f => newAddedIds.has(f.id) && f.uploadStatus === 'complete')
-                          .map(f => f.id);
-                        callPreview(addedCompletedIds);
+                        // 증분 방식: 새로 체크된 파일만 전송
+                        const newlyCheckedIds = [...checkedPendingIds];
+                        callPreview(newlyCheckedIds);
                         setCheckedPendingIds(new Set());
                         setIsFileListCollapsed(false);
                       }}
@@ -1044,6 +1115,28 @@ export default function DiagnosticFilesPage() {
                 )}
               </div>
             )}
+
+            {/* 파싱 결과 미리보기 (선택된 파일이 있을 때) */}
+            {selectedFileId && (
+              <div className="bg-white rounded-[12px] border border-[var(--color-border-default)]">
+                <div className="px-[20px] py-[16px] border-b border-[var(--color-border-default)] flex items-center justify-between">
+                  <h3 className="font-title-medium text-[var(--color-text-primary)]">
+                    파싱 결과
+                  </h3>
+                  <button
+                    onClick={() => setSelectedFileId(null)}
+                    className="p-[4px] hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <svg className="w-[20px] h-[20px] text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-[20px]">
+                  <ParsingResultView diagnosticId={diagnosticId} fileId={selectedFileId} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 우측: 필수 첨부 자료 리스트 */}
@@ -1058,9 +1151,9 @@ export default function DiagnosticFilesPage() {
                 slots={requiredSlotStatus}
                 submittedSlots={submittedSlots}
                 missingRequired={missingRequiredSlots}
-                slotHints={previewMutation.data?.slot_hint || []}
+                slotHints={previewData?.slot_hint || []}
                 fileIdToName={fileIdToName}
-                isLoading={previewMutation.isPending}
+                isLoading={(isInitialPreviewLoading && !previewData) || previewMutation.isPending}
               />
             </div>
             {/* 최종 제출 버튼 */}
@@ -1082,28 +1175,6 @@ export default function DiagnosticFilesPage() {
             </div>
           </div>
         </div>
-
-        {/* 파싱 결과 미리보기 (선택된 파일이 있을 때) */}
-        {selectedFileId && (
-          <div className="bg-white rounded-[12px] border border-[var(--color-border-default)]">
-            <div className="px-[20px] py-[16px] border-b border-[var(--color-border-default)] flex items-center justify-between">
-              <h3 className="font-title-medium text-[var(--color-text-primary)]">
-                파싱 결과
-              </h3>
-              <button
-                onClick={() => setSelectedFileId(null)}
-                className="p-[4px] hover:bg-gray-100 rounded transition-colors"
-              >
-                <svg className="w-[20px] h-[20px] text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-[20px]">
-              <ParsingResultView diagnosticId={diagnosticId} fileId={selectedFileId} />
-            </div>
-          </div>
-        )}
 
         {/* 하단 네비게이션 */}
         <div className="flex justify-start">
@@ -1156,7 +1227,7 @@ export default function DiagnosticFilesPage() {
                     분석 대상 ({completedCount}개 파일)
                   </p>
                   <div className="space-y-[6px] max-h-[200px] overflow-y-auto">
-                    {uploadedFiles.filter(f => f.uploadStatus === 'complete').map(f => (
+                    {addedFiles.filter(f => f.uploadStatus === 'complete').map(f => (
                       <div key={f.id} className="flex items-center gap-[8px] px-[8px] py-[6px] bg-white rounded-[6px]">
                         <svg className="w-[16px] h-[16px] text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
