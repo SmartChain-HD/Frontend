@@ -519,26 +519,21 @@ export default function DiagnosticFilesPage() {
   useEffect(() => {
     if (diagnosticId > 0 && existingFiles && !initialLoadDoneRef.current) {
       initialLoadDoneRef.current = true;
-      // 이번 세션에서 업로드한 파일 ID (auto-add에서 제외)
+      // 기존 완료 파일 ID
       const newlyUploadedIds = new Set(newlyUploadedFiles.map(f => f.id));
-      // 기존 완료 파일 ID (이번 세션 업로드 제외)
       const existingCompleteIds = existingFiles
         .filter(f => f.parsingStatus === 'SUCCESS' && !newlyUploadedIds.has(f.fileId))
         .map(f => f.fileId);
-      // sessionStorage에 저장된 addedFileIds가 없으면 기존 완료 파일 전체를 자동 Add
-      // (최초 진입 또는 sessionStorage가 비어있는 경우)
+      // sessionStorage에 저장된 addedFileIds를 복원 (없으면 빈 상태로 시작)
+      // 새 파일은 항상 "새 파일" 섹션에 표시되며, 사용자가 Add 버튼을 눌러야 "추가된 파일"로 이동
       const storedAdded = sessionStorage.getItem(`addedFileIds-${diagnosticId}`);
       if (!storedAdded) {
-        if (existingCompleteIds.length > 0) {
-          setAddedFileIds(new Set(existingCompleteIds));
-        } else {
-          // 파일 없이 방문해도 기록을 남겨서, 이후 업로드된 파일이 auto-add 되지 않도록 함
-          sessionStorage.setItem(`addedFileIds-${diagnosticId}`, '[]');
-        }
+        // 최초 진입 시 빈 상태로 시작 (자동 Add 하지 않음)
+        sessionStorage.setItem(`addedFileIds-${diagnosticId}`, '[]');
       }
       // preview 직접 호출하여 슬롯 목록 및 매칭 정보 로드
       // addedFileIds에 있는 파일만 전송 (Add 안 한 파일은 보내지 않음)
-      const storedIds: number[] = storedAdded ? JSON.parse(storedAdded) : existingCompleteIds;
+      const storedIds: number[] = storedAdded ? JSON.parse(storedAdded) : [];
       const previewFileIds = existingCompleteIds.filter(id => storedIds.includes(id));
       if (previewFileIds.length > 0) {
         setIsInitialPreviewLoading(true);
