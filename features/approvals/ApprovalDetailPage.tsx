@@ -412,14 +412,6 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
           </div>
         </div>
 
-        {/* 요약 */}
-        <div>
-          <p className="font-title-xsmall text-[var(--color-text-tertiary)] mb-[8px]">분석 요약</p>
-          <p className="font-body-medium text-[var(--color-text-primary)] leading-[1.6]">
-            {result.whySummary}
-          </p>
-        </div>
-
         {/* 슬롯별 결과 */}
         {details?.slot_results && details.slot_results.length > 0 && (
           <div>
@@ -427,9 +419,18 @@ function AiResultSection({ result }: { result: AiAnalysisResultResponse }) {
               슬롯별 분석 결과
             </p>
             <div className="space-y-[12px]">
-              {details.slot_results.map((slotResult, index) => (
-                <SlotResultCard key={index} result={slotResult} />
-              ))}
+              {details.slot_results.map((slotResult, index) => {
+                const clarification = details.clarifications?.find(
+                  (c) => c.slot_name === slotResult.slot_name
+                );
+                return (
+                  <SlotResultCard
+                    key={index}
+                    result={slotResult}
+                    clarificationMessage={clarification?.message}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -521,11 +522,13 @@ function CrossValidationCard({ result }: { result: CrossValidationResult }) {
   );
 }
 
-function SlotResultCard({ result }: { result: SlotResultDetail }) {
+function SlotResultCard({ result, clarificationMessage }: { result: SlotResultDetail; clarificationMessage?: string }) {
   const verdict = result.verdict as Verdict;
   const displayName = result.display_name || result.slot_name;
   const hasReasons = result.reasons && result.reasons.length > 0;
   const [open, setOpen] = useState(false);
+  const strippedMessage = clarificationMessage?.replace(/^안녕하세요[^\n]*\n\n/, '').trim();
+  const [clarifyOpen, setClarifyOpen] = useState(false);
 
   return (
     <div className="rounded-[12px] border overflow-hidden" style={VERDICT_CARD_BG[verdict]}>
@@ -568,6 +571,30 @@ function SlotResultCard({ result }: { result: SlotResultDetail }) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {strippedMessage && (
+        <div className="border-t border-[var(--color-border-default)]">
+          <button
+            type="button"
+            onClick={() => setClarifyOpen(prev => !prev)}
+            className="flex items-center gap-[6px] w-full px-[20px] py-[10px] font-label-small text-[var(--color-state-warning-text)] hover:bg-black/[0.03] transition-colors"
+          >
+            <svg
+              className={`w-[14px] h-[14px] flex-shrink-0 transition-transform ${clarifyOpen ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+            보완 요청 사항
+          </button>
+          {clarifyOpen && (
+            <div className="px-[20px] pb-[16px]">
+              <p className="font-body-small text-[var(--color-state-warning-text)] leading-[1.6] whitespace-pre-line">
+                {strippedMessage}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
