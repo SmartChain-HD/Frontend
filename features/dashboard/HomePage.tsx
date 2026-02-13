@@ -259,9 +259,14 @@ function ExternalRiskPanel() {
     <div className="bg-white rounded-[20px] p-[44px] h-[555px] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-[24px]">
-        <p className="font-title-large text-[#212529]">
-          AI 협력사 외부 리스크 감지
-        </p>
+        <div>
+          <p className="font-title-large text-[#212529]">
+            협력사 외부 리스크 감지
+          </p>
+          <p className="font-body-small text-[#868e96] mt-[4px]">
+            AI 기반으로 협력사의 리스크를 감지합니다.
+          </p>
+        </div>
         <button
           onClick={handleDetectAll}
           disabled={detectMutation.isPending || companies.length === 0}
