@@ -510,19 +510,6 @@ function MessageBubble({ message }: { message: DisplayMessage }) {
           <p className="font-body-medium whitespace-pre-wrap">{message.content}</p>
         </div>
 
-        {/* Confidence badge */}
-        {message.confidence && (
-          <div className="mt-[4px]">
-            <span
-              className={`inline-block px-[8px] py-[2px] rounded border font-detail-small ${
-                confidenceColors[message.confidence]
-              }`}
-            >
-              신뢰도: {confidenceLabels[message.confidence]}
-            </span>
-          </div>
-        )}
-
         {/* Sources */}
         {message.sources && message.sources.length > 0 && (
           <div className="mt-[6px]">
